@@ -1,5 +1,14 @@
 # Hemppa - generic Matrix bot
 
+## Module list
+
+Write !modulename in Matrix room where the bot is to use modules.
+
+### Echo
+
+Simple example module that just echoes what user said. Can be used as an
+example for writing own modules.
+
 ## First
 
 * Create a Matrix user
