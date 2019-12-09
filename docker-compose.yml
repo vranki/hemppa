@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  malobot:
+    container_name: hemppa
+    image: 'hemppa:latest'
+    build: '.'
+    restart: always
+    environment:
+      - MATRIX_ACCESS_TOKEN
+      - MATRIX_USER
+      - MATRIX_PASSWORD
+      - MATRIX_SERVER
+      - JOIN_ON_INVITE
