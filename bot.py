@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import asyncio
 import os
 import json
@@ -44,6 +46,7 @@ class Bot:
             try:
                 await moduleobject.matrix_message(bot, room, event)
             except:
+                await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                 traceback.print_exc(file=sys.stderr)
 
     async def unknown_cb(self, room, event):
