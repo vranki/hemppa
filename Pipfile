@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 matrix-nio = "*"
 geopy = "*"
+google-api-python-client = "*"
+google-auth-httplib2 = "*"
+google-auth-oauthlib = "*"
 
 [dev-packages]
 pylint = "*"

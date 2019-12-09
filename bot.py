@@ -15,11 +15,21 @@ class Bot:
     client = None
     join_on_invite = False
     modules = dict()
+    pollcount = 0
+    poll_task = None
 
     async def send_text(self, room, body):
         msg = {
             "body": body,
             "msgtype": "m.text"
+        }
+        await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
+
+    async def send_html(self, room, html):
+        msg = {
+            "msgtype": "m.text",
+            "format": "org.matrix.custom.html",
+            "formatted_body": html
         }
         await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
 
@@ -83,6 +93,17 @@ class Bot:
             if moduleobject:
                 self.modules[modulename] = moduleobject
 
+    async def poll_timer(self):
+        while True:
+            self.pollcount = self.pollcount + 1
+            for modulename, moduleobject in self.modules.items():
+                if "matrix_poll" in dir(moduleobject):
+                    try:
+                        await moduleobject.matrix_poll(bot, self.pollcount)
+                    except:
+                        traceback.print_exc(file=sys.stderr)
+            await asyncio.sleep(10)
+
     def init(self):
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
@@ -116,6 +137,7 @@ class Bot:
             print("Logged in with password, access token:", self.client.access_token)
 
         await self.client.sync()
+        self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
 
         if self.client.logged_in:
             self.client.add_event_callback(self.message_cb, RoomMessageText)
@@ -134,5 +156,7 @@ bot.init()
 try:
     asyncio.get_event_loop().run_until_complete(bot.run())
 except KeyboardInterrupt:
-    pass
+    if bot.poll_task:
+        bot.poll_task.cancel()
+
 bot.stop()
