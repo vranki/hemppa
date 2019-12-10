@@ -156,16 +156,6 @@ class Bot:
         self.join_on_invite = os.getenv('JOIN_ON_INVITE')
 
         self.get_modules()
-
-        print(f'Starting {len(self.modules)} modules..')
-
-        for modulename, moduleobject in self.modules.items():
-            print('Starting', modulename, '..')
-            if "matrix_start" in dir(moduleobject):
-                try:
-                    moduleobject.matrix_start(bot)
-                except:
-                    traceback.print_exc(file=sys.stderr)
     
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
@@ -183,6 +173,16 @@ class Bot:
             print("Logged in with password, access token:", self.client.access_token)
 
         await self.client.sync()
+
+        print(f'Starting {len(self.modules)} modules..')
+        for modulename, moduleobject in self.modules.items():
+            print('Starting', modulename, '..')
+            if "matrix_start" in dir(moduleobject):
+                try:
+                    moduleobject.matrix_start(bot)
+                except:
+                    traceback.print_exc(file=sys.stderr)
+
         self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
 
         if self.client.logged_in:

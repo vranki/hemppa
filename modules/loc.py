@@ -10,7 +10,6 @@ class MatrixModule:
     async def unknown_cb(self, room, event):
         if event.msgtype != 'm.location':
             return
-
         location_text = event.content['body']
 
         # Fallback if body is empty
@@ -29,15 +28,14 @@ class MatrixModule:
 
         osm_link = 'https://www.openstreetmap.org/?mlat=' + latlon[0] + "&mlon=" + latlon[1]
         
-        plain = sender + ' - ' + osm_link
-        html = f'{sender} - <a href={osm_link}>{location_text}</a>'
+        plain = sender + ' 🚩 ' + osm_link
+        html = f'{sender} 🚩 <a href={osm_link}>{location_text}</a>'
 
         await self.bot.send_html(room, html, plain)
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         args.pop(0)
-
         if len(args) == 0:
             await bot.send_text(room, 'Usage: !loc <location name>')
         if len(args) == 1:
@@ -46,13 +44,11 @@ class MatrixModule:
             location = geolocator.geocode(query)
             if location:
                 locationmsg = {
-                    "body": "Tampere, Finland",
-                    "geo_uri": "geo:61.5,23.766667",
+                    "body": str(location.address),
+                    "geo_uri": 'geo:' + str(location.latitude) + ',' + str(location.longitude),
                     "msgtype": "m.location",
                 }
-                locationmsg['body'] = location.address
-                locationmsg['geo_uri'] = 'geo:' + str(location.latitude) + ',' + str(location.longitude)
-                await bot.client.room_send(bot.get_room_id(room), 'm.room.message', locationmsg)
+                await bot.client.room_send(room.room_id, 'm.room.message', locationmsg)
             else:
                 await bot.send_text(room, "Can't find " + query + " on map!")
 
