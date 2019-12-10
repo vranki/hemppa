@@ -57,7 +57,6 @@ class Bot:
                     module_settings[modulename] = moduleobject.get_settings()
                 except:
                     traceback.print_exc(file=sys.stderr)
-        print('Collected module settings:', module_settings)
         data = { self.appid: self.version, 'module_settings': module_settings}
         self.set_account_data(data)
 
@@ -153,8 +152,8 @@ class Bot:
         response = requests.get(ad_url)
         if response.status_code == 200:
             return response.json()
-        elif response.status_code != 200:
-            print('Getting account data failed:', response, response.json())
+        print('Getting account data failed:', response, response.json())
+        return None
 
     def init(self):
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])

@@ -19,7 +19,7 @@ Simple example module that just echoes what user said.
 
 Aviation weather metar service access.
 
-### TAF 
+### TAF
 
 Aviation weather TAF service access.
 
@@ -39,7 +39,7 @@ When credentials.json is present, you must authenticate the bot to access calend
 Please visit this URL to authorize this application: https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=907....
 ```
 
-Open the link and authenticate as needed. A new file token.pickle will be created in the directory and bot will read it in future. 
+Open the link and authenticate as needed. A new file token.pickle will be created in the directory and bot will read it in future.
 
 Now the bot should be usable.
 
@@ -53,6 +53,21 @@ Commands:
 * !googlecal add [calendar id] - Add new calendar to room
 * !googlecal del [calendar id] - Delete calendar from room
 * !googlecal calendars - List calendars in this room
+
+### Cron
+
+Can schedule things to be done.
+
+Commands:
+
+* !cron daily [hour] [command] - Run command on start of hour
+* !cron list - List commands in this room
+* !cron clear - Clear command s in this room
+
+Examples:
+
+* !cron daily 19 "It is now 19 o clock"
+* !cron daily 8 "!googlecal today"
 
 ## Bot setup
 
@@ -108,5 +123,9 @@ Functions:
 * matrix_stop - Called once before exit
 * async matrix_poll - Called every 10 seconds
 * help - Return one-liner help text
+* get_settings - Must return a dict object that can be converted to JSON and sent to server
+* set_settings - Load these settings. It should be the same JSON you returned in previous get_settings
 
 You only need to implement the ones you need. See existing bots for examples
+
+Settings are stored in Matrix account data.
