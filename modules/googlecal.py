@@ -33,9 +33,7 @@ class MatrixModule:
         if os.getenv("GCAL_CREDENTIALS"):
             self.credentials_file = os.getenv("GCAL_CREDENTIALS")
         self.service = None
-        self.report_time = 8
-        self.last_report_date = None
-        self.calendar_rooms = dict() # Contains rooms -> [calid, calid] ..
+        self.calendar_rooms = dict() # Contains room_id -> [calid, calid] ..
 
         creds = None
 
@@ -72,7 +70,7 @@ class MatrixModule:
             return
         args = event.body.split()
         events = []
-        calendars = self.calendar_rooms.get(room) or []
+        calendars = self.calendar_rooms.get(room.room_id) or []
 
         if len(args) == 2:
             if args[1] == 'today':
@@ -80,20 +78,38 @@ class MatrixModule:
                     print('Listing events in cal', calid)
                     events = events + self.list_today(calid)
             if args[1] == 'calendars':
-                await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room)))
+                await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
         elif len(args) == 3:
             if args[1] == 'add':
                 calid = args[2]
-                print(f'Adding calendar {calid} to room {room}')
+                print(f'Adding calendar {calid} to room id {room.room_id}')
 
-                if self.calendar_rooms.get(room):
-                    self.calendar_rooms[room].append(calid)
+                if self.calendar_rooms.get(room.room_id):
+                    if calid not in self.calendar_rooms[room.room_id]:
+                        self.calendar_rooms[room.room_id].append(calid)
+                    else:
+                        await bot.send_text(room, 'This google calendar already added in this room!')
+                        return
                 else:
-                    self.calendar_rooms[room] = [calid]
+                    self.calendar_rooms[room.room_id] = [calid]
 
-                print(f'Calendars now for this room {self.calendar_rooms[room]}')
+                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+
+                bot.save_settings()
 
                 await bot.send_text(room, 'Added new google calendar to this room')
+            if args[1] == 'del':
+                calid = args[2]
+                print(f'Removing calendar {calid} from room id {room.room_id}')
+
+                if self.calendar_rooms.get(room.room_id):
+                    self.calendar_rooms[room.room_id].remove(calid)
+
+                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+
+                bot.save_settings()
+
+                await bot.send_text(room, 'Removed google calendar from this room')
         else:
             for calid in calendars:
                 print('Listing events in cal', calid)
@@ -108,9 +124,9 @@ class MatrixModule:
     async def send_events(self, bot, events, room):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            await bot.send_text(room, f"{self.parseDate(start)} {event['summary']}")
-            # await bot.send_text(room, f"{self.parseDate(start)} {event['summary']} {event['htmlLink']}")
-            # await bot.send_html(room, self.parseDate(start) + " <a href=\"" + event['htmlLink'] + "\">" + event['summary'] + "</a>")
+            # await bot.send_text(room, f"{self.parse_date(start)} {event['summary']}")
+            # await bot.send_text(room, f"{self.parse_date(start)} {event['summary']} {event['htmlLink']}")
+            await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>', f'{self.parse_date(start)} {event["summary"]}')
 
     def list_upcoming(self, calid):
         startTime = datetime.datetime.utcnow()
@@ -133,38 +149,17 @@ class MatrixModule:
         events = events_result.get('items', [])
         return events
 
-    async def matrix_poll(self, bot, pollcount):
-        if not self.service:
-            return
-
-        if pollcount % (6 * 5) == 0: # Poll every 5 min
-            pass # Not implemented yet
-
-        needs_send = False
-
-        today = datetime.datetime.now()
-        since_last = 999
-
-        # Bot's been started
-        if self.last_report_date:
-            since_last = (today - self.last_report_date).total_seconds() / 60 / 60
-
-        if since_last > 20 and today.hour >= self.report_time:
-            needs_send = True
-
-        if needs_send:
-            self.last_report_date = today
-
-            for room in self.calendar_rooms:
-                events = []
-                for calid in self.calendar_rooms.get(room):
-                    events = events + self.list_today(calid)
-                await self.send_events(bot, events, room)
-
     def help(self):
         return('Google calendar. Lists 10 next events by default. today = list today\'s events.')
 
-    def parseDate(self, start):
+    def get_settings(self):
+        return { 'calendar_rooms': self.calendar_rooms }
+
+    def set_settings(self, data):
+        if data.get('calendar_rooms'):
+            self.calendar_rooms = data['calendar_rooms']
+
+    def parse_date(self, start):
         try: 
             dt = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S%z')
             return dt.strftime("%d.%m %H:%M")

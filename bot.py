@@ -8,10 +8,15 @@ import traceback
 import importlib
 import sys
 import re
+import requests
+import json
+import urllib.parse
 from nio import (AsyncClient, RoomMessageText, RoomMessageUnknown, JoinError, InviteEvent)
 
 
 class Bot:
+    appid = 'org.vranki.hemppa'
+    version = '1.0'
     client = None
     join_on_invite = False
     modules = dict()
@@ -25,11 +30,12 @@ class Bot:
         }
         await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
 
-    async def send_html(self, room, html):
+    async def send_html(self, room, html, plaintext):
         msg = {
             "msgtype": "m.text",
             "format": "org.matrix.custom.html",
-            "formatted_body": html
+            "formatted_body": html,
+            "body": plaintext
         }
         await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
 
@@ -39,6 +45,32 @@ class Bot:
                 return roomid
         print('Cannot find id for room', room.named_room_name(), ' - is the bot on it?')
         return None
+
+    def get_room_by_id(self, room_id):
+        return self.client.rooms[room_id]
+
+    def save_settings(self):
+        module_settings = dict()
+        for modulename, moduleobject in self.modules.items():
+            if "get_settings" in dir(moduleobject):
+                try:
+                    module_settings[modulename] = moduleobject.get_settings()
+                except:
+                    traceback.print_exc(file=sys.stderr)
+        print('Collected module settings:', module_settings)
+        data = { self.appid: self.version, 'module_settings': module_settings}
+        self.set_account_data(data)
+
+    def load_settings(self, data):
+        if not data.get('module_settings'):
+            return
+        for modulename, moduleobject in self.modules.items():
+            if data['module_settings'].get(modulename):
+                if "set_settings" in dir(moduleobject):
+                    try:
+                        moduleobject.set_settings(data['module_settings'][modulename])
+                    except:
+                        traceback.print_exc(file=sys.stderr)
 
     async def message_cb(self, room, event):
         # Figure out the command
@@ -104,6 +136,26 @@ class Bot:
                         traceback.print_exc(file=sys.stderr)
             await asyncio.sleep(10)
 
+    def set_account_data(self, data):
+        userid = urllib.parse.quote(os.environ['MATRIX_USER'])
+
+        ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
+
+        response = requests.put(ad_url, json.dumps(data))
+        if response.status_code != 200:
+            print('Setting account data failed:', response, response.json())
+
+    def get_account_data(self):
+        userid = urllib.parse.quote(os.environ['MATRIX_USER'])
+
+        ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
+
+        response = requests.get(ad_url)
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code != 200:
+            print('Getting account data failed:', response, response.json())
+
     def init(self):
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
@@ -114,7 +166,7 @@ class Bot:
         print(f'Starting {len(self.modules)} modules..')
 
         for modulename, moduleobject in self.modules.items():
-            print(modulename + '..')
+            print('Starting', modulename, '..')
             if "matrix_start" in dir(moduleobject):
                 try:
                     moduleobject.matrix_start(bot)
@@ -124,7 +176,7 @@ class Bot:
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
         for modulename, moduleobject in self.modules.items():
-            print(modulename + '..')
+            print('Stopping', modulename, '..')
             if "matrix_stop" in dir(moduleobject):
                 try:
                     moduleobject.matrix_stop(bot)
@@ -140,6 +192,7 @@ class Bot:
         self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
 
         if self.client.logged_in:
+            self.load_settings(self.get_account_data())
             self.client.add_event_callback(self.message_cb, RoomMessageText)
             self.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
             if self.join_on_invite:

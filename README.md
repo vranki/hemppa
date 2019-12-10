@@ -27,9 +27,9 @@ Aviation weather TAF service access.
 
 Prints bot uptime.
 
-### Google Calendar (WIP)
+### Google Calendar
 
-Displays changes and daily report of a google calendar to a room. This is a bit pain to set up, sorry.
+Can access a google calendar in a room. This is a bit pain to set up, sorry.
 
 To set up, you'll need to generate credentials.json file - see https://console.developers.google.com/apis/credentials
 
@@ -51,6 +51,7 @@ Commands:
 * !googlecal - Show next 10 events in calendar
 * !googlecal today - Show today's events
 * !googlecal add [calendar id] - Add new calendar to room
+* !googlecal del [calendar id] - Delete calendar from room
 * !googlecal calendars - List calendars in this room
 
 ## Bot setup
