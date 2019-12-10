@@ -19,19 +19,12 @@ from google.auth.transport.requests import Request
 # It's created on first run (run from console!) and 
 # can be copied to another computer.
 #
-# ENV variables:
-#
-# Google calendar creds file: (defaults to this)
-# GCAL_CREDENTIALS="credentials.json"
-#
 
 class MatrixModule:
     def matrix_start(self, bot):
         self.bot = bot
         self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
         self.credentials_file = "credentials.json"
-        if os.getenv("GCAL_CREDENTIALS"):
-            self.credentials_file = os.getenv("GCAL_CREDENTIALS")
         self.service = None
         self.calendar_rooms = dict() # Contains room_id -> [calid, calid] ..
 
@@ -43,25 +36,30 @@ class MatrixModule:
         if os.path.exists('token.pickle'):
             with open('token.pickle', 'rb') as token:
                 creds = pickle.load(token)
+                print('Loaded existing pickle file')
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
+            print('No credentials or credentials not valid!')
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_file, self.SCOPES)
-                creds = flow.run_local_server(port=0)
+                creds = flow.run_local_server(port=0) # urn:ietf:wg:oauth:2.0:oob
             # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
+                print('Pickle saved')
 
         self.service = build('calendar', 'v3', credentials=creds)
 
-        calendar_list = self.service.calendarList().list().execute()['items']
-
-        print(f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
-        for calendar in calendar_list:
-            print(calendar['summary'] + ' - ' + calendar['id'])
+        try:
+            calendar_list = self.service.calendarList().list().execute()['items']
+            print(f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
+            for calendar in calendar_list:
+                print(calendar['summary'] + ' - ' + calendar['id'])
+        except:
+            print('Getting calendar list failed!')
 
 
     async def matrix_message(self, bot, room, event):
@@ -77,7 +75,7 @@ class MatrixModule:
                 for calid in calendars:
                     print('Listing events in cal', calid)
                     events = events + self.list_today(calid)
-            if args[1] == 'calendars':
+            if args[1] == 'list':
                 await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
         elif len(args) == 3:
             if args[1] == 'add':

@@ -6,6 +6,11 @@ COPY Pipfile .
 RUN pipenv install --skip-lock --system
 
 COPY bot.py .
-COPY modules .
+COPY modules modules
+
+# Uncomment for google calendar:
+
+#COPY credentials.json .
+#COPY token.pickle .
 
 CMD [ "python", "-u", "./bot.py" ]

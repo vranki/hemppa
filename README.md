@@ -31,7 +31,10 @@ Prints bot uptime.
 
 Can access a google calendar in a room. This is a bit pain to set up, sorry.
 
-To set up, you'll need to generate credentials.json file - see https://console.developers.google.com/apis/credentials
+To set up, you'll need to generate oauth2 credentials.json file - see https://console.developers.google.com/apis/credentials
+
+Run the bot on *local* machine as OAuth2 wants to open localhost url in your browser. I haven't found out an easy way to
+do this on server.
 
 When credentials.json is present, you must authenticate the bot to access calendar. There will be a link in console like this:
 
@@ -40,6 +43,7 @@ Please visit this URL to authorize this application: https://accounts.google.com
 ```
 
 Open the link and authenticate as needed. A new file token.pickle will be created in the directory and bot will read it in future.
+Save the token.pickle and ship it with the bot to your server. Edit Dockerfile to copy it in container if needed.
 
 Now the bot should be usable.
 
@@ -52,7 +56,7 @@ Commands:
 * !googlecal today - Show today's events
 * !googlecal add [calendar id] - Add new calendar to room
 * !googlecal del [calendar id] - Delete calendar from room
-* !googlecal calendars - List calendars in this room
+* !googlecal list - List calendars in this room
 
 ### Cron
 

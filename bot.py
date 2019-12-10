@@ -28,7 +28,7 @@ class Bot:
             "body": body,
             "msgtype": "m.text"
         }
-        await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
+        await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_html(self, room, html, plaintext):
         msg = {
@@ -37,14 +37,7 @@ class Bot:
             "formatted_body": html,
             "body": plaintext
         }
-        await self.client.room_send(self.get_room_id(room), 'm.room.message', msg)
-
-    def get_room_id(self, room):
-        for roomid in self.client.rooms:
-            if self.client.rooms[roomid].named_room_name() == room.named_room_name():
-                return roomid
-        print('Cannot find id for room', room.named_room_name(), ' - is the bot on it?')
-        return None
+        await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
