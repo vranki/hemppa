@@ -69,6 +69,18 @@ Examples:
 * !cron daily 19 "It is now 19 o clock"
 * !cron daily 8 "!googlecal today"
 
+### Location
+
+Can search OpenStreetMaps for locations and send Matrix location events from them. Translates Matrix location events into OSM links.
+
+Commands:
+
+* !loc [location] - search for location
+
+Example:
+
+* !loc Tampere
+
 ## Bot setup
 
 * Create a Matrix user
