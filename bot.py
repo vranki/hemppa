@@ -61,6 +61,8 @@ class Bot:
         self.set_account_data(data)
 
     def load_settings(self, data):
+        if not data:
+            return
         if not data.get('module_settings'):
             return
         for modulename, moduleobject in self.modules.items():
