@@ -1,9 +1,15 @@
 # Hemppa - generic modular Matrix bot
 
-This bot is meant to be super easy platform to code Matrix bot functionality
-with Python. It uses matrix-nio library https://github.com/poljar/matrix-nio/ .
+This bot is meant to be super easy platform to write Matrix bot functionality
+in Python. It uses matrix-nio library https://github.com/poljar/matrix-nio/ for 
+Matrix communications.
+
+Zero configuration except minimal Matrix account info is needed. Everything else can
+be done with bot commands.
 
 Type !help in room with this bot running to list active modules.
+
+If you don't want some modules, just delete the files from modules directory.
 
 ## Module list
 
@@ -162,6 +168,8 @@ Functions:
 * get_settings - Must return a dict object that can be converted to JSON and sent to server
 * set_settings - Load these settings. It should be the same JSON you returned in previous get_settings
 
-You only need to implement the ones you need. See existing bots for examples
+You only need to implement the ones you need. See existing bots for examples.
 
-Settings are stored in Matrix account data.
+Module settings are stored in Matrix account data.
+
+If you write a new module, please make a PR if it's something useful for others.
