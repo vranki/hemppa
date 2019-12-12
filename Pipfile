@@ -4,6 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+pyTeamUp = "*"
+pandas = "*"
 matrix-nio = "*"
 geopy = "*"
 google-api-python-client = "*"

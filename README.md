@@ -27,6 +27,26 @@ Aviation weather TAF service access.
 
 Prints bot uptime.
 
+### Teamup
+
+Can access Teamup ( https://teamup.com/ ) calendar. Teamup has nice API and is easier to set up than Google so
+prefer it if possible. This bot polls the calendar every 5 minutes and notifies the room of any changes.
+
+Howto:
+
+* Create a calendar in Teamup https://teamup.com/ 
+* Get api key at https://teamup.com/api-keys/request
+* !teamup apikey [your api key]
+* !teamup add [calendar id]
+
+Commands:
+
+* !teamup apikey [apikey] - set api key
+* !teamup add [calendar id] - add calendar to this room
+* !teamup del [calendar id] - delete calendar from this room
+* !teamup list - list calendars in this room
+* !teamup poll - poll now for changes
+
 ### Google Calendar
 
 Can access a google calendar in a room. This is a bit pain to set up, sorry.
