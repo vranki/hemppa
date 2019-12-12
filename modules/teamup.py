@@ -18,7 +18,18 @@ class MatrixModule:
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
-        if len(args) == 2:
+        if len(args) == 1:
+            if self.calendar_rooms.get(room.room_id):
+                for calendarid in self.calendar_rooms.get(room.room_id):
+                    calendar = self.calendars[calendarid]
+                    events = calendar.get_event_collection()
+                    for event in events:
+                        s = '<b>' + str(event.start_dt.day) + '.' + str(event.start_dt.month)
+                        if not event.all_day:
+                            s = s + ' ' + event.start_dt.strftime("%H:%M") + ' (' + str(event.duration) + ' min)'
+                        s = s + '</b> ' + event.title + " " + (event.notes or '')
+                        await bot.send_html(room, s, s)
+        elif len(args) == 2:
             if args[1] == 'list':
                 await bot.send_text(room, f'Calendars in this room: {self.calendar_rooms.get(room.room_id) or []}')
             elif args[1] == 'poll':
@@ -71,6 +82,7 @@ class MatrixModule:
                 self.calendars[calendarid].timestamp = timestamp
                 for event in events:
                     await bot.send_text(bot.get_room_by_id(roomid), 'Calendar: ' + self.eventToString(event))
+
 
     def poll_server(self, calendar):
         events, timestamp = calendar.get_changed_events(calendar.timestamp)

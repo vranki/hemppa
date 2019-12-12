@@ -48,6 +48,7 @@ Howto:
 Commands:
 
 * !teamup apikey [apikey] - set api key
+* !teamup - list upcoming events in calendar
 * !teamup add [calendar id] - add calendar to this room
 * !teamup del [calendar id] - delete calendar from this room
 * !teamup list - list calendars in this room
