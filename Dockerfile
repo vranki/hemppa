@@ -3,14 +3,16 @@ FROM python:3
 WORKDIR /bot
 RUN pip install pipenv
 COPY Pipfile .
-RUN pipenv install --pre --system
+RUN pipenv install --pre
 
 COPY bot.py .
 COPY modules modules
 
-# Uncomment for google calendar:
+# Make sure these exist
+RUN touch credentials.json
+RUN touch token.pickle
 
-#COPY credentials.json .
-#COPY token.pickle .
+COPY credentials.json .
+COPY token.pickle .
 
-CMD [ "python", "-u", "./bot.py" ]
+CMD [ "pipenv", "run", "python", "-u", "./bot.py" ]

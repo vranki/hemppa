@@ -30,7 +30,7 @@ class MatrixModule:
 
         creds = None
 
-        if not os.path.exists(self.credentials_file):
+        if not os.path.exists(self.credentials_file) or os.path.getsize(self.credentials_file) == 0:
             return # No-op if not set up
 
         if os.path.exists('token.pickle'):
