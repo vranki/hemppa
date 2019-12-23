@@ -119,12 +119,13 @@ Example:
 
 ## Running on host
 
-Run something like:
+Run something like (tested on Ubuntu):
 
 ``` bash
-pip3 install pipenv
+sudo apt install python3-pip
+sudo pip3 install pipenv
 pipenv shell
-pipenv install
+pipenv install --pre
 MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53CgYAYFgo" MATRIX_SERVER="https://matrix.org" JOIN_ON_INVITE=True python3 bot.py
 ```
 

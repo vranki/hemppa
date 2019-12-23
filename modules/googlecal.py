@@ -115,9 +115,10 @@ class MatrixModule:
 
             if len(events) == 0:
                 await bot.send_text(room, 'No events found.')
-            else:
-                print(f'Found {len(events)} events')
-                await self.send_events(bot, events, room)
+
+        if len(events):
+            print(f'Found {len(events)} events')
+            await self.send_events(bot, events, room)
 
     async def send_events(self, bot, events, room):
         for event in events:
@@ -137,15 +138,15 @@ class MatrixModule:
 
     def list_today(self, calid):
         startTime = datetime.datetime.utcnow()
-        startTime = startTime - datetime.timedelta(hours=startTime.hour, minutes=startTime.minute)
+        startTime = startTime.replace(hour = 0, minute = 0, second = 0, microsecond=0)
         endTime = startTime + datetime.timedelta(hours=24)
         now = startTime.isoformat() + 'Z'
         end = endTime.isoformat() + 'Z'
+        print('Looking for events between', now, end)
         events_result = self.service.events().list(calendarId=calid, timeMin=now,
                                                     timeMax=end, maxResults=10, singleEvents=True,
                                             orderBy='startTime').execute()
-        events = events_result.get('items', [])
-        return events
+        return events_result.get('items', [])
 
     def help(self):
         return('Google calendar. Lists 10 next events by default. today = list today\'s events.')
