@@ -33,6 +33,7 @@ class MatrixModule:
             if args[1] == 'list':
                 await bot.send_text(room, f'Calendars in this room: {self.calendar_rooms.get(room.room_id) or []}')
             elif args[1] == 'poll':
+                bot.must_be_owner(event)
                 await self.poll_all_calendars(bot)
         elif len(args) == 3:
             if args[1] == 'add':

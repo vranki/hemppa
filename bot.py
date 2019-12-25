@@ -61,7 +61,6 @@ class Bot:
 
     # Returns true if event's sender is admin in the room event was sent in
     def is_admin(self, room, event):
-        print(room.power_levels)
         if not event.sender in room.power_levels.users:
             return False
         return room.power_levels.users[event.sender] >= 50

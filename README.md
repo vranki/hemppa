@@ -52,7 +52,7 @@ Commands:
 * !teamup add [calendar id] - add calendar to this room (Must be done as room admin)
 * !teamup del [calendar id] - delete calendar from this room (Must be done as room admin)
 * !teamup list - list calendars in this room
-* !teamup poll - poll now for changes
+* !teamup poll - poll now for changes (Must be done as bot owner)
 
 ### Google Calendar
 
@@ -112,6 +112,21 @@ Commands:
 Example:
 
 * !loc Tampere
+
+### Instagram
+
+Polls instagram account(s) and posts new items to the room. Uses instagram scraper library
+without any authentication or api key so it polls only every hour to keep traffic at minimum. 
+
+See: https://github.com/realsirjoe/instagram-scraper/
+
+Commands:
+
+* !ig add [accountname] - Add instagram account to this room (Must be done as room admin)
+* !ig del [accountname] - Delete instagram account from room (Must be done as room admin)
+* !ig list - List accounts in room 
+* !ig poll - Poll for new items  (Must be done as bot owner)
+
 
 ## Bot setup
 
