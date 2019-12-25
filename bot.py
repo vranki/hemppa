@@ -117,6 +117,9 @@ class Bot:
                 traceback.print_exc(file=sys.stderr)
 
     async def invite_cb(self, room, event):
+        if not self.join_on_invite or self.is_owner(event):
+            return
+
         for attempt in range(3):
             result = await self.client.join(room.room_id)
             if type(result) == JoinError:
@@ -179,7 +182,7 @@ class Bot:
     def init(self):
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
-        self.join_on_invite = os.getenv('JOIN_ON_INVITE')
+        self.join_on_invite = len(os.getenv('JOIN_ON_INVITE')) > 0
         self.owners = os.environ['BOT_OWNERS'].split(',')
         self.get_modules()
     
@@ -214,9 +217,10 @@ class Bot:
         if self.client.logged_in:
             self.load_settings(self.get_account_data())
             self.client.add_event_callback(self.message_cb, RoomMessageText)
+            self.client.add_event_callback(self.invite_cb, (InviteEvent,))
+
             if self.join_on_invite:
                 print('Note: Bot will join rooms if invited')
-                self.client.add_event_callback(self.invite_cb, (InviteEvent,))
             print('Bot running as', self.client.user, ', owners', self.owners)
             await self.client.sync_forever(timeout=30000)
         else:
