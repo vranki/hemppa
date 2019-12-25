@@ -79,6 +79,8 @@ class MatrixModule:
                 await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
         elif len(args) == 3:
             if args[1] == 'add':
+                bot.must_be_admin(room, event)
+
                 calid = args[2]
                 print(f'Adding calendar {calid} to room id {room.room_id}')
 
@@ -97,6 +99,8 @@ class MatrixModule:
 
                 await bot.send_text(room, 'Added new google calendar to this room')
             if args[1] == 'del':
+                bot.must_be_admin(room, event)
+
                 calid = args[2]
                 print(f'Removing calendar {calid} from room id {room.room_id}')
 

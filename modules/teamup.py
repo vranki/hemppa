@@ -36,6 +36,8 @@ class MatrixModule:
                 await self.poll_all_calendars(bot)
         elif len(args) == 3:
             if args[1] == 'add':
+                bot.must_be_admin(room, event)
+
                 calid = args[2]
                 print(f'Adding calendar {calid} to room id {room.room_id}')
 
@@ -54,6 +56,8 @@ class MatrixModule:
                 self.setup_calendars()
                 await bot.send_text(room, 'Added new teamup calendar to this room')
             if args[1] == 'del':
+                bot.must_be_admin(room, event)
+
                 calid = args[2]
                 print(f'Removing calendar {calid} from room id {room.room_id}')
 
@@ -66,6 +70,8 @@ class MatrixModule:
                 self.setup_calendars()
                 await bot.send_text(room, 'Removed teamup calendar from this room')
             if args[1] == 'apikey':
+                bot.must_be_owner(event)
+
                 self.api_key = args[2]
                 bot.save_settings()
                 self.setup_calendars()

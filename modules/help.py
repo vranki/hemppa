@@ -1,6 +1,6 @@
 class MatrixModule:
     async def matrix_message(self, bot, room, event):
-        msg = 'This is Hemppa, a generic Matrix bot. Known commands:\n\n'
+        msg = f'This is Hemppa {bot.version}, a generic Matrix bot. Known commands:\n\n'
 
         for modulename, moduleobject in bot.modules.items():
             msg = msg + '!' + modulename

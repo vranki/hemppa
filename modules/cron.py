@@ -6,6 +6,8 @@ class MatrixModule:
     last_hour = datetime.now().hour
 
     async def matrix_message(self, bot, room, event):
+        bot.must_be_admin(room, event)
+        
         args = shlex.split(event.body)
         args.pop(0)
         if len(args) == 3:

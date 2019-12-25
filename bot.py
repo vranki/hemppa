@@ -13,15 +13,22 @@ import json
 import urllib.parse
 from nio import (AsyncClient, RoomMessageText, RoomMessageUnknown, JoinError, InviteEvent)
 
+# Couple of custom exceptions
+class CommandRequiresAdmin(Exception):
+    pass
+
+class CommandRequiresOwner(Exception):
+    pass
 
 class Bot:
     appid = 'org.vranki.hemppa'
-    version = '1.0'
+    version = '1.1'
     client = None
     join_on_invite = False
     modules = dict()
     pollcount = 0
     poll_task = None
+    owners = []
 
     async def send_text(self, room, body):
         msg = {
@@ -41,6 +48,27 @@ class Bot:
 
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
+
+    # Throws exception if event sender is not a room admin
+    def must_be_admin(self, room, event):
+        if not self.is_admin(room, event):
+            raise CommandRequiresAdmin
+
+    # Throws exception if event sender is not a bot owner
+    def must_be_owner(self, event):
+        if not self.is_owner(event):
+            raise CommandRequiresOwner
+
+    # Returns true if event's sender is admin in the room event was sent in
+    def is_admin(self, room, event):
+        print(room.power_levels)
+        if not event.sender in room.power_levels.users:
+            return False
+        return room.power_levels.users[event.sender] >= 50
+
+    # Returns true if event's sender is owner of the bot
+    def is_owner(self, event):
+        return event.sender in self.owners
 
     def save_settings(self):
         module_settings = dict()
@@ -81,14 +109,13 @@ class Bot:
         if "matrix_message" in dir(moduleobject):
             try:
                 await moduleobject.matrix_message(bot, room, event)
+            except CommandRequiresAdmin:
+                await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
+            except CommandRequiresOwner:
+                await self.send_text(room, f'Sorry, only bot owner can run that command.')
             except:
                 await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                 traceback.print_exc(file=sys.stderr)
-
-    async def unknown_cb(self, room, event):
-        if event.msgtype != 'm.location':
-            return
-        pass
 
     async def invite_cb(self, room, event):
         for attempt in range(3):
@@ -154,7 +181,7 @@ class Bot:
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         self.join_on_invite = os.getenv('JOIN_ON_INVITE')
-
+        self.owners = os.environ['BOT_OWNERS'].split(',')
         self.get_modules()
     
     def stop(self):
@@ -188,11 +215,10 @@ class Bot:
         if self.client.logged_in:
             self.load_settings(self.get_account_data())
             self.client.add_event_callback(self.message_cb, RoomMessageText)
-            self.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
             if self.join_on_invite:
                 print('Note: Bot will join rooms if invited')
                 self.client.add_event_callback(self.invite_cb, (InviteEvent,))
-            print('Bot running')
+            print('Bot running as', self.client.user, ', owners', self.owners)
             await self.client.sync_forever(timeout=30000)
         else:
             print('Client was not able to log in, check env variables!')

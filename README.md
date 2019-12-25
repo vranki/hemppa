@@ -42,15 +42,15 @@ Howto:
 
 * Create a calendar in Teamup https://teamup.com/ 
 * Get api key at https://teamup.com/api-keys/request
-* !teamup apikey [your api key]
-* !teamup add [calendar id]
+* !teamup apikey [your api key] 
+* !teamup add [calendar id] 
 
 Commands:
 
-* !teamup apikey [apikey] - set api key
+* !teamup apikey [apikey] - set api key (Must be done as bot owner)
 * !teamup - list upcoming events in calendar
-* !teamup add [calendar id] - add calendar to this room
-* !teamup del [calendar id] - delete calendar from this room
+* !teamup add [calendar id] - add calendar to this room (Must be done as room admin)
+* !teamup del [calendar id] - delete calendar from this room (Must be done as room admin)
 * !teamup list - list calendars in this room
 * !teamup poll - poll now for changes
 
@@ -82,8 +82,8 @@ Commands:
 
 * !googlecal - Show next 10 events in calendar
 * !googlecal today - Show today's events
-* !googlecal add [calendar id] - Add new calendar to room
-* !googlecal del [calendar id] - Delete calendar from room
+* !googlecal add [calendar id] - Add new calendar to room (Must be done as room admin)
+* !googlecal del [calendar id] - Delete calendar from room (Must be done as room admin)
 * !googlecal list - List calendars in this room
 
 ### Cron
@@ -92,9 +92,9 @@ Can schedule things to be done.
 
 Commands:
 
-* !cron daily [hour] [command] - Run command on start of hour
+* !cron daily [hour] [command] - Run command on start of hour (Must be done as room admin)
 * !cron list - List commands in this room
-* !cron clear - Clear command s in this room
+* !cron clear - Clear command s in this room (Must be done as room admin)
 
 Examples:
 
@@ -127,7 +127,8 @@ sudo apt install python3-pip
 sudo pip3 install pipenv
 pipenv shell
 pipenv install --pre
-MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53CgYAYFgo" MATRIX_SERVER="https://matrix.org" JOIN_ON_INVITE=True python3 bot.py
+MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53CgYAYFgo" MATRIX_SERVER="https://matrix.org" JOIN_ON_INVITE=True BOT_OWNERS=@botowner:matrix.org
+ python3 bot.py
 ```
 
 ## Running with Docker
@@ -139,6 +140,7 @@ MATRIX_USER=@user:matrix.org
 MATRIX_ACCESS_TOKEN=MDAxOGxvYlotofcharacters53CgYAYFgo
 MATRIX_SERVER=https://matrix.org
 JOIN_ON_INVITE=True
+BOT_OWNERS=@user1:matrix.org,@user2:matrix.org
 ```
 
 Note: without quotes!
@@ -155,6 +157,11 @@ User, access token and server should be self-explanatory. Set JOIN_ON_INVITE to 
 join invites automatically.
 
 You can set MATRIX_PASSWORD if you want to get access token. Normally you can use Riot to get it.
+
+BOT_OWNERS is a comma-separated list of matrix id's for the owners of the bot. Some commands require
+sender to be bot owner. Typically set your own id into it. Don't include bot itself in BOT_OWNERS if cron
+or any other module that can cause bot to send custom commands is used as it could potentially be used to run 
+owner commands as the bot itself.
 
 ## Module API
 

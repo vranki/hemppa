@@ -12,6 +12,7 @@ services:
       - MATRIX_PASSWORD
       - MATRIX_SERVER
       - JOIN_ON_INVITE
+      - BOT_OWNERS
     volumes:
       - ${PWD}/credentials.json:/bot/credentials.json
       - ${PWD}/token.pickle:/bot/token.pickle
