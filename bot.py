@@ -117,17 +117,17 @@ class Bot:
                 traceback.print_exc(file=sys.stderr)
 
     async def invite_cb(self, room, event):
-        if not self.join_on_invite or self.is_owner(event):
-            return
-
-        for attempt in range(3):
-            result = await self.client.join(room.room_id)
-            if type(result) == JoinError:
-                print(f"Error joining room {room.room_id} (attempt %d): %s",
-                    attempt, result.message,
-                )
-            else:
-                break
+        if self.join_on_invite or self.is_owner(event):
+            for attempt in range(3):
+                result = await self.client.join(room.room_id)
+                if type(result) == JoinError:
+                    print(f"Error joining room {room.room_id} (attempt %d): %s",
+                        attempt, result.message,
+                    )
+                else:
+                    break
+        else:
+            print('Received invite event, but not joining as sender is not owner or bot not configured to join on invte.')
 
     def load_module(self, modulename):
         try:
