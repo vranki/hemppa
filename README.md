@@ -11,6 +11,8 @@ Type !help in room with this bot running to list active modules.
 
 If you don't want some modules, just delete the files from modules directory.
 
+Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
+
 ## Module list
 
 ### Help
