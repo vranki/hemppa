@@ -176,7 +176,7 @@ class Bot:
         response = requests.get(ad_url)
         if response.status_code == 200:
             return response.json()
-        print('Getting account data failed:', response, response.json())
+        print(f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
         return None
 
     def init(self):
