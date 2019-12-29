@@ -8,11 +8,8 @@ RUN pipenv install --pre
 COPY bot.py .
 COPY modules modules
 
-# Make sure these exist
-RUN touch credentials.json
-RUN touch token.pickle
-
-COPY credentials.json .
-COPY token.pickle .
+# googlecal: copy credentials.json and token.pickle if they exist
+COPY *.json .
+COPY *.pickle .
 
 CMD [ "pipenv", "run", "python", "-u", "./bot.py" ]
