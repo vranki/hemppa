@@ -182,7 +182,7 @@ class Bot:
     def init(self):
         self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
-        self.join_on_invite = len(os.getenv('JOIN_ON_INVITE')) > 0
+        self.join_on_invite = os.getenv("JOIN_ON_INVITE") is not None
         self.owners = os.environ['BOT_OWNERS'].split(',')
         self.get_modules()
     
