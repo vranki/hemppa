@@ -26,7 +26,7 @@ class MatrixModule:
         for media in medias:
             if not self.first_run:
                 if not media.identifier in self.known_ids:
-                    await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', media.caption)
+                    await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', f'{account}: {media.caption} {media.link}')
 
             self.known_ids.add(media.identifier)
 
