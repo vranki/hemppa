@@ -1,4 +1,7 @@
 from igramscraper.instagram import Instagram
+from igramscraper.exception.instagram_not_found_exception import InstagramNotFoundException
+from datetime import datetime, timedelta
+from random import randrange
 
 class MatrixModule:
     instagram = Instagram()
@@ -6,17 +9,21 @@ class MatrixModule:
     known_ids = set()
     first_run = True
     account_rooms = dict() # Roomid -> [account, account..]
+    next_poll_time = dict() # Roomid -> datetime 
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
-            if pollcount % (6 * 60) == 0: # Poll every 60 min automatically
-               await self.poll_all_accounts(bot)
+            await self.poll_all_accounts(bot)
 
     async def poll_all_accounts(self, bot):
+        now = datetime.now()
         for roomid in self.account_rooms:
-            accounts = self.account_rooms[roomid]
-            for account in accounts:
-                await self.poll_account(bot, account, roomid)
+            if not self.next_poll_time.get(roomid, None):
+                self.next_poll_time[roomid] = now
+            if now >= self.next_poll_time.get(roomid):
+                accounts = self.account_rooms[roomid]
+                for account in accounts:
+                    await self.poll_account(bot, account, roomid)
 
         self.first_run = False
 
@@ -25,10 +32,11 @@ class MatrixModule:
 
         for media in medias:
             if not self.first_run:
-                if not media.identifier in self.known_ids:
+                if media.identifier not in self.known_ids:
                     await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', f'{account}: {media.caption} {media.link}')
-
             self.known_ids.add(media.identifier)
+        polldelay = timedelta(minutes=30 + randrange(30))
+        self.next_poll_time[roomid] = datetime.now() + polldelay
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
@@ -39,6 +47,11 @@ class MatrixModule:
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
                 await self.poll_all_accounts(bot)
+            elif args[1] == 'clear':
+                bot.must_be_admin(room, event)
+                self.account_rooms[room.room_id] = []
+                bot.save_settings()
+                await bot.send_text(room, 'Cleared all instagram accounts from this room')
         if len(args) == 3:
             if args[1] == 'add':
                 bot.must_be_admin(room, event)
@@ -57,9 +70,15 @@ class MatrixModule:
 
                 print(f'Accounts now for this room {self.account_rooms.get(room.room_id)}')
 
-                bot.save_settings()
-                await bot.send_text(room, 'Added new instagram account to this room')
-            if args[1] == 'del':
+                try:
+                    await self.poll_account(bot, account, room.room_id)
+                    bot.save_settings()
+                    await bot.send_text(room, 'Added new instagram account to this room')
+                except InstagramNotFoundException:
+                    await bot.send_text(room, 'Account doesn\'t seem to exist')
+                    self.account_rooms[room.room_id].remove(account)
+
+            elif args[1] == 'del':
                 bot.must_be_admin(room, event)
 
                 account = args[2]

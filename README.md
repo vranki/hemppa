@@ -118,7 +118,7 @@ Example:
 ### Instagram
 
 Polls instagram account(s) and posts new items to the room. Uses instagram scraper library
-without any authentication or api key so it polls only every hour to keep traffic at minimum. 
+without any authentication or api key so it polls only randomly every 30 to 60 minutes to keep traffic at minimum. 
 
 See: https://github.com/realsirjoe/instagram-scraper/
 
@@ -128,7 +128,7 @@ Commands:
 * !ig del [accountname] - Delete instagram account from room (Must be done as room admin)
 * !ig list - List accounts in room 
 * !ig poll - Poll for new items  (Must be done as bot owner)
-
+* !ig clear - Clear all ig accounts from this room  (Must be done as room admin)
 
 ## Bot setup
 
@@ -171,7 +171,7 @@ docker-compose up
 ## Env variables
 
 User, access token and server should be self-explanatory. Set JOIN_ON_INVITE to anything if you want the bot to
-join invites automatically.
+join invites automatically (do not set it if you don't want it to join).
 
 You can set MATRIX_PASSWORD if you want to get access token. Normally you can use Riot to get it.
 
