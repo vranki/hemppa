@@ -59,8 +59,10 @@ class Bot:
         if not self.is_owner(event):
             raise CommandRequiresOwner
 
-    # Returns true if event's sender is admin in the room event was sent in
+    # Returns true if event's sender is admin in the room event was sent in, or is bot owner
     def is_admin(self, room, event):
+        if self.is_owner(event):
+            return True
         if not event.sender in room.power_levels.users:
             return False
         return room.power_levels.users[event.sender] >= 50
@@ -127,7 +129,7 @@ class Bot:
                 else:
                     break
         else:
-            print('Received invite event, but not joining as sender is not owner or bot not configured to join on invte.')
+            print(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
     def load_module(self, modulename):
         try:
