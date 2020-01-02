@@ -1,16 +1,13 @@
 from __future__ import print_function
-from datetime import datetime
-import datetime
-import pickle
-import os.path
-import time
+
 import os
+import os.path
+import pickle
+from datetime import datetime
 
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-
-
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 
 #
 # Google calendar notifications
@@ -20,18 +17,19 @@ from google.auth.transport.requests import Request
 # can be copied to another computer.
 #
 
+
 class MatrixModule:
     def matrix_start(self, bot):
         self.bot = bot
         self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
         self.credentials_file = "credentials.json"
         self.service = None
-        self.calendar_rooms = dict() # Contains room_id -> [calid, calid] ..
+        self.calendar_rooms = dict()  # Contains room_id -> [calid, calid] ..
 
         creds = None
 
         if not os.path.exists(self.credentials_file) or os.path.getsize(self.credentials_file) == 0:
-            return # No-op if not set up
+            return  # No-op if not set up
 
         if os.path.exists('token.pickle'):
             with open('token.pickle', 'rb') as token:
@@ -45,7 +43,8 @@ class MatrixModule:
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_file, self.SCOPES)
-                creds = flow.run_local_server(port=0) # urn:ietf:wg:oauth:2.0:oob
+                # urn:ietf:wg:oauth:2.0:oob
+                creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
@@ -54,13 +53,14 @@ class MatrixModule:
         self.service = build('calendar', 'v3', credentials=creds)
 
         try:
-            calendar_list = self.service.calendarList().list().execute()['items']
-            print(f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
+            calendar_list = self.service.calendarList().list().execute()[
+                'items']
+            print(
+                f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
             for calendar in calendar_list:
                 print(calendar['summary'] + ' - ' + calendar['id'])
-        except:
+        except Exception:
             print('Getting calendar list failed!')
-
 
     async def matrix_message(self, bot, room, event):
         if not self.service:
@@ -95,7 +95,8 @@ class MatrixModule:
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
 
-                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                print(
+                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
 
@@ -111,7 +112,8 @@ class MatrixModule:
                 if self.calendar_rooms.get(room.room_id):
                     self.calendar_rooms[room.room_id].remove(calid)
 
-                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                print(
+                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
 
@@ -141,28 +143,29 @@ class MatrixModule:
         startTime = datetime.datetime.utcnow()
         now = startTime.isoformat() + 'Z'
         events_result = self.service.events().list(calendarId=calid, timeMin=now,
-                                            maxResults=10, singleEvents=True,
-                                            orderBy='startTime').execute()
+                                                   maxResults=10, singleEvents=True,
+                                                   orderBy='startTime').execute()
         events = events_result.get('items', [])
         return events
 
     def list_today(self, calid):
         startTime = datetime.datetime.utcnow()
-        startTime = startTime.replace(hour = 0, minute = 0, second = 0, microsecond=0)
+        startTime = startTime.replace(
+            hour=0, minute=0, second=0, microsecond=0)
         endTime = startTime + datetime.timedelta(hours=24)
         now = startTime.isoformat() + 'Z'
         end = endTime.isoformat() + 'Z'
         print('Looking for events between', now, end)
         events_result = self.service.events().list(calendarId=calid, timeMin=now,
-                                                    timeMax=end, maxResults=10, singleEvents=True,
-                                            orderBy='startTime').execute()
+                                                   timeMax=end, maxResults=10, singleEvents=True,
+                                                   orderBy='startTime').execute()
         return events_result.get('items', [])
 
     def help(self):
         return('Google calendar. Lists 10 next events by default. today = list today\'s events.')
 
     def get_settings(self):
-        return { 'calendar_rooms': self.calendar_rooms }
+        return {'calendar_rooms': self.calendar_rooms}
 
     def set_settings(self, data):
         if data.get('calendar_rooms'):

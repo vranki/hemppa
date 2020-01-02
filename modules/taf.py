@@ -1,5 +1,5 @@
-import os
 import urllib.request
+
 
 class MatrixModule:
     async def matrix_message(self, bot, room, event):
@@ -16,6 +16,6 @@ class MatrixModule:
                 await bot.send_text(room, 'Cannot find taf for ' + icao)
         else:
             await bot.send_text(room, 'Usage: !taf <icao code>')
-            
+
     def help(self):
         return('Taf data access (usage: !taf <icao code>)')

@@ -1,20 +1,22 @@
-from pyteamup import Calendar, Event
-from datetime import datetime
 import time
-import os
+from datetime import datetime
+
+from pyteamup import Calendar
 
 #
 # TeamUp calendar notifications
 #
+
+
 class MatrixModule:
     api_key = None
-    calendar_rooms = dict() # Roomid -> [calid, calid..]
-    calendars = dict() # calid -> Calendar
+    calendar_rooms = dict()  # Roomid -> [calid, calid..]
+    calendars = dict()  # calid -> Calendar
 
     async def matrix_poll(self, bot, pollcount):
         if self.api_key:
-            if pollcount % (6 * 5) == 0: # Poll every 5 min
-               await self.poll_all_calendars(bot)
+            if pollcount % (6 * 5) == 0:  # Poll every 5 min
+                await self.poll_all_calendars(bot)
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
@@ -24,10 +26,14 @@ class MatrixModule:
                     calendar = self.calendars[calendarid]
                     events = calendar.get_event_collection()
                     for event in events:
-                        s = '<b>' + str(event.start_dt.day) + '.' + str(event.start_dt.month)
+                        s = '<b>' + str(event.start_dt.day) + \
+                            '.' + str(event.start_dt.month)
                         if not event.all_day:
-                            s = s + ' ' + event.start_dt.strftime("%H:%M") + ' (' + str(event.duration) + ' min)'
-                        s = s + '</b> ' + event.title + " " + (event.notes or '')
+                            s = s + ' ' + \
+                                event.start_dt.strftime(
+                                    "%H:%M") + ' (' + str(event.duration) + ' min)'
+                        s = s + '</b> ' + event.title + \
+                            " " + (event.notes or '')
                         await bot.send_html(room, s, s)
         elif len(args) == 2:
             if args[1] == 'list':
@@ -51,7 +57,8 @@ class MatrixModule:
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
 
-                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                print(
+                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 self.setup_calendars()
@@ -65,7 +72,8 @@ class MatrixModule:
                 if self.calendar_rooms.get(room.room_id):
                     self.calendar_rooms[room.room_id].remove(calid)
 
-                print(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                print(
+                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 self.setup_calendars()
@@ -85,11 +93,11 @@ class MatrixModule:
         for roomid in self.calendar_rooms:
             calendars = self.calendar_rooms[roomid]
             for calendarid in calendars:
-                events, timestamp = self.poll_server(self.calendars[calendarid])
+                events, timestamp = self.poll_server(
+                    self.calendars[calendarid])
                 self.calendars[calendarid].timestamp = timestamp
                 for event in events:
                     await bot.send_text(bot.get_room_by_id(roomid), 'Calendar: ' + self.eventToString(event))
-
 
     def poll_server(self, calendar):
         events, timestamp = calendar.get_changed_events(calendar.timestamp)
@@ -111,9 +119,12 @@ class MatrixModule:
         if(event['delete_dt']):
             s = event['title'] + ' deleted.'
         else:
-            s = event['title'] + " " + (event['notes'] or '') + ' ' + str(startdt.day) + '.' + str(startdt.month)
+            s = event['title'] + " " + (event['notes'] or '') + \
+                ' ' + str(startdt.day) + '.' + str(startdt.month)
             if not event['all_day']:
-                s = s + ' ' + startdt.strftime("%H:%M") + ' (' + str(event['duration']) + ' min)'
+                s = s + ' ' + \
+                    startdt.strftime("%H:%M") + \
+                    ' (' + str(event['duration']) + ' min)'
         return s
 
     def setup_calendars(self):
@@ -126,13 +137,13 @@ class MatrixModule:
                     self.calendars[calid].timestamp = int(time.time())
 
     def get_settings(self):
-        return { 'apikey': self.api_key or '',  'calendar_rooms': self.calendar_rooms }
+        return {'apikey': self.api_key or '',  'calendar_rooms': self.calendar_rooms}
 
     def set_settings(self, data):
         if data.get('calendar_rooms'):
             self.calendar_rooms = data['calendar_rooms']
         if data.get('apikey'):
             self.api_key = data['apikey']
-        if self.api_key and len(self.api_key)==0:
+        if self.api_key and len(self.api_key) == 0:
             self.api_key = None
         self.setup_calendars()

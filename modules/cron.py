@@ -1,13 +1,14 @@
 import shlex
 from datetime import datetime
 
+
 class MatrixModule:
-    daily_commands = dict() # room_id -> command json
+    daily_commands = dict()  # room_id -> command json
     last_hour = datetime.now().hour
 
     async def matrix_message(self, bot, room, event):
         bot.must_be_admin(room, event)
-        
+
         args = shlex.split(event.body)
         args.pop(0)
         if len(args) == 3:
@@ -16,7 +17,8 @@ class MatrixModule:
                 dailycmd = args[2]
                 if not self.daily_commands.get(room.room_id):
                     self.daily_commands[room.room_id] = []
-                self.daily_commands[room.room_id].append({ 'time': dailytime, 'command': dailycmd })
+                self.daily_commands[room.room_id].append(
+                    {'time': dailytime, 'command': dailycmd})
                 bot.save_settings()
                 await bot.send_text(room, 'Daily command added.')
         elif len(args) == 1:
@@ -31,7 +33,7 @@ class MatrixModule:
         return('Runs scheduled commands')
 
     def get_settings(self):
-        return { 'daily_commands': self.daily_commands }
+        return {'daily_commands': self.daily_commands}
 
     def set_settings(self, data):
         if data.get('daily_commands'):

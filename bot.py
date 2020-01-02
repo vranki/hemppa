@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 
 import asyncio
-import os
-import json
 import glob
-import traceback
 import importlib
-import sys
-import re
-import requests
 import json
+import os
+import re
+import sys
+import traceback
 import urllib.parse
-from nio import (AsyncClient, RoomMessageText, RoomMessageUnknown, JoinError, InviteEvent)
+
+import requests
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText
 
 # Couple of custom exceptions
+
+
 class CommandRequiresAdmin(Exception):
     pass
 
+
 class CommandRequiresOwner(Exception):
     pass
+
 
 class Bot:
     appid = 'org.vranki.hemppa'
@@ -59,11 +63,12 @@ class Bot:
         if not self.is_owner(event):
             raise CommandRequiresOwner
 
-    # Returns true if event's sender is admin in the room event was sent in, or is bot owner
+    # Returns true if event's sender is admin in the room event was sent in,
+    # or is bot owner
     def is_admin(self, room, event):
         if self.is_owner(event):
             return True
-        if not event.sender in room.power_levels.users:
+        if event.sender not in room.power_levels.users:
             return False
         return room.power_levels.users[event.sender] >= 50
 
@@ -77,9 +82,9 @@ class Bot:
             if "get_settings" in dir(moduleobject):
                 try:
                     module_settings[modulename] = moduleobject.get_settings()
-                except:
+                except Exception:
                     traceback.print_exc(file=sys.stderr)
-        data = { self.appid: self.version, 'module_settings': module_settings}
+        data = {self.appid: self.version, 'module_settings': module_settings}
         self.set_account_data(data)
 
     def load_settings(self, data):
@@ -91,8 +96,9 @@ class Bot:
             if data['module_settings'].get(modulename):
                 if "set_settings" in dir(moduleobject):
                     try:
-                        moduleobject.set_settings(data['module_settings'][modulename])
-                    except:
+                        moduleobject.set_settings(
+                            data['module_settings'][modulename])
+                    except Exception:
                         traceback.print_exc(file=sys.stderr)
 
     async def message_cb(self, room, event):
@@ -114,7 +120,7 @@ class Bot:
                 await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
             except CommandRequiresOwner:
                 await self.send_text(room, f'Sorry, only bot owner can run that command.')
-            except:
+            except Exception:
                 await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                 traceback.print_exc(file=sys.stderr)
 
@@ -124,12 +130,13 @@ class Bot:
                 result = await self.client.join(room.room_id)
                 if type(result) == JoinError:
                     print(f"Error joining room {room.room_id} (attempt %d): %s",
-                        attempt, result.message,
-                    )
+                          attempt, result.message,
+                          )
                 else:
                     break
         else:
-            print(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
+            print(
+                f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
     def load_module(self, modulename):
         try:
@@ -157,7 +164,7 @@ class Bot:
                 if "matrix_poll" in dir(moduleobject):
                     try:
                         await moduleobject.matrix_poll(bot, self.pollcount)
-                    except:
+                    except Exception:
                         traceback.print_exc(file=sys.stderr)
             await asyncio.sleep(10)
 
@@ -178,16 +185,18 @@ class Bot:
         response = requests.get(ad_url)
         if response.status_code == 200:
             return response.json()
-        print(f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
+        print(
+            f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
         return None
 
     def init(self):
-        self.client = AsyncClient(os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
+        self.client = AsyncClient(
+            os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
         self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         self.join_on_invite = os.getenv("JOIN_ON_INVITE") is not None
         self.owners = os.environ['BOT_OWNERS'].split(',')
         self.get_modules()
-    
+
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
         for modulename, moduleobject in self.modules.items():
@@ -195,13 +204,14 @@ class Bot:
             if "matrix_stop" in dir(moduleobject):
                 try:
                     moduleobject.matrix_stop(bot)
-                except:
+                except Exception:
                     traceback.print_exc(file=sys.stderr)
 
     async def run(self):
         if not self.client.access_token:
             await self.client.login(os.environ['MATRIX_PASSWORD'])
-            print("Logged in with password, access token:", self.client.access_token)
+            print("Logged in with password, access token:",
+                  self.client.access_token)
 
         await self.client.sync()
 
@@ -211,7 +221,7 @@ class Bot:
             if "matrix_start" in dir(moduleobject):
                 try:
                     moduleobject.matrix_start(bot)
-                except:
+                except Exception:
                     traceback.print_exc(file=sys.stderr)
 
         self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())

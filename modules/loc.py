@@ -1,8 +1,10 @@
 from geopy.geocoders import Nominatim
-from nio import (RoomMessageUnknown)
+from nio import RoomMessageUnknown
+
 
 class MatrixModule:
     bot = None
+
     def matrix_start(self, bot):
         self.bot = bot
         bot.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
@@ -26,8 +28,9 @@ class MatrixModule:
         float(latlon[0])
         float(latlon[1])
 
-        osm_link = 'https://www.openstreetmap.org/?mlat=' + latlon[0] + "&mlon=" + latlon[1]
-        
+        osm_link = 'https://www.openstreetmap.org/?mlat=' + \
+            latlon[0] + "&mlon=" + latlon[1]
+
         plain = sender + ' 🚩 ' + osm_link
         html = f'{sender} 🚩 <a href={osm_link}>{location_text}</a>'
 
