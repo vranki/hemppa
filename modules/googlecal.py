@@ -15,8 +15,8 @@ from google.auth.transport.requests import Request
 #
 # Google calendar notifications
 #
-# Note: Provide a token.pickle file for the service. 
-# It's created on first run (run from console!) and 
+# Note: Provide a token.pickle file for the service.
+# It's created on first run (run from console!) and
 # can be copied to another computer.
 #
 
@@ -77,6 +77,8 @@ class MatrixModule:
                     events = events + self.list_today(calid)
             if args[1] == 'list':
                 await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
+                return
+
         elif len(args) == 3:
             if args[1] == 'add':
                 bot.must_be_admin(room, event)
@@ -98,6 +100,8 @@ class MatrixModule:
                 bot.save_settings()
 
                 await bot.send_text(room, 'Added new google calendar to this room')
+                return
+
             if args[1] == 'del':
                 bot.must_be_admin(room, event)
 
@@ -112,17 +116,19 @@ class MatrixModule:
                 bot.save_settings()
 
                 await bot.send_text(room, 'Removed google calendar from this room')
+                return
+
         else:
             for calid in calendars:
                 print('Listing events in cal', calid)
                 events = events + self.list_upcoming(calid)
 
-            if len(events) == 0:
-                await bot.send_text(room, 'No events found.')
-
-        if len(events):
+        if len(events) > 0:
             print(f'Found {len(events)} events')
             await self.send_events(bot, events, room)
+        else:
+            print(f'No events found')
+            await bot.send_text(room, 'No events found, try again later :)')
 
     async def send_events(self, bot, events, room):
         for event in events:
@@ -163,7 +169,7 @@ class MatrixModule:
             self.calendar_rooms = data['calendar_rooms']
 
     def parse_date(self, start):
-        try: 
+        try:
             dt = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S%z')
             return dt.strftime("%d.%m %H:%M")
         except ValueError:
