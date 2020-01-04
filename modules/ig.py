@@ -29,27 +29,28 @@ class MatrixModule:
             if now >= self.next_poll_time.get(roomid):
                 accounts = self.account_rooms[roomid]
                 for account in accounts:
-                    try:
-                        await self.poll_account(bot, account, roomid, send_messages)
-                    except InstagramNotFoundException:
-                        print('ig error: there is ', account,
-                              ' account that does not exist - deleting from room')
-                        self.account_rooms[roomid].remove(account)
-                        bot.save_settings()
-                    except Exception:
-                        print('Polling instagram account failed:')
-                        traceback.print_exc(file=sys.stderr)
+                    await self.poll_account(bot, account, roomid, send_messages)
 
         self.first_run = False
 
     async def poll_account(self, bot, account, roomid, send_messages):
-        medias = self.instagram.get_medias(account, 5)
+        try:
+            medias = self.instagram.get_medias(account, 5)
+            for media in medias:
+                if send_messages:
+                    if media.identifier not in self.known_ids:
+                        await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', f'{account}: {media.caption} {media.link}')
+                self.known_ids.add(media.identifier)
 
-        for media in medias:
-            if send_messages:
-                if media.identifier not in self.known_ids:
-                    await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', f'{account}: {media.caption} {media.link}')
-            self.known_ids.add(media.identifier)
+        except InstagramNotFoundException:
+            print('ig error: there is ', account,
+                    ' account that does not exist - deleting from room')
+            self.account_rooms[roomid].remove(account)
+            bot.save_settings()
+        except Exception:
+            print('Polling instagram account failed:')
+            traceback.print_exc(file=sys.stderr)
+
         polldelay = timedelta(minutes=30 + randrange(30))
         self.next_poll_time[roomid] = datetime.now() + polldelay
 
