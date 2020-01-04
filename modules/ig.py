@@ -1,3 +1,5 @@
+import traceback
+import sys
 from datetime import datetime, timedelta
 from random import randrange
 
@@ -34,11 +36,13 @@ class MatrixModule:
                               ' account that does not exist - deleting from room')
                         self.account_rooms[roomid].remove(account)
                         bot.save_settings()
+                    except Exception:
+                        print('Polling instagram account failed:')
+                        traceback.print_exc(file=sys.stderr)
 
         self.first_run = False
 
     async def poll_account(self, bot, account, roomid, send_messages):
-        print('polling', account, roomid, send_messages)
         medias = self.instagram.get_medias(account, 5)
 
         for media in medias:

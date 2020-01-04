@@ -41,10 +41,12 @@ class MatrixModule:
         args.pop(0)
         if len(args) == 0:
             await bot.send_text(room, 'Usage: !loc <location name>')
-        if len(args) == 1:
+        else:
             query = event.body[4:]
             geolocator = Nominatim(user_agent=bot.appid)
+            print('loc: looking up', query, '..')
             location = geolocator.geocode(query)
+            print('loc rx', location)
             if location:
                 locationmsg = {
                     "body": str(location.address),
