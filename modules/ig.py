@@ -1,14 +1,17 @@
-from igramscraper.instagram import Instagram
-from igramscraper.exception.instagram_not_found_exception import InstagramNotFoundException
 from datetime import datetime, timedelta
 from random import randrange
+
+from igramscraper.exception.instagram_not_found_exception import \
+    InstagramNotFoundException
+from igramscraper.instagram import Instagram
+
 
 class MatrixModule:
     instagram = Instagram()
 
     known_ids = set()
-    account_rooms = dict() # Roomid -> [account, account..]
-    next_poll_time = dict() # Roomid -> datetime, None = not polled yet
+    account_rooms = dict()  # Roomid -> [account, account..]
+    next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
@@ -27,7 +30,8 @@ class MatrixModule:
                     try:
                         await self.poll_account(bot, account, roomid, send_messages)
                     except InstagramNotFoundException:
-                        print('ig error: there is ', account, ' account that does not exist - deleting from room')
+                        print('ig error: there is ', account,
+                              ' account that does not exist - deleting from room')
                         self.account_rooms[roomid].remove(account)
                         bot.save_settings()
 
@@ -77,7 +81,8 @@ class MatrixModule:
                 else:
                     self.account_rooms[room.room_id] = [account]
 
-                print(f'Accounts now for this room {self.account_rooms.get(room.room_id)}')
+                print(
+                    f'Accounts now for this room {self.account_rooms.get(room.room_id)}')
 
                 try:
                     await self.poll_account(bot, account, room.room_id, False)
@@ -91,18 +96,20 @@ class MatrixModule:
                 bot.must_be_admin(room, event)
 
                 account = args[2]
-                print(f'Removing account {account} from room id {room.room_id}')
+                print(
+                    f'Removing account {account} from room id {room.room_id}')
 
                 if self.account_rooms.get(room.room_id):
                     self.account_rooms[room.room_id].remove(account)
 
-                print(f'Accounts now for this room {self.account_rooms.get(room.room_id)}')
+                print(
+                    f'Accounts now for this room {self.account_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 await bot.send_text(room, 'Removed instagram account from this room')
 
     def get_settings(self):
-        return { 'account_rooms': self.account_rooms }
+        return {'account_rooms': self.account_rooms}
 
     def set_settings(self, data):
         if data.get('account_rooms'):
