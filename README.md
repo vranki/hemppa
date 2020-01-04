@@ -15,6 +15,13 @@ Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
 
 ## Module list
 
+### Bot
+
+Bot management commands.
+
+* !bot version - print version of the bot
+* !bot quit - quit the bot process (Must be done as bot owner)
+
 ### Help
 
 Prints help on existing modules.
@@ -23,13 +30,19 @@ Prints help on existing modules.
 
 Simple example module that just echoes what user said.
 
+* !echo Hello, world!
+
 ### Metar
 
 Aviation weather metar service access.
 
+* !metar eftp
+
 ### TAF
 
 Aviation weather TAF service access.
+
+* !taf eftp
 
 ### Uptime
 

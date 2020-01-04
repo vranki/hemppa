@@ -234,7 +234,8 @@ class Bot:
             if self.join_on_invite:
                 print('Note: Bot will join rooms if invited')
             print('Bot running as', self.client.user, ', owners', self.owners)
-            await self.client.sync_forever(timeout=30000)
+            self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
+            await self.bot_task
         else:
             print('Client was not able to log in, check env variables!')
 
@@ -246,5 +247,6 @@ try:
 except KeyboardInterrupt:
     if bot.poll_task:
         bot.poll_task.cancel()
+    bot.bot_task.cancel()
 
 bot.stop()
