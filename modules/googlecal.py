@@ -140,7 +140,7 @@ class MatrixModule:
             await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>', f'{self.parse_date(start)} {event["summary"]}')
 
     def list_upcoming(self, calid):
-        startTime = datetime.datetime.utcnow()
+        startTime = datetime.utcnow()
         now = startTime.isoformat() + 'Z'
         events_result = self.service.events().list(calendarId=calid, timeMin=now,
                                                    maxResults=10, singleEvents=True,
@@ -149,7 +149,7 @@ class MatrixModule:
         return events
 
     def list_today(self, calid):
-        startTime = datetime.datetime.utcnow()
+        startTime = datetime.utcnow()
         startTime = startTime.replace(
             hour=0, minute=0, second=0, microsecond=0)
         endTime = startTime + datetime.timedelta(hours=24)
