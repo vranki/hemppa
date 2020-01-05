@@ -19,8 +19,10 @@ Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
 
 Bot management commands.
 
-* !bot version - print version of the bot
+* !bot version - print version and uptime of the bot
 * !bot quit - quit the bot process (Must be done as bot owner)
+* !bot reload - reload all bot modules  (Must be done as bot owner)
+* !bot stats - show statistics on matrix users seen by bot
 
 ### Help
 
@@ -43,10 +45,6 @@ Aviation weather metar service access.
 Aviation weather TAF service access.
 
 * !taf eftp
-
-### Uptime
-
-Prints bot uptime.
 
 ### Teamup
 

@@ -12,6 +12,7 @@ import urllib.parse
 
 import requests
 from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText
+from importlib import reload
 
 # Couple of custom exceptions
 
@@ -141,12 +142,17 @@ class Bot:
     def load_module(self, modulename):
         try:
             module = importlib.import_module('modules.' + modulename)
+            module = reload(module)
             cls = getattr(module, 'MatrixModule')
             return cls()
         except ModuleNotFoundError:
             print('Module ', modulename, ' failed to load!')
             traceback.print_exc(file=sys.stderr)
             return None
+
+    def reload_module(self, modulename):
+        print('Reloading', modulename)
+        self.modules[modulename] = self.load_module(modulename)
 
     def get_modules(self):
         modulefiles = glob.glob('./modules/*.py')
@@ -156,6 +162,9 @@ class Bot:
             moduleobject = self.load_module(modulename)
             if moduleobject:
                 self.modules[modulename] = moduleobject
+    
+    def clear_modules(self):
+        self.modules = dict()
 
     async def poll_timer(self):
         while True:
@@ -197,6 +206,16 @@ class Bot:
         self.owners = os.environ['BOT_OWNERS'].split(',')
         self.get_modules()
 
+    def start(self):
+        print(f'Starting {len(self.modules)} modules..')
+        for modulename, moduleobject in self.modules.items():
+            print('Starting', modulename, '..')
+            if "matrix_start" in dir(moduleobject):
+                try:
+                    moduleobject.matrix_start(bot)
+                except Exception:
+                    traceback.print_exc(file=sys.stderr)
+
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
         for modulename, moduleobject in self.modules.items():
@@ -215,14 +234,7 @@ class Bot:
 
         await self.client.sync()
 
-        print(f'Starting {len(self.modules)} modules..')
-        for modulename, moduleobject in self.modules.items():
-            print('Starting', modulename, '..')
-            if "matrix_start" in dir(moduleobject):
-                try:
-                    moduleobject.matrix_start(bot)
-                except Exception:
-                    traceback.print_exc(file=sys.stderr)
+        self.start()
 
         self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
 
