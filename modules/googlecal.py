@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import os.path
 import pickle
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -135,8 +135,6 @@ class MatrixModule:
     async def send_events(self, bot, events, room):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            # await bot.send_text(room, f"{self.parse_date(start)} {event['summary']}")
-            # await bot.send_text(room, f"{self.parse_date(start)} {event['summary']} {event['htmlLink']}")
             await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>', f'{self.parse_date(start)} {event["summary"]}')
 
     def list_upcoming(self, calid):
@@ -152,7 +150,7 @@ class MatrixModule:
         startTime = datetime.utcnow()
         startTime = startTime.replace(
             hour=0, minute=0, second=0, microsecond=0)
-        endTime = startTime + datetime.timedelta(hours=24)
+        endTime = startTime + timedelta(hours=24)
         now = startTime.isoformat() + 'Z'
         end = endTime.isoformat() + 'Z'
         print('Looking for events between', now, end)
@@ -173,8 +171,8 @@ class MatrixModule:
 
     def parse_date(self, start):
         try:
-            dt = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S%z')
+            dt = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S%z')
             return dt.strftime("%d.%m %H:%M")
         except ValueError:
-            dt = datetime.datetime.strptime(start, '%Y-%m-%d')
+            dt = datetime.strptime(start, '%Y-%m-%d')
             return dt.strftime("%d.%m")
