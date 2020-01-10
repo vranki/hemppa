@@ -1,7 +1,7 @@
 # Hemppa - generic modular Matrix bot
 
 This bot is meant to be super easy platform to write Matrix bot functionality
-in Python. It uses matrix-nio library https://github.com/poljar/matrix-nio/ for 
+in Python. It uses matrix-nio library https://github.com/poljar/matrix-nio/ for
 Matrix communications.
 
 Zero configuration except minimal Matrix account info is needed. Everything else can
@@ -53,10 +53,10 @@ prefer it if possible. This bot polls the calendar every 5 minutes and notifies 
 
 Howto:
 
-* Create a calendar in Teamup https://teamup.com/ 
+* Create a calendar in Teamup https://teamup.com/
 * Get api key at https://teamup.com/api-keys/request
-* !teamup apikey [your api key] 
-* !teamup add [calendar id] 
+* !teamup apikey [your api key]
+* !teamup add [calendar id]
 
 Commands:
 
@@ -76,7 +76,7 @@ To set up, you'll need to generate oauth2 credentials.json file - see https://co
 Run the bot on *local* machine as OAuth2 wants to open localhost url in your browser. I haven't found out an easy way to
 do this on server.
 
-There is a empty credentials.json file in the bot directory. Replace it with yours. When credentials.json is present, you must 
+There is a empty credentials.json file in the bot directory. Replace it with yours. When credentials.json is present, you must
 authenticate the bot to access calendar. There will be a link in console like this:
 
 ``` text
@@ -137,23 +137,38 @@ Prefix with selected service, for example "!ig add accountname" or "!twitter lis
 
 * add [accountname] - Add account to this room (Must be done as room admin)
 * del [accountname] - Delete account from room (Must be done as room admin)
-* list - List accounts in room 
+* list - List accounts in room
 * poll - Poll for new items  (Must be done as bot owner)
 * clear - Clear all accounts from this room  (Must be done as room admin)
 
 #### Instagram
 
 Polls instagram account(s). Uses instagram scraper library
-without any authentication or api key. 
+without any authentication or api key.
 
 See: https://github.com/realsirjoe/instagram-scraper/
 
 #### Twitter
 
 Polls twitter account(s). Uses twitter scraper library
-without any authentication or api key. 
+without any authentication or api key.
 
 See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
+
+#### Url titles
+
+Watches all messages in a room and if a url is found tries to fetch it and
+spit out the title if found.
+
+Commands:
+
+* !urltitles on -    spam titles to room
+* !urltitles off    - stop spamming
+* !urltitles status - show current status
+
+Example:
+
+* !urltitles status
 
 ## Bot setup
 
@@ -202,7 +217,7 @@ You can set MATRIX_PASSWORD if you want to get access token. Normally you can us
 
 BOT_OWNERS is a comma-separated list of matrix id's for the owners of the bot. Some commands require
 sender to be bot owner. Typically set your own id into it. Don't include bot itself in BOT_OWNERS if cron
-or any other module that can cause bot to send custom commands is used as it could potentially be used to run 
+or any other module that can cause bot to send custom commands is used as it could potentially be used to run
 owner commands as the bot itself.
 
 ## Module API
