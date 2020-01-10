@@ -155,16 +155,18 @@ without any authentication or api key.
 
 See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 
-#### Url titles
+#### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
 spit out the title if found.
 
 Commands:
 
-* !urltitles on -    spam titles to room
-* !urltitles off    - stop spamming
-* !urltitles status - show current status
+* !url status       - show current status
+* !url title        - spam titles to room
+* !url description  - spam descriptions
+* !url both         - spam both title and description
+* !url off          - stop spamming
 
 Example:
 
