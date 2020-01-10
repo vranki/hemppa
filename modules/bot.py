@@ -20,8 +20,7 @@ class MatrixModule:
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'Reloading modules..')
                 bot.stop()
-                for modulename in bot.modules:
-                    bot.reload_module(modulename)
+                bot.reload_modules()
                 bot.start()
             elif args[1]=='stats':
                 roomcount = len(bot.client.rooms)

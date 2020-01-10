@@ -13,6 +13,7 @@ google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
 requests = "*"
 igramscraper = "*"
+twitterscraper = "*"
 
 [dev-packages]
 pylint = "*"

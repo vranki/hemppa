@@ -27,7 +27,7 @@ class CommandRequiresOwner(Exception):
 
 class Bot:
     appid = 'org.vranki.hemppa'
-    version = '1.1'
+    version = '1.2'
     client = None
     join_on_invite = False
     modules = dict()
@@ -107,6 +107,9 @@ class Bot:
         body = event.body
         if len(body) == 0:
             return
+        if body[0] != '!':
+            return
+
         command = body.split().pop(0)
 
         # Strip away non-alphanumeric characters, including leading ! for security
@@ -150,9 +153,12 @@ class Bot:
             traceback.print_exc(file=sys.stderr)
             return None
 
-    def reload_module(self, modulename):
-        print('Reloading', modulename)
-        self.modules[modulename] = self.load_module(modulename)
+    def reload_modules(self):
+        for modulename in bot.modules:
+            print('Reloading', modulename, '..')
+            self.modules[modulename] = self.load_module(modulename)
+
+        self.load_settings(self.get_account_data())
 
     def get_modules(self):
         modulefiles = glob.glob('./modules/*.py')

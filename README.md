@@ -126,20 +126,34 @@ Example:
 
 * !loc Tampere
 
-### Instagram
+### Slow polling services
 
-Polls instagram account(s) and posts new items to the room. Uses instagram scraper library
-without any authentication or api key so it polls only randomly every 30 to 60 minutes to keep traffic at minimum. 
-
-See: https://github.com/realsirjoe/instagram-scraper/
+These have the same usage - you can add one or more accounts to a room and bot polls the accounts.
+New posts are sent to room.  Polls only randomly every 30 to 60 minutes to keep traffic at minimum.
 
 Commands:
 
-* !ig add [accountname] - Add instagram account to this room (Must be done as room admin)
-* !ig del [accountname] - Delete instagram account from room (Must be done as room admin)
-* !ig list - List accounts in room 
-* !ig poll - Poll for new items  (Must be done as bot owner)
-* !ig clear - Clear all ig accounts from this room  (Must be done as room admin)
+Prefix with selected service, for example "!ig add accountname" or "!twitter list"
+
+* add [accountname] - Add account to this room (Must be done as room admin)
+* del [accountname] - Delete account from room (Must be done as room admin)
+* list - List accounts in room 
+* poll - Poll for new items  (Must be done as bot owner)
+* clear - Clear all accounts from this room  (Must be done as room admin)
+
+#### Instagram
+
+Polls instagram account(s). Uses instagram scraper library
+without any authentication or api key. 
+
+See: https://github.com/realsirjoe/instagram-scraper/
+
+#### Twitter
+
+Polls twitter account(s). Uses twitter scraper library
+without any authentication or api key. 
+
+See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 
 ## Bot setup
 
