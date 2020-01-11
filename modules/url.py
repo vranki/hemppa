@@ -1,9 +1,10 @@
 import re
 import shlex
+from functools import lru_cache
+
 import httpx
 from lxml.html.soupparser import fromstring
 from nio import RoomMessageText
-from functools import lru_cache
 
 
 class MatrixModule:
@@ -64,18 +65,18 @@ class MatrixModule:
 
             msg = None
 
-            if status == 'TITLE' and title is not None:
-                msg = f'Title: {title}'
-            elif status == 'DESCRIPTION' and description is not None:
-                msg = f'Description: {description}'
+            if status == "TITLE" and title is not None:
+                msg = f"Title: {title}"
+            elif status == "DESCRIPTION" and description is not None:
+                msg = f"Description: {description}"
 
-            elif status == 'BOTH' and title is not None and description is not None:
-                msg = f'Title: {title}\nDescription: {description}'
+            elif status == "BOTH" and title is not None and description is not None:
+                msg = f"Title: {title}\nDescription: {description}"
 
-            elif status == 'BOTH' and title is not None:
-                msg = f'Title: {title}'
-            elif status == 'BOTH' and description is not None:
-                msg = f'Description: {description}'
+            elif status == "BOTH" and title is not None:
+                msg = f"Title: {title}"
+            elif status == "BOTH" and description is not None:
+                msg = f"Description: {description}"
 
             if msg is not None:
                 await self.bot.send_text(room, msg)
