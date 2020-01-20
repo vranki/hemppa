@@ -158,7 +158,9 @@ See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 #### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
-spit out the title if found.
+spit out the title if found. 
+
+Defaults to off and needs to be activated on every room you want this.
 
 Commands:
 
@@ -170,7 +172,7 @@ Commands:
 
 Example:
 
-* !urltitles status
+* !url status
 
 ## Bot setup
 
