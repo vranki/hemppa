@@ -19,6 +19,7 @@ Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
 
 Bot management commands.
 
+* !bot status - print bot status information
 * !bot version - print version and uptime of the bot
 * !bot quit - quit the bot process (Must be done as bot owner)
 * !bot reload - reload all bot modules  (Must be done as bot owner)
@@ -140,18 +141,19 @@ Prefix with selected service, for example "!ig add accountname" or "!twitter lis
 * list - List accounts in room 
 * poll - Poll for new items  (Must be done as bot owner)
 * clear - Clear all accounts from this room  (Must be done as room admin)
+* debug - Show some debug information for accounts in room
 
 #### Instagram
 
 Polls instagram account(s). Uses instagram scraper library
-without any authentication or api key. 
+without any authentication or api key.
 
 See: https://github.com/realsirjoe/instagram-scraper/
 
 #### Twitter
 
 Polls twitter account(s). Uses twitter scraper library
-without any authentication or api key. 
+without any authentication or api key.
 
 See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 

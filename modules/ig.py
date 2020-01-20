@@ -8,13 +8,16 @@ from igramscraper.exception.instagram_not_found_exception import \
     InstagramNotFoundException
 from igramscraper.instagram import Instagram
 
-class MatrixModule(PollingService): 
-    instagram = Instagram()
-    service_name = 'Instagram'
+class MatrixModule(PollingService):
+    def __init__(self):
+        super().__init__()
+        self.instagram = Instagram()
+        self.service_name = 'Instagram'
 
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:
             medias = self.instagram.get_medias(account, 5)
+            print(f'Polling instagram account {account} for room {roomid} - got {len(medias)} posts.')
             for media in medias:
                 if send_messages:
                     if media.identifier not in self.known_ids:

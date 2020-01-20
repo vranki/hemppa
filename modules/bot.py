@@ -14,14 +14,16 @@ class MatrixModule:
                 print(f'{event.sender} commanded bot to quit, so quitting..')
                 bot.bot_task.cancel()
             elif args[1]=='version':
-                uptme = datetime.now() - self.starttime
-                await bot.send_text(room, f'Hemppa version {bot.version} - Uptime {uptme} - https://github.com/vranki/hemppa')
+                await bot.send_text(room, f'Hemppa version {bot.version} - https://github.com/vranki/hemppa')
             elif args[1]=='reload':
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'Reloading modules..')
                 bot.stop()
                 bot.reload_modules()
                 bot.start()
+            elif args[1]=='status':
+                uptime = datetime.now() - self.starttime
+                await bot.send_text(room, f'Uptime {uptime} - system time is {datetime.now()} - loaded {len(bot.modules)} modules.')
             elif args[1]=='stats':
                 roomcount = len(bot.client.rooms)
                 usercount = 0
@@ -39,10 +41,10 @@ class MatrixModule:
 
                 homeservers = sorted(homeservers.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
 
-                if len(homeservers) > 5:
-                    homeservers = homeservers[0:5]
+                if len(homeservers) > 10:
+                    homeservers = homeservers[0:10]
 
-                await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms. Top 5 homeservers: {homeservers}')
+                await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
         else:
             await bot.send_text(room, 'Unknown command, sorry.')
 

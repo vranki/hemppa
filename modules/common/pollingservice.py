@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 from random import randrange
 
 class PollingService:
-    known_ids = set()
-    account_rooms = dict()  # Roomid -> [account, account..]
-    next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
-    service_name = "Service" 
+    def __init__(self):
+        self.known_ids = set()
+        self.account_rooms = dict()  # Roomid -> [account, account..]
+        self.next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
+        self.service_name = "Service" 
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
@@ -17,8 +18,9 @@ class PollingService:
         now = datetime.now()
         for roomid in self.account_rooms:
             send_messages = True
+            # First poll
             if not self.next_poll_time.get(roomid, None):
-                self.next_poll_time[roomid] = now
+                self.next_poll_time[roomid] = now + timedelta(hours=-1)
                 send_messages = False
             if now >= self.next_poll_time.get(roomid):
                 accounts = self.account_rooms[roomid]
@@ -44,10 +46,10 @@ class PollingService:
             if args[1] == 'list':
                 await bot.send_text(room, f'{self.service_name} accounts in this room: {self.account_rooms.get(room.room_id) or []}')
             if args[1] == 'debug':
-                await bot.send_text(room, f'{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}')
+                await bot.send_text(room, f"{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}\n" \
+                                          f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
-                print('forced polling')
                 for roomid in self.account_rooms:
                     self.next_poll_time[roomid] = datetime.now()
                 await self.poll_all_accounts(bot)
