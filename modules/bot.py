@@ -30,9 +30,9 @@ class MatrixModule:
                 homeservers = dict()
 
                 for croomid in bot.client.rooms:
-                    room = bot.client.rooms[croomid]
-                    usercount = usercount + len(room.users)
-                    for user in room.users:
+                    roomobj = bot.client.rooms[croomid]
+                    usercount = usercount + len(roomobj.users)
+                    for user in roomobj.users:
                         hs = user.split(':')[1]
                         if homeservers.get(hs):
                             homeservers[hs] = homeservers[hs] + 1
