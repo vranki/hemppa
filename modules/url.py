@@ -12,8 +12,6 @@ class MatrixModule:
     Simple url fetch and spit out title module.
 
     Everytime a url is seen in a message we do http request to it and try to get a title tag contents to spit out to the room.
-
-    TODO: on/off switch...
     """
 
     bot = None
