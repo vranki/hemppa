@@ -14,12 +14,16 @@ google-auth-oauthlib = "*"
 requests = "*"
 igramscraper = "*"
 twitterscraper = "*"
+httpx = "*"
 
 [dev-packages]
 pylint = "*"
 pycodestyle = "*"
 flake8 = "*"
 autopep8 = "*"
+black = "*"
+ipython = "*"
+isort = "*"
 
 [requires]
 python_version = "3.7"
