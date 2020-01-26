@@ -239,6 +239,11 @@ class Bot:
                   self.client.access_token)
 
         await self.client.sync()
+        for roomid in self.client.rooms:
+            print(f'Bot is on {roomid} with {len(self.client.rooms[roomid].users)} users')
+            if len(self.client.rooms[roomid].users) == 1:
+                print(f'Room {roomid} has no other users - leaving it.')
+                print(await self.client.room_leave(roomid))
 
         self.start()
 

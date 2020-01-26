@@ -45,6 +45,12 @@ class MatrixModule:
                     homeservers = homeservers[0:10]
 
                 await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
+            elif args[1]=='leave':
+                bot.must_be_admin(room, event)
+                print(f'{event.sender} asked bot to leave room {room.room_id}')
+                await bot.send_text(room, f'By your command.')
+                await bot.client.room_leave(room.room_id)
+
         else:
             await bot.send_text(room, 'Unknown command, sorry.')
 

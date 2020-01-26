@@ -90,14 +90,21 @@ class MatrixModule:
         return('Polls teamup calendar.')
 
     async def poll_all_calendars(self, bot):
+        delete_rooms = []
         for roomid in self.calendar_rooms:
-            calendars = self.calendar_rooms[roomid]
-            for calendarid in calendars:
-                events, timestamp = self.poll_server(
-                    self.calendars[calendarid])
-                self.calendars[calendarid].timestamp = timestamp
-                for event in events:
-                    await bot.send_text(bot.get_room_by_id(roomid), 'Calendar: ' + self.eventToString(event))
+            if roomid in bot.client.rooms:
+                calendars = self.calendar_rooms[roomid]
+                for calendarid in calendars:
+                    events, timestamp = self.poll_server(
+                        self.calendars[calendarid])
+                    self.calendars[calendarid].timestamp = timestamp
+                    for event in events:
+                        await bot.send_text(bot.get_room_by_id(roomid), 'Calendar: ' + self.eventToString(event))
+            else:
+                delete_rooms.append(roomid)
+                
+        for roomid in delete_rooms:
+            self.calendar_rooms.pop(roomid, None)
 
     def poll_server(self, calendar):
         events, timestamp = calendar.get_changed_events(calendar.timestamp)

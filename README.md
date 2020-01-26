@@ -24,6 +24,7 @@ Bot management commands.
 * !bot quit - quit the bot process (Must be done as bot owner)
 * !bot reload - reload all bot modules  (Must be done as bot owner)
 * !bot stats - show statistics on matrix users seen by bot
+* !bot leave - ask bot to leave this room (Must be done as admin in room)
 
 ### Help
 

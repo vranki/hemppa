@@ -9,6 +9,8 @@ class PollingService:
         self.account_rooms = dict()  # Roomid -> [account, account..]
         self.next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
         self.service_name = "Service"
+        self.poll_interval_min = 30 # TODO: Configurable
+        self.poll_interval_random = 30
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
@@ -16,16 +18,23 @@ class PollingService:
 
     async def poll_all_accounts(self, bot):
         now = datetime.now()
+        delete_rooms = []
         for roomid in self.account_rooms:
-            send_messages = True
-            # First poll
-            if not self.next_poll_time.get(roomid, None):
-                self.next_poll_time[roomid] = now + timedelta(hours=-1)
-                send_messages = False
-            if now >= self.next_poll_time.get(roomid):
-                accounts = self.account_rooms[roomid]
-                for account in accounts:
-                    await self.poll_account(bot, account, roomid, send_messages)
+            if roomid in bot.client.rooms:
+                send_messages = True
+                # First poll
+                if not self.next_poll_time.get(roomid, None):
+                    self.next_poll_time[roomid] = now + timedelta(hours=-1)
+                    send_messages = False
+                if now >= self.next_poll_time.get(roomid):
+                    accounts = self.account_rooms[roomid]
+                    for account in accounts:
+                        await self.poll_account(bot, account, roomid, send_messages)
+            else:
+                print(f'Bot is no longer in room {roomid} - deleting it from {self.service_name} room list')
+                delete_rooms.append(roomid)
+        for roomid in delete_rooms:
+            self.account_rooms.pop(roomid, None)
 
         self.first_run = False
 
@@ -33,7 +42,7 @@ class PollingService:
         pass
 
     async def poll_account(self, bot, account, roomid, send_messages):
-        polldelay = timedelta(minutes=30 + randrange(30))
+        polldelay = timedelta(minutes=self.poll_interval_min + randrange(self.poll_interval_random))
         self.next_poll_time[roomid] = datetime.now() + polldelay
 
         await self.poll_implementation(bot, account, roomid, send_messages)
@@ -45,13 +54,15 @@ class PollingService:
         if len(args) == 2:
             if args[1] == 'list':
                 await bot.send_text(room, f'{self.service_name} accounts in this room: {self.account_rooms.get(room.room_id) or []}')
-            if args[1] == 'debug':
+            elif args[1] == 'debug':
                 await bot.send_text(room, f"{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}\n" \
                                           f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
+                print(f'{self.service_name} force polling requested by {event.sender}')
+                # Faking next poll times to force poll
                 for roomid in self.account_rooms:
-                    self.next_poll_time[roomid] = datetime.now()
+                    self.next_poll_time[roomid] = datetime.now() - timedelta(hours=1)
                 await self.poll_all_accounts(bot)
             elif args[1] == 'clear':
                 bot.must_be_admin(room, event)

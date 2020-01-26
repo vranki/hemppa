@@ -40,11 +40,18 @@ class MatrixModule:
             self.daily_commands = data['daily_commands']
 
     async def matrix_poll(self, bot, pollcount):
+        delete_rooms = []
         if self.last_hour != datetime.now().hour:
             self.last_hour = datetime.now().hour
 
             for room_id in self.daily_commands:
-                commands = self.daily_commands[room_id]
-                for command in commands:
-                    if int(command['time']) == self.last_hour:
-                        await bot.send_text(bot.get_room_by_id(room_id), command['command'])
+                if room_id in bot.client.rooms:
+                    commands = self.daily_commands[room_id]
+                    for command in commands:
+                        if int(command['time']) == self.last_hour:
+                            await bot.send_text(bot.get_room_by_id(room_id), command['command'])
+                else:
+                    delete_rooms.append(room_id)
+
+        for roomid in delete_rooms:
+            self.daily_commands.pop(roomid, None)
