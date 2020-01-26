@@ -47,6 +47,13 @@ Aviation weather TAF service access.
 
 * !taf eftp
 
+### NOTAM
+
+Aviation NOTAM data access. Currently supports only Finnish airports - implement other countries where
+data is available.
+
+* !notam efjm
+
 ### Teamup
 
 Can access Teamup ( https://teamup.com/ ) calendar. Teamup has nice API and is easier to set up than Google so

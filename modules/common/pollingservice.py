@@ -8,7 +8,7 @@ class PollingService:
         self.known_ids = set()
         self.account_rooms = dict()  # Roomid -> [account, account..]
         self.next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
-        self.service_name = "Service" 
+        self.service_name = "Service"
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
