@@ -3,7 +3,7 @@ import shlex
 from functools import lru_cache
 
 import httpx
-from lxml.html.soupparser import fromstring
+from bs4 import BeautifulSoup
 from nio import RoomMessageText
 
 
@@ -90,31 +90,23 @@ class MatrixModule:
         try:
             r = httpx.get(url)
         except Exception as e:
-            # if it failed then it failed, no point in trying anything fancy
-            # this is just a title spitting bot :)
+            print(f"Failed fetching url {url}. Error: {e}")
             return (title, description)
 
         if r.status_code != 200:
+            print(f"Failed fetching url {url}. Status code: {r.status_code}")
             return (title, description)
 
         # try parse and get the title
         try:
-            titleelem = fromstring(r.text).find(".//head/title")
-            descriptionelem = fromstring(r.text).find(
-                './/head/meta[@name="description"]'
-            )
-        except Exception:
-            # again, no point in trying anything else
+            soup = BeautifulSoup(r.text, "html.parser")
+            title = soup.title.string
+            descr_tag = soup.find("meta", attrs={"name": "description"})
+            if descr_tag:
+                description = descr_tag.get("content", None)
+        except Exception as e:
+            print(f"Failed parsing response from url {url}. Error: {e}")
             return (title, description)
-
-        try:
-            if titleelem is not None:
-                title = titleelem.text
-            if descriptionelem is not None:
-                description = descriptionelem.attrib.get("content")
-        except Exception:
-            # if it fails it fails
-            pass
 
         return (title, description)
 
