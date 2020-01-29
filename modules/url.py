@@ -143,5 +143,12 @@ class MatrixModule:
 
         return
 
+    def get_settings(self):
+        return {"status": self.status}
+
+    def set_settings(self, data):
+        if data.get("status"):
+            self.status = data["status"]
+
     def help(self):
         return "If I see a url in a message I will try to get the title from the page and spit it out"
