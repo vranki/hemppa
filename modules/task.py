@@ -6,14 +6,14 @@ class MatrixModule:
         args = event.body.split()
         args.pop(0)
         encoding="utf-8"
-        forbidden_args = ['help', 'edit', 'command', 'stats', 'config', 'ghistory', 'burndown']
+        
+        allowed_args = ['list', 'add', 'del','done', 'undo', 'calc']
 
         # wrap task
         if not args:
                 args=['list']
 
-        if args[0] in forbidden_args:
-                 print(args[0], "found in List: " , forbidden_args)
+        if args[0] not in allowed_args:
                  await bot.send_text(room, "command not allowed")
                  return()
 
