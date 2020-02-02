@@ -1,8 +1,9 @@
 import shlex
 from datetime import datetime
+from .common.module import BotModule
 
 
-class MatrixModule:
+class MatrixModule(BotModule):
     daily_commands = dict()  # room_id -> command json
     last_hour = datetime.now().hour
 
@@ -30,7 +31,7 @@ class MatrixModule:
                 await bot.send_text(room, 'Cleared commands on this room.')
 
     def help(self):
-        return('Runs scheduled commands')
+        return ('Runs scheduled commands')
 
     def get_settings(self):
         return {'daily_commands': self.daily_commands}

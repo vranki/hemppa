@@ -1,30 +1,33 @@
-import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
+from modules.common.module import BotModule
 
-class MatrixModule:
+
+class MatrixModule(BotModule):
+
     def matrix_start(self, bot):
         self.starttime = datetime.now()
-
+        
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 2:
-            if args[1]=='quit':
+            if args[1] == 'quit':
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'Quitting, as requested')
                 print(f'{event.sender} commanded bot to quit, so quitting..')
                 bot.bot_task.cancel()
-            elif args[1]=='version':
+            elif args[1] == 'version':
                 await bot.send_text(room, f'Hemppa version {bot.version} - https://github.com/vranki/hemppa')
-            elif args[1]=='reload':
+            elif args[1] == 'reload':
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'Reloading modules..')
                 bot.stop()
                 bot.reload_modules()
                 bot.start()
-            elif args[1]=='status':
+            elif args[1] == 'status':
                 uptime = datetime.now() - self.starttime
-                await bot.send_text(room, f'Uptime {uptime} - system time is {datetime.now()} - loaded {len(bot.modules)} modules.')
-            elif args[1]=='stats':
+                await bot.send_text(room,
+                                    f'Uptime {uptime} - system time is {datetime.now()} - loaded {len(bot.modules)} modules.')
+            elif args[1] == 'stats':
                 roomcount = len(bot.client.rooms)
                 usercount = 0
                 homeservers = dict()
@@ -44,8 +47,9 @@ class MatrixModule:
                 if len(homeservers) > 10:
                     homeservers = homeservers[0:10]
 
-                await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
-            elif args[1]=='leave':
+                await bot.send_text(room,
+                                    f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
+            elif args[1] == 'leave':
                 bot.must_be_admin(room, event)
                 print(f'{event.sender} asked bot to leave room {room.room_id}')
                 await bot.send_text(room, f'By your command.')
@@ -55,4 +59,4 @@ class MatrixModule:
             await bot.send_text(room, 'Unknown command, sorry.')
 
     def help(self):
-        return('Bot management commands')
+        return 'Bot management commands'

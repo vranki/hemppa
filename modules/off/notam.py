@@ -1,8 +1,10 @@
-import urllib.request
 import re
+import urllib.request
+
+from modules.common.module import BotModule
 
 
-class MatrixModule:
+class MatrixModule(BotModule):
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 2 and len(args[1]) == 4:
@@ -13,12 +15,12 @@ class MatrixModule:
             await bot.send_text(room, 'Usage: !notam <icao code>')
 
     def help(self):
-        return('NOTAM data access (usage: !notam <icao code>) - Currently Finnish airports only')
+        return ('NOTAM data access (usage: !notam <icao code>) - Currently Finnish airports only')
 
-# TODO: This handles only finnish airports. Implement support for other countries.
+    # TODO: This handles only finnish airports. Implement support for other countries.
     def get_notam(self, icao):
         if not icao.startswith('EF'):
-            return('Only Finnish airports supported currently, sorry.')
+            return ('Only Finnish airports supported currently, sorry.')
 
         icao_first_letter = icao[2]
         if icao_first_letter < 'M':
