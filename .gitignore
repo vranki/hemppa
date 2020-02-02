@@ -1,5 +1,6 @@
 # editors
 .vscode
+.idea
 
 # ignore Pipfile.lock
 Pipfile.lock
