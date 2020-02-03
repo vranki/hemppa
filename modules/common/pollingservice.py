@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from random import randrange
 
+from modules.common.module import BotModule
 
-class PollingService:
+
+class PollingService(BotModule):
     def __init__(self):
         self.known_ids = set()
         self.account_rooms = dict()  # Roomid -> [account, account..]
