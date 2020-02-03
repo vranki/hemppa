@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from nio import RoomMessageText, Event
+from nio import RoomMessageText, MatrixRoom
 
 
 class BotModule(ABC):
@@ -40,9 +40,9 @@ class BotModule(ABC):
         :param bot: a reference to the bot
         :type bot: Bot
         :param room: a matrix room message
-        :type room: RoomMessageText
+        :type room: MatrixRoom
         :param event: a handle to the event that triggered the callback
-        :type event: Event
+        :type event: RoomMessageText
         """
         pass
 
