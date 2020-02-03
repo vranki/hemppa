@@ -1,7 +1,6 @@
-import traceback
-import sys
 from datetime import datetime, timedelta
 from random import randrange
+
 
 class PollingService:
     def __init__(self):
@@ -9,7 +8,7 @@ class PollingService:
         self.account_rooms = dict()  # Roomid -> [account, account..]
         self.next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
         self.service_name = "Service"
-        self.poll_interval_min = 30 # TODO: Configurable
+        self.poll_interval_min = 30  # TODO: Configurable
         self.poll_interval_random = 30
 
     async def matrix_poll(self, bot, pollcount):
@@ -47,16 +46,17 @@ class PollingService:
 
         await self.poll_implementation(bot, account, roomid, send_messages)
 
-
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
 
         if len(args) == 2:
             if args[1] == 'list':
-                await bot.send_text(room, f'{self.service_name} accounts in this room: {self.account_rooms.get(room.room_id) or []}')
+                await bot.send_text(room,
+                                    f'{self.service_name} accounts in this room: {self.account_rooms.get(room.room_id) or []}')
             elif args[1] == 'debug':
-                await bot.send_text(room, f"{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}\n" \
-                                          f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
+                await bot.send_text(room,
+                                    f"{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}\n" \
+                                    f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
                 print(f'{self.service_name} force polling requested by {event.sender}')
@@ -111,4 +111,4 @@ class PollingService:
             self.account_rooms = data['account_rooms']
 
     def help(self):
-        return(f'{self.service_name} polling')
+        return f'{self.service_name} polling'

@@ -6,8 +6,10 @@ import httpx
 from bs4 import BeautifulSoup
 from nio import RoomMessageText
 
+from modules.common.module import BotModule
 
-class MatrixModule:
+
+class MatrixModule(BotModule):
     """
     Simple url fetch and spit out title module.
 
@@ -152,3 +154,7 @@ class MatrixModule:
 
     def help(self):
         return "If I see a url in a message I will try to get the title from the page and spit it out"
+
+    def dump(self, obj):
+        for attr in dir(obj):
+            print("obj.%s = %r" % (attr, getattr(obj, attr)))

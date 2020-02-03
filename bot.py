@@ -9,10 +9,11 @@ import re
 import sys
 import traceback
 import urllib.parse
+from importlib import reload
 
 import requests
 from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText
-from importlib import reload
+
 
 # Couple of custom exceptions
 
@@ -125,7 +126,8 @@ class Bot:
             except CommandRequiresOwner:
                 await self.send_text(room, f'Sorry, only bot owner can run that command.')
             except Exception:
-                await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                await self.send_text(room,
+                                     f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                 traceback.print_exc(file=sys.stderr)
 
     async def invite_cb(self, room, event):
@@ -144,6 +146,7 @@ class Bot:
 
     def load_module(self, modulename):
         try:
+            print("load module: " + modulename)
             module = importlib.import_module('modules.' + modulename)
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
@@ -168,7 +171,7 @@ class Bot:
             moduleobject = self.load_module(modulename)
             if moduleobject:
                 self.modules[modulename] = moduleobject
-    
+
     def clear_modules(self):
         self.modules = dict()
 
