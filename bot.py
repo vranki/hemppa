@@ -191,33 +191,62 @@ class Bot:
             await asyncio.sleep(10)
 
     def set_account_data(self, data):
-        userid = urllib.parse.quote(os.environ['MATRIX_USER'])
+        userid = urllib.parse.quote(self.matrix_user)
 
         ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
 
         response = requests.put(ad_url, json.dumps(data))
+        self.__handle_error_response(response)
+
         if response.status_code != 200:
             print('Setting account data failed:', response, response.json())
 
     def get_account_data(self):
-        userid = urllib.parse.quote(os.environ['MATRIX_USER'])
+        userid = urllib.parse.quote(self.matrix_user)
 
         ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
 
         response = requests.get(ad_url)
+        self.__handle_error_response(response)
+
         if response.status_code == 200:
             return response.json()
         print(
             f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
         return None
 
+    def __handle_error_response(self, response):
+        if response.status_code == 401:
+            print("ERROR: access token is invalid or missing")
+            print("NOTE: check MATRIX_ACCESS_TOKEN or set MATRIX_PASSWORD")
+            sys.exit(2)
+
+
     def init(self):
-        self.client = AsyncClient(
-            os.environ['MATRIX_SERVER'], os.environ['MATRIX_USER'])
-        self.client.access_token = os.getenv('MATRIX_ACCESS_TOKEN')
-        self.join_on_invite = os.getenv("JOIN_ON_INVITE") is not None
-        self.owners = os.environ['BOT_OWNERS'].split(',')
-        self.get_modules()
+
+        self.matrix_user    = os.getenv('MATRIX_USER')
+        self.matrix_pass    = os.getenv('MATRIX_PASSWORD')
+        matrix_server       = os.getenv('MATRIX_SERVER') 
+        bot_owners          = os.getenv('BOT_OWNERS')
+        access_token        = os.getenv('MATRIX_ACCESS_TOKEN')
+        join_on_invite      = os.getenv('JOIN_ON_INVITE')
+
+        if matrix_server and self.matrix_user and bot_owners:
+            self.client = AsyncClient(matrix_server, self.matrix_user)
+            self.client.access_token = access_token 
+
+            if self.client.access_token is None:
+                if self.matrix_pass is None:
+                    print("Either MATRIX_ACCESS_TOKEN or MATRIX_PASSWORD need to be set")
+                    sys.exit(1)
+
+            self.join_on_invite = join_on_invite is not None
+            self.owners = bot_owners.split(',')
+            self.get_modules()
+        else:
+            print("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
+            sys.exit(1)
+
 
     def start(self):
         print(f'Starting {len(self.modules)} modules..')
@@ -241,7 +270,7 @@ class Bot:
 
     async def run(self):
         if not self.client.access_token:
-            login_response = await self.client.login(os.environ['MATRIX_PASSWORD'])
+            login_response = await self.client.login(self.matrix_pass)
 
             if isinstance(login_response, LoginError):
                 print(f"Failed to login: {login_response.message}")
