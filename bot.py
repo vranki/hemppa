@@ -12,7 +12,8 @@ import urllib.parse
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LogoutError, \
+    LoginError
 
 
 # Couple of custom exceptions
@@ -131,6 +132,9 @@ class Bot:
                 traceback.print_exc(file=sys.stderr)
 
     async def invite_cb(self, room, event):
+        room: MatrixRoom
+        event: InviteEvent
+
         if self.join_on_invite or self.is_owner(event):
             for attempt in range(3):
                 result = await self.client.join(room.room_id)
@@ -139,10 +143,10 @@ class Bot:
                           attempt, result.message,
                           )
                 else:
+                    print(f"joining room '{room.display_name}'({room.room_id}) invited by '{event.sender}'")
                     break
         else:
-            print(
-                f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
+            print(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
     def load_module(self, modulename):
         try:
@@ -237,14 +241,19 @@ class Bot:
 
     async def run(self):
         if not self.client.access_token:
-            await self.client.login(os.environ['MATRIX_PASSWORD'])
-            print("Logged in with password, access token:",
-                  self.client.access_token)
+            login_response = await self.client.login(os.environ['MATRIX_PASSWORD'])
+
+            if isinstance(login_response, LoginError):
+                print(f"Failed to login: {login_response.message}")
+                return
+
+            last_16 = self.client.access_token[-16:]
+            print(f"Logged in with password, access token: ...{last_16}")
 
         await self.client.sync()
-        for roomid in self.client.rooms:
-            print(f'Bot is on {roomid} with {len(self.client.rooms[roomid].users)} users')
-            if len(self.client.rooms[roomid].users) == 1:
+        for roomid, room in self.client.rooms.items():
+            print(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
+            if len(room.users) == 1:
                 print(f'Room {roomid} has no other users - leaving it.')
                 print(await self.client.room_leave(roomid))
 
@@ -265,6 +274,25 @@ class Bot:
         else:
             print('Client was not able to log in, check env variables!')
 
+    async def shutdown(self):
+
+        if self.client.logged_in:
+            logout = await self.client.logout()
+
+            if isinstance(logout, LogoutResponse):
+                print("Logout successful")
+                try:
+                    await self.client.close()
+                    print("Connection closed")
+                except Exception as e:
+                    print("error while closing client", e)
+
+            else:
+                logout: LogoutError
+                print(f"Logout unsuccessful. msg: {logout.message}")
+        else:
+            await self.client.client_session.close()
+
 
 bot = Bot()
 bot.init()
@@ -276,3 +304,4 @@ except KeyboardInterrupt:
     bot.bot_task.cancel()
 
 bot.stop()
+asyncio.get_event_loop().run_until_complete(bot.shutdown())
