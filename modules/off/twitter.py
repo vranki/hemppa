@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from twitterscraper import query_tweets_from_user
 
 from modules.common.pollingservice import PollingService

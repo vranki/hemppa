@@ -1,5 +1,5 @@
 from geopy.geocoders import Nominatim
-from nio import RoomMessageUnknown
+from nio import RoomMessageUnknown, AsyncClient
 from modules.common.module import BotModule
 
 

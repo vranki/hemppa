@@ -34,9 +34,12 @@ class MatrixModule(BotModule):
         return ('Runs scheduled commands')
 
     def get_settings(self):
-        return {'daily_commands': self.daily_commands}
+        data = super().get_settings()
+        data['daily_commands'] = self.daily_commands
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('daily_commands'):
             self.daily_commands = data['daily_commands']
 

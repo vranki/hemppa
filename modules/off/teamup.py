@@ -146,9 +146,13 @@ class MatrixModule(BotModule):
                     self.calendars[calid].timestamp = int(time.time())
 
     def get_settings(self):
-        return {'apikey': self.api_key or '', 'calendar_rooms': self.calendar_rooms}
+        data = super().get_settings()
+        data['apikey'] = self.api_key
+        data['calendar_rooms'] = self.calendar_rooms
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('calendar_rooms'):
             self.calendar_rooms = data['calendar_rooms']
         if data.get('apikey'):

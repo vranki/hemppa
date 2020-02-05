@@ -118,7 +118,7 @@ class Bot:
 
         moduleobject = self.modules.get(command)
 
-        if "matrix_message" in dir(moduleobject):
+        if moduleobject.enabled and ("matrix_message" in dir(moduleobject)):
             try:
                 await moduleobject.matrix_message(bot, room, event)
             except CommandRequiresAdmin:
@@ -182,11 +182,12 @@ class Bot:
         while True:
             self.pollcount = self.pollcount + 1
             for modulename, moduleobject in self.modules.items():
-                if "matrix_poll" in dir(moduleobject):
-                    try:
-                        await moduleobject.matrix_poll(bot, self.pollcount)
-                    except Exception:
-                        traceback.print_exc(file=sys.stderr)
+                if moduleobject.enabled:
+                    if "matrix_poll" in dir(moduleobject):
+                        try:
+                            await moduleobject.matrix_poll(bot, self.pollcount)
+                        except Exception:
+                            traceback.print_exc(file=sys.stderr)
             await asyncio.sleep(10)
 
     def set_account_data(self, data):
@@ -242,20 +243,24 @@ class Bot:
             self.join_on_invite = join_on_invite is not None
             self.owners = bot_owners.split(',')
             self.get_modules()
+
         else:
             print("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
             sys.exit(1)
 
 
     def start(self):
-        print(f'Starting {len(self.modules)} modules..')
+        self.load_settings(self.get_account_data())
+        enabled_modules = [module for module_name, module in self.modules.items() if module.enabled]
+        print(f'Starting {len(enabled_modules)} modules..')
         for modulename, moduleobject in self.modules.items():
-            print('Starting', modulename, '..')
-            if "matrix_start" in dir(moduleobject):
-                try:
-                    moduleobject.matrix_start(bot)
-                except Exception:
-                    traceback.print_exc(file=sys.stderr)
+            if moduleobject.enabled:
+                print('Starting', modulename, '..')
+                if "matrix_start" in dir(moduleobject):
+                    try:
+                        moduleobject.matrix_start(bot)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
 
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
@@ -312,7 +317,6 @@ class Bot:
         else:
             logout: LogoutError
             print(f"Logout unsuccessful. msg: {logout.message}")
-
 
 
 bot = Bot()
