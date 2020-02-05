@@ -25,6 +25,9 @@ class BotModule(ABC):
 
     """
 
+    def __init__(self):
+        self.enabled = False
+
     def matrix_start(self, bot):
         """Called once on startup
 
@@ -75,7 +78,7 @@ class BotModule(ABC):
         :return: a dict object that can be converted to JSON
         :rtype: dict
         """
-        pass
+        return {'enabled': self.enabled}
 
     def set_settings(self, data):
         """Load these settings. It should be the same JSON you returned in previous get_settings
@@ -83,4 +86,11 @@ class BotModule(ABC):
         :param data: a dict object containing the settings read from the account
         :type data: dict
         """
-        pass
+        if data.get('enabled'):
+            self.enabled = data['enabled']
+
+    def enable(self):
+        self.enabled = True
+
+    def disable(self):
+        self.enabled = False
