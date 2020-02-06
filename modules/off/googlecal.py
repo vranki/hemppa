@@ -22,6 +22,7 @@ from modules.common.module import BotModule
 
 class MatrixModule(BotModule):
     def matrix_start(self, bot):
+        super().matrix_start(bot)
         self.bot = bot
         self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
         self.credentials_file = "credentials.json"

@@ -9,8 +9,8 @@ from modules.common.pollingservice import PollingService
 # https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 
 class MatrixModule(PollingService):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.service_name = 'Twitter'
 
     async def poll_implementation(self, bot, account, roomid, send_messages):

@@ -4,11 +4,12 @@ from modules.common.module import BotModule
 
 class MatrixModule(BotModule):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.enable()
 
     def matrix_start(self, bot):
+        super().matrix_start(bot)
         self.starttime = datetime.now()
         
     async def matrix_message(self, bot, room, event):
