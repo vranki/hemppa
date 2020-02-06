@@ -7,8 +7,13 @@ class MatrixModule(BotModule):
     bot = None
 
     def matrix_start(self, bot):
+        super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
+
+    def matrix_stop(self, bot):
+        super().matrix_stop(bot)
+        bot.remove_callback(self.unknown_cb)
 
     async def unknown_cb(self, room, event):
         if event.msgtype != 'm.location':

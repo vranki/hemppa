@@ -53,6 +53,12 @@ class Bot:
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
+    def remove_callback(self, callback):
+        for cb_object in bot.client.event_callbacks:
+            if cb_object.func == callback:
+                print("remove callback")
+                bot.client.event_callbacks.remove(cb_object)
+
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
 
@@ -82,11 +88,10 @@ class Bot:
     def save_settings(self):
         module_settings = dict()
         for modulename, moduleobject in self.modules.items():
-            if "get_settings" in dir(moduleobject):
-                try:
-                    module_settings[modulename] = moduleobject.get_settings()
-                except Exception:
-                    traceback.print_exc(file=sys.stderr)
+            try:
+                module_settings[modulename] = moduleobject.get_settings()
+            except Exception:
+                traceback.print_exc(file=sys.stderr)
         data = {self.appid: self.version, 'module_settings': module_settings}
         self.set_account_data(data)
 
@@ -97,12 +102,11 @@ class Bot:
             return
         for modulename, moduleobject in self.modules.items():
             if data['module_settings'].get(modulename):
-                if "set_settings" in dir(moduleobject):
-                    try:
-                        moduleobject.set_settings(
-                            data['module_settings'][modulename])
-                    except Exception:
-                        traceback.print_exc(file=sys.stderr)
+                try:
+                    moduleobject.set_settings(
+                        data['module_settings'][modulename])
+                except Exception:
+                    traceback.print_exc(file=sys.stderr)
 
     async def message_cb(self, room, event):
         # Figure out the command
@@ -119,7 +123,7 @@ class Bot:
 
         moduleobject = self.modules.get(command)
 
-        if moduleobject.enabled and ("matrix_message" in dir(moduleobject)):
+        if moduleobject.enabled:
             try:
                 await moduleobject.matrix_message(bot, room, event)
             except CommandRequiresAdmin:
@@ -154,7 +158,7 @@ class Bot:
             module = importlib.import_module('modules.' + modulename)
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
-            return cls()
+            return cls(modulename)
         except ModuleNotFoundError:
             print('Module ', modulename, ' failed to load!')
             traceback.print_exc(file=sys.stderr)
@@ -184,11 +188,10 @@ class Bot:
             self.pollcount = self.pollcount + 1
             for modulename, moduleobject in self.modules.items():
                 if moduleobject.enabled:
-                    if "matrix_poll" in dir(moduleobject):
-                        try:
-                            await moduleobject.matrix_poll(bot, self.pollcount)
-                        except Exception:
-                            traceback.print_exc(file=sys.stderr)
+                    try:
+                        await moduleobject.matrix_poll(bot, self.pollcount)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
             await asyncio.sleep(10)
 
     def set_account_data(self, data):
@@ -222,15 +225,14 @@ class Bot:
             print("NOTE: check MATRIX_ACCESS_TOKEN or set MATRIX_PASSWORD")
             sys.exit(2)
 
-
     def init(self):
 
-        self.matrix_user    = os.getenv('MATRIX_USER')
-        self.matrix_pass    = os.getenv('MATRIX_PASSWORD')
-        matrix_server       = os.getenv('MATRIX_SERVER') 
-        bot_owners          = os.getenv('BOT_OWNERS')
-        access_token        = os.getenv('MATRIX_ACCESS_TOKEN')
-        join_on_invite      = os.getenv('JOIN_ON_INVITE')
+        self.matrix_user = os.getenv('MATRIX_USER')
+        self.matrix_pass = os.getenv('MATRIX_PASSWORD')
+        matrix_server = os.getenv('MATRIX_SERVER')
+        bot_owners = os.getenv('BOT_OWNERS')
+        access_token = os.getenv('MATRIX_ACCESS_TOKEN')
+        join_on_invite = os.getenv('JOIN_ON_INVITE')
 
         if matrix_server and self.matrix_user and bot_owners:
             self.client = AsyncClient(matrix_server, self.matrix_user)
@@ -256,22 +258,18 @@ class Bot:
         print(f'Starting {len(enabled_modules)} modules..')
         for modulename, moduleobject in self.modules.items():
             if moduleobject.enabled:
-                print('Starting', modulename, '..')
-                if "matrix_start" in dir(moduleobject):
-                    try:
-                        moduleobject.matrix_start(bot)
-                    except Exception:
-                        traceback.print_exc(file=sys.stderr)
+                try:
+                    moduleobject.matrix_start(bot)
+                except Exception:
+                    traceback.print_exc(file=sys.stderr)
 
     def stop(self):
         print(f'Stopping {len(self.modules)} modules..')
         for modulename, moduleobject in self.modules.items():
-            print('Stopping', modulename, '..')
-            if "matrix_stop" in dir(moduleobject):
-                try:
-                    moduleobject.matrix_stop(bot)
-                except Exception:
-                    traceback.print_exc(file=sys.stderr)
+            try:
+                moduleobject.matrix_stop(bot)
+            except Exception:
+                traceback.print_exc(file=sys.stderr)
 
     async def run(self):
         if not self.client.access_token:

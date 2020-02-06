@@ -5,7 +5,8 @@ from modules.common.module import BotModule
 
 
 class PollingService(BotModule):
-    def __init__(self):
+    def __init__(self, name):
+        super().__init__(name)
         self.known_ids = set()
         self.account_rooms = dict()  # Roomid -> [account, account..]
         self.next_poll_time = dict()  # Roomid -> datetime, None = not polled yet
