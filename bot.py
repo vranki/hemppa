@@ -12,7 +12,8 @@ import urllib.parse
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LogoutError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LogoutError, \
+    LoginError
 
 
 # Couple of custom exceptions
@@ -266,7 +267,12 @@ class Bot:
 
     async def run(self):
         if not self.client.access_token:
-            await self.client.login(self.matrix_pass)
+            login_response = await self.client.login(self.matrix_pass)
+
+            if isinstance(login_response, LoginError):
+                print(f"Failed to login: {login_response.message}")
+                return
+
             last_16 = self.client.access_token[-16:]
             print(f"Logged in with password, access token: ...{last_16}")
 
@@ -296,20 +302,22 @@ class Bot:
 
     async def shutdown(self):
 
-        logout = await self.client.logout()
+        if self.client.logged_in:
+            logout = await self.client.logout()
 
-        if isinstance(logout, LogoutResponse):
-            print("Logout successful")
-            try:
-                await self.client.close()
-                print("Connection closed")
-            except Exception as e:
-                print("error while closing client", e)
+            if isinstance(logout, LogoutResponse):
+                print("Logout successful")
+                try:
+                    await self.client.close()
+                    print("Connection closed")
+                except Exception as e:
+                    print("error while closing client", e)
 
+            else:
+                logout: LogoutError
+                print(f"Logout unsuccessful. msg: {logout.message}")
         else:
-            logout: LogoutError
-            print(f"Logout unsuccessful. msg: {logout.message}")
-
+            await self.client.client_session.close()
 
 bot = Bot()
 bot.init()
