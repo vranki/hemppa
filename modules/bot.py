@@ -4,6 +4,10 @@ from modules.common.module import BotModule
 
 class MatrixModule(BotModule):
 
+    def __init__(self):
+        super().__init__()
+        self.enable()
+
     def matrix_start(self, bot):
         self.starttime = datetime.now()
         
@@ -22,6 +26,14 @@ class MatrixModule(BotModule):
                 await self.stats(bot, room)
             elif args[1] == 'leave':
                 await self.leave(bot, room, event)
+            elif args[1] == 'modules':
+                await self.show_modules(bot, room)
+
+        elif len(args) == 3:
+            if args[1] == 'enable':
+                await self.enable_module(bot, room, event, args[2])
+            elif args[1] == 'disable':
+                await self.disable_module(bot, room, event, args[2])
 
         else:
             await bot.send_text(room, 'Unknown command, sorry.')
@@ -72,5 +84,35 @@ class MatrixModule(BotModule):
         print(f'{event.sender} commanded bot to quit, so quitting..')
         bot.bot_task.cancel()
 
+    async def enable_module(self, bot, room, event, module_name):
+        bot.must_be_admin(room, event)
+        print(f"asked to enable {module_name}")
+        if bot.modules.get(module_name):
+            module = bot.modules.get(module_name)
+            module.enable()
+            module.matrix_start(bot)
+            bot.save_settings()
+            await bot.send_text(room, f"module {module_name} enabled")
+        else:
+            await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
+
+    async def disable_module(self, bot, room, event, module_name):
+        bot.must_be_admin(room, event)
+        print(f"asked to disable {module_name}")
+        if bot.modules.get(module_name):
+            module = bot.modules.get(module_name)
+            module.disable()
+            module.matrix_stop(bot)
+            bot.save_settings()
+            await bot.send_text(room, f"module {module_name} disabled")
+        else:
+            await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
+
+
+    async def show_modules(self, bot, room):
+        await bot.send_text(room, "Modules:\n")
+        for modulename, module in bot.modules.items():
+            await bot.send_text(room, f"Name: {modulename:20s} Enabled: {module.enabled}")
+
     def help(self):
-        return 'Bot management commands'
+        return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'

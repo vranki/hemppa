@@ -146,9 +146,12 @@ class MatrixModule(BotModule):
         return
 
     def get_settings(self):
-        return {"status": self.status}
+        data = super().get_settings()
+        data['status'] = self.status
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get("status"):
             self.status = data["status"]
 
