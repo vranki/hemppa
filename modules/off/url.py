@@ -30,6 +30,7 @@ class MatrixModule(BotModule):
         """
         Register callback for all RoomMessageText events on startup
         """
+        super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.text_cb, RoomMessageText)
 

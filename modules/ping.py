@@ -15,7 +15,7 @@ class MatrixModule(BotModule):
             # print ("adding trailing https")
             url = "https://" + url
 
-        print(url)
+        print("ping:", url)
 
         start = timer()
         try:

@@ -25,8 +25,9 @@ class BotModule(ABC):
 
     """
 
-    def __init__(self):
+    def __init__(self, name):
         self.enabled = False
+        self.name = name
 
     def matrix_start(self, bot):
         """Called once on startup
@@ -34,7 +35,7 @@ class BotModule(ABC):
         :param bot: a reference to the bot
         :type bot: Bot
         """
-        pass
+        print('Starting', self.name, '..')
 
     @abstractmethod
     async def matrix_message(self, bot, room, event):
@@ -55,7 +56,7 @@ class BotModule(ABC):
         :param bot: a reference to the bot
         :type bot: Bot
         """
-        pass
+        print('Stopping', self.name, '..')
 
     async def matrix_poll(self, bot, pollcount):
         """Called every 10 seconds

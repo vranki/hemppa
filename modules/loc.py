@@ -7,6 +7,7 @@ class MatrixModule(BotModule):
     bot = None
 
     def matrix_start(self, bot):
+        super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
 
