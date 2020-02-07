@@ -1,11 +1,15 @@
-FROM python:3
+FROM python:3.7-slim
 
 WORKDIR /bot
-RUN pip install pipenv && rm -rf /root/.cache
+
 COPY Pipfile .
-RUN pipenv install --pre && rm -rf /root/.cache
+RUN pip install pipenv && \
+    pipenv install --pre && \ 
+    pipenv install --deploy --system && \
+    rm -r /root/.cache/* && \
+    rm -r /root/.local/*
 
 COPY bot.py *.json *.pickle /bot/
 COPY modules modules
 
-CMD [ "pipenv", "run", "python", "-u", "./bot.py" ]
+CMD [ "python", "-u", "./bot.py" ]
