@@ -3,12 +3,14 @@ from datetime import datetime
 
 from pyteamup import Calendar
 
+
 #
 # TeamUp calendar notifications
 #
+from modules.common.module import BotModule
 
 
-class MatrixModule:
+class MatrixModule(BotModule):
     api_key = None
     calendar_rooms = dict()  # Roomid -> [calid, calid..]
     calendars = dict()  # calid -> Calendar
@@ -87,7 +89,7 @@ class MatrixModule:
                 await bot.send_text(room, 'Api key set')
 
     def help(self):
-        return('Polls teamup calendar.')
+        return ('Polls teamup calendar.')
 
     async def poll_all_calendars(self, bot):
         delete_rooms = []
@@ -102,7 +104,7 @@ class MatrixModule:
                         await bot.send_text(bot.get_room_by_id(roomid), 'Calendar: ' + self.eventToString(event))
             else:
                 delete_rooms.append(roomid)
-                
+
         for roomid in delete_rooms:
             self.calendar_rooms.pop(roomid, None)
 
@@ -115,7 +117,7 @@ class MatrixModule:
             return datetime.strptime(dts, '%Y-%m-%dT%H:%M:%S')
         except ValueError:
             pos = len(dts) - 3
-            dts = dts[:pos] + dts[pos+1:]
+            dts = dts[:pos] + dts[pos + 1:]
             return datetime.strptime(dts, '%Y-%m-%dT%H:%M:%S%z')
 
     def eventToString(self, event):
@@ -123,7 +125,7 @@ class MatrixModule:
         if len(event['title']) == 0:
             event['title'] = '(empty name)'
 
-        if(event['delete_dt']):
+        if (event['delete_dt']):
             s = event['title'] + ' deleted.'
         else:
             s = event['title'] + " " + (event['notes'] or '') + \
@@ -144,9 +146,13 @@ class MatrixModule:
                     self.calendars[calid].timestamp = int(time.time())
 
     def get_settings(self):
-        return {'apikey': self.api_key or '',  'calendar_rooms': self.calendar_rooms}
+        data = super().get_settings()
+        data['apikey'] = self.api_key
+        data['calendar_rooms'] = self.calendar_rooms
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('calendar_rooms'):
             self.calendar_rooms = data['calendar_rooms']
         if data.get('apikey'):

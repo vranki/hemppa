@@ -9,6 +9,7 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+
 #
 # Google calendar notifications
 #
@@ -16,16 +17,21 @@ from googleapiclient.discovery import build
 # It's created on first run (run from console!) and
 # can be copied to another computer.
 #
+from modules.common.module import BotModule
 
 
-class MatrixModule:
-    def matrix_start(self, bot):
-        self.bot = bot
-        self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+class MatrixModule(BotModule):
+    def __init__(self, name):
+        super().__init__(name)
         self.credentials_file = "credentials.json"
+        self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+        self.bot = None
         self.service = None
         self.calendar_rooms = dict()  # Contains room_id -> [calid, calid] ..
 
+    def matrix_start(self, bot):
+        super().matrix_start(bot)
+        self.bot = bot
         creds = None
 
         if not os.path.exists(self.credentials_file) or os.path.getsize(self.credentials_file) == 0:
@@ -41,8 +47,7 @@ class MatrixModule:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_file, self.SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, self.SCOPES)
                 # urn:ietf:wg:oauth:2.0:oob
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
@@ -135,7 +140,8 @@ class MatrixModule:
     async def send_events(self, bot, events, room):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>', f'{self.parse_date(start)} {event["summary"]}')
+            await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>',
+                                f'{self.parse_date(start)} {event["summary"]}')
 
     def list_upcoming(self, calid):
         startTime = datetime.utcnow()
@@ -160,12 +166,15 @@ class MatrixModule:
         return events_result.get('items', [])
 
     def help(self):
-        return('Google calendar. Lists 10 next events by default. today = list today\'s events.')
+        return ('Google calendar. Lists 10 next events by default. today = list today\'s events.')
 
     def get_settings(self):
-        return {'calendar_rooms': self.calendar_rooms}
+        data = super().get_settings()
+        data['calendar_rooms'] = self.calendar_rooms
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('calendar_rooms'):
             self.calendar_rooms = data['calendar_rooms']
 

@@ -1,13 +1,19 @@
 from geopy.geocoders import Nominatim
-from nio import RoomMessageUnknown
+from nio import RoomMessageUnknown, AsyncClient
+from modules.common.module import BotModule
 
 
-class MatrixModule:
+class MatrixModule(BotModule):
     bot = None
 
     def matrix_start(self, bot):
+        super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
+
+    def matrix_stop(self, bot):
+        super().matrix_stop(bot)
+        bot.remove_callback(self.unknown_cb)
 
     async def unknown_cb(self, room, event):
         if event.msgtype != 'm.location':
@@ -29,7 +35,7 @@ class MatrixModule:
         float(latlon[1])
 
         osm_link = 'https://www.openstreetmap.org/?mlat=' + \
-            latlon[0] + "&mlon=" + latlon[1]
+                   latlon[0] + "&mlon=" + latlon[1]
 
         plain = sender + ' 🚩 ' + osm_link
         html = f'{sender} 🚩 <a href={osm_link}>{location_text}</a>'
@@ -58,4 +64,4 @@ class MatrixModule:
                 await bot.send_text(room, "Can't find " + query + " on map!")
 
     def help(self):
-        return('Search for locations and display Matrix location events as OSM links')
+        return 'Search for locations and display Matrix location events as OSM links'

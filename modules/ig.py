@@ -1,16 +1,18 @@
-import traceback
 import sys
+import traceback
 from datetime import datetime, timedelta
 from random import randrange
-from modules.common.pollingservice import PollingService
 
 from igramscraper.exception.instagram_not_found_exception import \
     InstagramNotFoundException
 from igramscraper.instagram import Instagram
 
+from modules.common.pollingservice import PollingService
+
+
 class MatrixModule(PollingService):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.instagram = Instagram()
         self.service_name = 'Instagram'
 
@@ -21,12 +23,14 @@ class MatrixModule(PollingService):
             for media in medias:
                 if send_messages:
                     if media.identifier not in self.known_ids:
-                        await bot.send_html(bot.get_room_by_id(roomid), f'<a href="{media.link}">Instagram {account}:</a> {media.caption}', f'{account}: {media.caption} {media.link}')
+                        await bot.send_html(bot.get_room_by_id(roomid),
+                                            f'<a href="{media.link}">Instagram {account}:</a> {media.caption}',
+                                            f'{account}: {media.caption} {media.link}')
                 self.known_ids.add(media.identifier)
 
         except InstagramNotFoundException:
             print('ig error: there is ', account,
-                    ' account that does not exist - deleting from room')
+                  ' account that does not exist - deleting from room')
             self.account_rooms[roomid].remove(account)
             bot.save_settings()
         except Exception:

@@ -1,7 +1,9 @@
 import urllib.request
 
+from modules.common.module import BotModule
 
-class MatrixModule:
+
+class MatrixModule(BotModule):
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 2:
@@ -18,4 +20,4 @@ class MatrixModule:
             await bot.send_text(room, 'Usage: !taf <icao code>')
 
     def help(self):
-        return('Taf data access (usage: !taf <icao code>)')
+        return ('Taf data access (usage: !taf <icao code>)')
