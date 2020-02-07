@@ -123,17 +123,22 @@ class Bot:
 
         moduleobject = self.modules.get(command)
 
-        if moduleobject.enabled:
-            try:
-                await moduleobject.matrix_message(bot, room, event)
-            except CommandRequiresAdmin:
-                await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
-            except CommandRequiresOwner:
-                await self.send_text(room, f'Sorry, only bot owner can run that command.')
-            except Exception:
-                await self.send_text(room,
-                                     f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
-                traceback.print_exc(file=sys.stderr)
+        if moduleobject is not None:
+            if moduleobject.enabled:
+                try:
+                    await moduleobject.matrix_message(bot, room, event)
+                except CommandRequiresAdmin:
+                    await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
+                except CommandRequiresOwner:
+                    await self.send_text(room, f'Sorry, only bot owner can run that command.')
+                except Exception:
+                    await self.send_text(room,
+                                         f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                    traceback.print_exc(file=sys.stderr)
+        else:
+            print(f"Unknown command: {command}")
+            await self.send_text(room, f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
+
 
     async def invite_cb(self, room, event):
         room: MatrixRoom
