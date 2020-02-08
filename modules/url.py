@@ -100,11 +100,11 @@ class MatrixModule(BotModule):
         try:
             r = httpx.get(url)
         except Exception as e:
-            print(f"Failed fetching url {url}. Error: {e}")
+            self.logger.error(f"Failed fetching url {url}. Error: {e}")
             return (title, description)
 
         if r.status_code != 200:
-            print(f"Failed fetching url {url}. Status code: {r.status_code}")
+            self.logger.info(f"Failed fetching url {url}. Status code: {r.status_code}")
             return (title, description)
 
         # try parse and get the title
@@ -115,7 +115,7 @@ class MatrixModule(BotModule):
             if descr_tag:
                 description = descr_tag.get("content", None)
         except Exception as e:
-            print(f"Failed parsing response from url {url}. Error: {e}")
+            self.logger.error(f"Failed parsing response from url {url}. Error: {e}")
             return (title, description)
 
         return (title, description)

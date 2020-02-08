@@ -1,5 +1,6 @@
 from geopy.geocoders import Nominatim
-from nio import RoomMessageUnknown, AsyncClient
+from nio import RoomMessageUnknown
+
 from modules.common.module import BotModule
 
 
@@ -50,9 +51,9 @@ class MatrixModule(BotModule):
         else:
             query = event.body[4:]
             geolocator = Nominatim(user_agent=bot.appid)
-            print('loc: looking up', query, '..')
+            self.logger.info('loc: looking up %s ..', query)
             location = geolocator.geocode(query)
-            print('loc rx', location)
+            self.logger.info('loc rx %s', location)
             if location:
                 locationmsg = {
                     "body": str(location.address),

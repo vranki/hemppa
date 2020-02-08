@@ -48,7 +48,7 @@ class MatrixModule(BotModule):
 
     async def leave(self, bot, room, event):
         bot.must_be_admin(room, event)
-        print(f'{event.sender} asked bot to leave room {room.room_id}')
+        self.logger.info(f'{event.sender} asked bot to leave room {room.room_id}')
         await bot.send_text(room, f'By your command.')
         await bot.client.room_leave(room.room_id)
 
@@ -89,13 +89,12 @@ class MatrixModule(BotModule):
     async def quit(self, bot, room, event):
         bot.must_be_admin(room, event)
         await bot.send_text(room, f'Quitting, as requested')
-        print(f'{event.sender} commanded bot to quit, so quitting..')
+        self.logger.info(f'{event.sender} commanded bot to quit, so quitting..')
         bot.bot_task.cancel()
 
     async def enable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
-        print(f"asked to enable {module_name}")
-
+        self.logger.info(f"asked to enable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             module.enable()
@@ -107,8 +106,7 @@ class MatrixModule(BotModule):
 
     async def disable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
-        print(f"asked to disable {module_name}")
-
+        self.logger.info(f"asked to disable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             if module.can_be_disabled:
