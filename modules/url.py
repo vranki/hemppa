@@ -100,7 +100,7 @@ class MatrixModule:
         # try parse and get the title
         try:
             soup = BeautifulSoup(r.text, "html.parser")
-            title = soup.title.string
+            title = soup.title.string.strip()
             descr_tag = soup.find("meta", attrs={"name": "description"})
             if descr_tag:
                 description = descr_tag.get("content", None)
