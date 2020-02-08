@@ -137,8 +137,8 @@ class Bot:
                     traceback.print_exc(file=sys.stderr)
         else:
             print(f"Unknown command: {command}")
-            await self.send_text(room, f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
-
+            await self.send_text(room,
+                                 f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
 
     async def invite_cb(self, room, event):
         room: MatrixRoom
@@ -155,7 +155,8 @@ class Bot:
                     print(f"joining room '{room.display_name}'({room.room_id}) invited by '{event.sender}'")
                     break
         else:
-            print(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
+            print(
+                f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
     def load_module(self, modulename):
         try:
@@ -241,7 +242,7 @@ class Bot:
 
         if matrix_server and self.matrix_user and bot_owners:
             self.client = AsyncClient(matrix_server, self.matrix_user)
-            self.client.access_token = access_token 
+            self.client.access_token = access_token
 
             if self.client.access_token is None:
                 if self.matrix_pass is None:
@@ -255,7 +256,6 @@ class Bot:
         else:
             print("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
             sys.exit(1)
-
 
     def start(self):
         self.load_settings(self.get_account_data())
@@ -329,6 +329,7 @@ class Bot:
                 print(f"Logout unsuccessful. msg: {logout.message}")
         else:
             await self.client.client_session.close()
+
 
 bot = Bot()
 bot.init()

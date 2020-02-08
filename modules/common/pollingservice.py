@@ -94,22 +94,23 @@ class PollingService(BotModule):
                 bot.must_be_admin(room, event)
 
                 account = args[2]
-                print(
-                    f'Removing {self.service_name} account {account} from room id {room.room_id}')
+                print(f'Removing {self.service_name} account {account} from room id {room.room_id}')
 
                 if self.account_rooms.get(room.room_id):
                     self.account_rooms[room.room_id].remove(account)
 
-                print(
-                    f'{self.service_name} accounts now for this room {self.account_rooms.get(room.room_id)}')
+                print(f'{self.service_name} accounts now for this room {self.account_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 await bot.send_text(room, f'Removed {self.service_name} account from this room')
 
     def get_settings(self):
-        return {'account_rooms': self.account_rooms}
+        data = super().get_settings()
+        data['account_rooms'] = self.account_rooms
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('account_rooms'):
             self.account_rooms = data['account_rooms']
 
