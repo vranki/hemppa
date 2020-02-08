@@ -33,7 +33,7 @@ class PollingService(BotModule):
                     for account in accounts:
                         await self.poll_account(bot, account, roomid, send_messages)
             else:
-                print(f'Bot is no longer in room {roomid} - deleting it from {self.service_name} room list')
+                self.logger.warning(f'Bot is no longer in room {roomid} - deleting it from {self.service_name} room list')
                 delete_rooms.append(roomid)
         for roomid in delete_rooms:
             self.account_rooms.pop(roomid, None)
@@ -62,7 +62,7 @@ class PollingService(BotModule):
                                     f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
-                print(f'{self.service_name} force polling requested by {event.sender}')
+                self.logger.info(f'{self.service_name} force polling requested by {event.sender}')
                 # Faking next poll times to force poll
                 for roomid in self.account_rooms:
                     self.next_poll_time[roomid] = datetime.now() - timedelta(hours=1)
@@ -77,7 +77,7 @@ class PollingService(BotModule):
                 bot.must_be_admin(room, event)
 
                 account = args[2]
-                print(f'Adding {self.service_name} account {account} to room id {room.room_id}')
+                self.logger.info(f'Adding {self.service_name} account {account} to room id {room.room_id}')
 
                 if self.account_rooms.get(room.room_id):
                     if account not in self.account_rooms[room.room_id]:
@@ -94,14 +94,12 @@ class PollingService(BotModule):
                 bot.must_be_admin(room, event)
 
                 account = args[2]
-                print(
-                    f'Removing {self.service_name} account {account} from room id {room.room_id}')
+                self.logger.info(f'Removing {self.service_name} account {account} from room id {room.room_id}')
 
                 if self.account_rooms.get(room.room_id):
                     self.account_rooms[room.room_id].remove(account)
 
-                print(
-                    f'{self.service_name} accounts now for this room {self.account_rooms.get(room.room_id)}')
+                self.logger.info(f'{self.service_name} accounts now for this room {self.account_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 await bot.send_text(room, f'Removed {self.service_name} account from this room')

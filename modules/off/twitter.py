@@ -16,7 +16,7 @@ class MatrixModule(PollingService):
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:
             tweets = query_tweets_from_user(account, limit=1)
-            print(f'Polling twitter account {account} - got {len(tweets)} tweets')
+            self.logger.info(f'Polling twitter account {account} - got {len(tweets)} tweets')
             for tweet in tweets:
                 if tweet.tweet_id not in self.known_ids:
                     if send_messages:
@@ -25,5 +25,5 @@ class MatrixModule(PollingService):
                                             f'Twitter {account}: {tweet.text} - https://twitter.com{tweet.tweet_url}')
                 self.known_ids.add(tweet.tweet_id)
         except Exception:
-            print('Polling twitter account failed:')
+            self.logger.error('Polling twitter account failed:')
             traceback.print_exc(file=sys.stderr)

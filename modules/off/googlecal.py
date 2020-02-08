@@ -9,7 +9,6 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-
 #
 # Google calendar notifications
 #
@@ -37,10 +36,10 @@ class MatrixModule(BotModule):
         if os.path.exists('token.pickle'):
             with open('token.pickle', 'rb') as token:
                 creds = pickle.load(token)
-                print('Loaded existing pickle file')
+                self.logger.info('Loaded existing pickle file')
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
-            print('No credentials or credentials not valid!')
+            self.logger.warn('No credentials or credentials not valid!')
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
@@ -51,19 +50,17 @@ class MatrixModule(BotModule):
             # Save the credentials for the next run
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
-                print('Pickle saved')
+                self.logger.info('Pickle saved')
 
         self.service = build('calendar', 'v3', credentials=creds)
 
         try:
-            calendar_list = self.service.calendarList().list().execute()[
-                'items']
-            print(
-                f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
+            calendar_list = self.service.calendarList().list().execute()['items']
+            self.logger.info(f'Google calendar set up successfully with access to {len(calendar_list)} calendars:\n')
             for calendar in calendar_list:
-                print(calendar['summary'] + ' - ' + calendar['id'])
+                self.logger.info(f"{calendar['summary']} - + {calendar['id']}")
         except Exception:
-            print('Getting calendar list failed!')
+            self.logger.error('Getting calendar list failed!')
 
     async def matrix_message(self, bot, room, event):
         if not self.service:
@@ -76,7 +73,7 @@ class MatrixModule(BotModule):
         if len(args) == 2:
             if args[1] == 'today':
                 for calid in calendars:
-                    print('Listing events in cal', calid)
+                    self.logger.info(f'Listing events in cal {calid}')
                     events = events + self.list_today(calid)
             if args[1] == 'list':
                 await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
@@ -87,7 +84,7 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
 
                 calid = args[2]
-                print(f'Adding calendar {calid} to room id {room.room_id}')
+                self.logger.info(f'Adding calendar {calid} to room id {room.room_id}')
 
                 if self.calendar_rooms.get(room.room_id):
                     if calid not in self.calendar_rooms[room.room_id]:
@@ -98,8 +95,7 @@ class MatrixModule(BotModule):
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
 
-                print(
-                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                self.logger.info(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
 
@@ -110,13 +106,12 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
 
                 calid = args[2]
-                print(f'Removing calendar {calid} from room id {room.room_id}')
+                self.logger.info(f'Removing calendar {calid} from room id {room.room_id}')
 
                 if self.calendar_rooms.get(room.room_id):
                     self.calendar_rooms[room.room_id].remove(calid)
 
-                print(
-                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                self.logger.info(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
 
@@ -125,14 +120,14 @@ class MatrixModule(BotModule):
 
         else:
             for calid in calendars:
-                print('Listing events in cal', calid)
+                self.logger.info(f'Listing events in cal {calid}')
                 events = events + self.list_upcoming(calid)
 
         if len(events) > 0:
-            print(f'Found {len(events)} events')
+            self.logger.info(f'Found {len(events)} events')
             await self.send_events(bot, events, room)
         else:
-            print(f'No events found')
+            self.logger.info(f'No events found')
             await bot.send_text(room, 'No events found, try again later :)')
 
     async def send_events(self, bot, events, room):
@@ -152,19 +147,18 @@ class MatrixModule(BotModule):
 
     def list_today(self, calid):
         startTime = datetime.utcnow()
-        startTime = startTime.replace(
-            hour=0, minute=0, second=0, microsecond=0)
+        startTime = startTime.replace(hour=0, minute=0, second=0, microsecond=0)
         endTime = startTime + timedelta(hours=24)
         now = startTime.isoformat() + 'Z'
         end = endTime.isoformat() + 'Z'
-        print('Looking for events between', now, end)
+        self.logger.info(f'Looking for events between {now} {end}')
         events_result = self.service.events().list(calendarId=calid, timeMin=now,
                                                    timeMax=end, maxResults=10, singleEvents=True,
                                                    orderBy='startTime').execute()
         return events_result.get('items', [])
 
     def help(self):
-        return ('Google calendar. Lists 10 next events by default. today = list today\'s events.')
+        return 'Google calendar. Lists 10 next events by default. today = list today\'s events.'
 
     def get_settings(self):
         data = super().get_settings()

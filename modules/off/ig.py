@@ -19,7 +19,7 @@ class MatrixModule(PollingService):
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:
             medias = self.instagram.get_medias(account, 5)
-            print(f'Polling instagram account {account} for room {roomid} - got {len(medias)} posts.')
+            self.logger.info(f'Polling instagram account {account} for room {roomid} - got {len(medias)} posts.')
             for media in medias:
                 if send_messages:
                     if media.identifier not in self.known_ids:
@@ -29,12 +29,11 @@ class MatrixModule(PollingService):
                 self.known_ids.add(media.identifier)
 
         except InstagramNotFoundException:
-            print('ig error: there is ', account,
-                  ' account that does not exist - deleting from room')
+            self.logger.error(f"{account} does not exist - deleting from room")
             self.account_rooms[roomid].remove(account)
             bot.save_settings()
         except Exception:
-            print('Polling instagram account failed:')
+            self.logger.error('Polling instagram account failed:')
             traceback.print_exc(file=sys.stderr)
 
         polldelay = timedelta(minutes=30 + randrange(30))
