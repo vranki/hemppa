@@ -3,13 +3,14 @@
 import asyncio
 import glob
 import importlib
-import json
+import yaml
 import os
 import re
 import sys
 import traceback
 import urllib.parse
 import logging
+import logging.config
 from importlib import reload
 
 import requests
@@ -46,13 +47,19 @@ class Bot:
         self.logger.debug("Initialized")
 
     def initializeLogger(self):
-        log_format = '%(levelname)s - %(name)s - %(message)s'
+
+        if os.path.exists('config/logging.yml'):
+            with open('config/logging.yml') as f:
+                config = yaml.load(f, Loader=yaml.Loader)
+                logging.config.dictConfig(config)
+        else:
+            log_format = '%(levelname)s - %(name)s - %(message)s'
+            logging.basicConfig(format=log_format)
+
         if self.debug:
             logging.root.setLevel(logging.DEBUG)
         else:
             logging.root.setLevel(logging.INFO)
-
-        logging.basicConfig(format=log_format)
 
     async def send_text(self, room, body):
         msg = {
@@ -73,7 +80,7 @@ class Bot:
     def remove_callback(self, callback):
         for cb_object in bot.client.event_callbacks:
             if cb_object.func == callback:
-                print("remove callback")
+                self.logger.info("remove callback")
                 bot.client.event_callbacks.remove(cb_object)
 
     def get_room_by_id(self, room_id):
