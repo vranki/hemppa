@@ -27,7 +27,8 @@ class BotModule(ABC):
     """
 
     def __init__(self, name):
-        self.enabled = False
+        self.enabled = True
+        self.can_be_disabled = True
         self.name = name
 
     def matrix_start(self, bot):
@@ -80,7 +81,7 @@ class BotModule(ABC):
         :return: a dict object that can be converted to JSON
         :rtype: dict
         """
-        return {'enabled': self.enabled}
+        return {'enabled': self.enabled, 'can_be_disabled': self.can_be_disabled}
 
     def set_settings(self, data):
         """Load these settings. It should be the same JSON you returned in previous get_settings
@@ -88,8 +89,10 @@ class BotModule(ABC):
         :param data: a dict object containing the settings read from the account
         :type data: dict
         """
-        if data.get('enabled'):
+        if data.get('enabled') is not None:
             self.enabled = data['enabled']
+        if data.get('can_be_disabled') is not None:
+            self.can_be_disabled = data['can_be_disabled']
 
     def enable(self):
         self.enabled = True

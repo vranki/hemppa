@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from modules.common.module import BotModule
 
 
@@ -6,7 +7,8 @@ class MatrixModule(BotModule):
 
     def __init__(self, name):
         super().__init__(name)
-        self.enable()
+        self.starttime = None
+        self.can_be_disabled = False
 
     def matrix_start(self, bot):
         super().matrix_start(bot)
@@ -15,6 +17,7 @@ class MatrixModule(BotModule):
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 2:
+
             if args[1] == 'quit':
                 await self.quit(bot, room, event)
             elif args[1] == 'version':
@@ -88,6 +91,7 @@ class MatrixModule(BotModule):
     async def enable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
         print(f"asked to enable {module_name}")
+
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             module.enable()
@@ -100,15 +104,18 @@ class MatrixModule(BotModule):
     async def disable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
         print(f"asked to disable {module_name}")
+
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
-            module.disable()
-            module.matrix_stop(bot)
-            bot.save_settings()
-            await bot.send_text(room, f"module {module_name} disabled")
+            if module.can_be_disabled:
+                module.disable()
+                module.matrix_stop(bot)
+                bot.save_settings()
+                await bot.send_text(room, f"module {module_name} disabled")
+            else:
+                await bot.send_text(room, f"module {module_name} cannot be disabled")
         else:
             await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
-
 
     async def show_modules(self, bot, room):
         await bot.send_text(room, "Modules:\n")
