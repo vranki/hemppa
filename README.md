@@ -25,6 +25,9 @@ Bot management commands.
 * !bot reload - reload all bot modules  (Must be done as bot owner)
 * !bot stats - show statistics on matrix users seen by bot
 * !bot leave - ask bot to leave this room (Must be done as admin in room)
+* !bot modules - list all modules including enabled status
+* !bot enable [module] - enable module (Must be done as admin in room)
+* !bot disable [module] - disable module (Must be done as admin in room)
 
 ### Help
 
