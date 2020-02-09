@@ -105,9 +105,12 @@ class PollingService(BotModule):
                 await bot.send_text(room, f'Removed {self.service_name} account from this room')
 
     def get_settings(self):
-        return {'account_rooms': self.account_rooms}
+        data = super().get_settings()
+        data['account_rooms'] = self.account_rooms
+        return data
 
     def set_settings(self, data):
+        super().set_settings(data)
         if data.get('account_rooms'):
             self.account_rooms = data['account_rooms']
 

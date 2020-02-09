@@ -4,7 +4,7 @@ WORKDIR /bot
 
 COPY Pipfile .
 RUN pip install pipenv && \
-    pipenv install --pre && \ 
+    pipenv install --pre && \
     pipenv install --deploy --system && \
     rm -r /root/.cache/* && \
     rm -r /root/.local/*
