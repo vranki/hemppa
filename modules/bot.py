@@ -121,9 +121,8 @@ class MatrixModule(BotModule):
     async def show_modules(self, bot, room):
         await bot.send_text(room, "Modules:\n")
         for modulename, module in collections.OrderedDict(sorted(bot.modules.items())).items():
-            module_message = f"Name: {modulename}\n"\
-                             f"Enabled: {module.enabled} (Can be disabled: {module.can_be_disabled})\n"\
-                             f"Description: {module.help()}\n"
+            state = 'Enabled' if module.enabled else 'Disabled'
+            module_message = f"{state}: {modulename} - {module.help()}"
             await bot.send_text(room, module_message)
 
     def help(self):
