@@ -10,6 +10,9 @@ RUN pip install pipenv && \
     rm -r /root/.local/*
 
 COPY bot.py *.json *.pickle /bot/
+COPY config config
 COPY modules modules
+
+VOLUME /bot/config
 
 CMD [ "python", "-u", "./bot.py" ]
