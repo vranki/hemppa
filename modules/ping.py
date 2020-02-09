@@ -1,5 +1,6 @@
 from timeit import default_timer as timer
 from urllib.request import urlopen
+
 from modules.common.module import BotModule
 
 
@@ -12,10 +13,10 @@ class MatrixModule(BotModule):
 
         # check url
         if not (url.startswith('http://') or url.startswith('https://')):
-            # print ("adding trailing https")
+            self.logger.debug("adding trailing https")
             url = "https://" + url
 
-        print("ping:", url)
+        self.logger.info("ping: %s", url)
 
         start = timer()
         try:
@@ -25,7 +26,7 @@ class MatrixModule(BotModule):
 
         except Exception as e:
             await bot.send_text(room, "Ping failed: " + str(e))
-            print("Error: " + str(e))
+            self.logger.error(str(e))
             return False
 
         end = timer()

@@ -13,6 +13,10 @@ services:
       - MATRIX_SERVER
       - JOIN_ON_INVITE
       - BOT_OWNERS
+      - DEBUG
     volumes:
+      - ${PWD}/config/:/bot/config
       - ${PWD}/credentials.json:/bot/credentials.json
       - ${PWD}/token.pickle:/bot/token.pickle
+
+    stop_signal: SIGINT

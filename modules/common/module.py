@@ -1,4 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
+
 from nio import RoomMessageText, MatrixRoom
 
 
@@ -28,6 +30,7 @@ class BotModule(ABC):
     def __init__(self, name):
         self.enabled = False
         self.name = name
+        self.logger = logging.getLogger("module " + self.name)
 
     def matrix_start(self, bot):
         """Called once on startup
@@ -35,7 +38,7 @@ class BotModule(ABC):
         :param bot: a reference to the bot
         :type bot: Bot
         """
-        print('Starting', self.name, '..')
+        self.logger.info('Starting..')
 
     @abstractmethod
     async def matrix_message(self, bot, room, event):
@@ -56,7 +59,7 @@ class BotModule(ABC):
         :param bot: a reference to the bot
         :type bot: Bot
         """
-        print('Stopping', self.name, '..')
+        self.logger.info('Stopping..')
 
     async def matrix_poll(self, bot, pollcount):
         """Called every 10 seconds

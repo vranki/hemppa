@@ -3,7 +3,6 @@ from datetime import datetime
 
 from pyteamup import Calendar
 
-
 #
 # TeamUp calendar notifications
 #
@@ -48,7 +47,7 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
 
                 calid = args[2]
-                print(f'Adding calendar {calid} to room id {room.room_id}')
+                self.logger.info(f'Adding calendar {calid} to room id {room.room_id}')
 
                 if self.calendar_rooms.get(room.room_id):
                     if calid not in self.calendar_rooms[room.room_id]:
@@ -59,8 +58,7 @@ class MatrixModule(BotModule):
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
 
-                print(
-                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                self.logger.info(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 self.setup_calendars()
@@ -69,13 +67,12 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
 
                 calid = args[2]
-                print(f'Removing calendar {calid} from room id {room.room_id}')
+                self.logger.info(f'Removing calendar {calid} from room id {room.room_id}')
 
                 if self.calendar_rooms.get(room.room_id):
                     self.calendar_rooms[room.room_id].remove(calid)
 
-                print(
-                    f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
+                self.logger.info(f'Calendars now for this room {self.calendar_rooms.get(room.room_id)}')
 
                 bot.save_settings()
                 self.setup_calendars()
