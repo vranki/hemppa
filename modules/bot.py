@@ -1,3 +1,4 @@
+import collections
 from datetime import datetime
 
 from modules.common.module import BotModule
@@ -119,8 +120,11 @@ class MatrixModule(BotModule):
 
     async def show_modules(self, bot, room):
         await bot.send_text(room, "Modules:\n")
-        for modulename, module in bot.modules.items():
-            await bot.send_text(room, f"Name: {modulename:20s} Enabled: {module.enabled}")
+        for modulename, module in collections.OrderedDict(sorted(bot.modules.items())).items():
+            module_message = f"Name: {modulename}\n"\
+                             f"Enabled: {module.enabled} (Can be disabled: {module.can_be_disabled})\n"\
+                             f"Description: {module.help()}\n"
+            await bot.send_text(room, module_message)
 
     def help(self):
         return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'
