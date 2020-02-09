@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import httpx
 from bs4 import BeautifulSoup
-from nio import RoomMessageText
+from nio import RoomMessageText, AsyncClient
 
 from modules.common.module import BotModule
 
@@ -16,15 +16,18 @@ class MatrixModule(BotModule):
     Everytime a url is seen in a message we do http request to it and try to get a title tag contents to spit out to the room.
     """
 
-    bot = None
-    status = dict()  # room_id -> what to do with urls
+    def __init__(self, name):
+        super().__init__(name)
 
-    STATUSES = {
-        "OFF": "Not spamming this channel",
-        "TITLE": "Spamming this channel with titles",
-        "DESCRIPTION": "Spamming this channel with descriptions",
-        "BOTH": "Spamming this channel with both title and description",
-    }
+        self.bot = None
+        self.status = dict()  # room_id -> what to do with urls
+
+        self.STATUSES = {
+            "OFF": "Not spamming this channel",
+            "TITLE": "Spamming this channel with titles",
+            "DESCRIPTION": "Spamming this channel with descriptions",
+            "BOTH": "Spamming this channel with both title and description",
+        }
 
     def matrix_start(self, bot):
         """
@@ -33,6 +36,10 @@ class MatrixModule(BotModule):
         super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.text_cb, RoomMessageText)
+
+    def matrix_stop(self, bot):
+        super().matrix_stop(bot)
+        bot.remove_callback(self.text_cb)
 
     async def text_cb(self, room, event):
         """
@@ -103,7 +110,7 @@ class MatrixModule(BotModule):
         # try parse and get the title
         try:
             soup = BeautifulSoup(r.text, "html.parser")
-            title = soup.title.string
+            title = soup.title.string.strip()
             descr_tag = soup.find("meta", attrs={"name": "description"})
             if descr_tag:
                 description = descr_tag.get("content", None)

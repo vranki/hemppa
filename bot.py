@@ -75,6 +75,12 @@ class Bot:
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
+    def remove_callback(self, callback):
+        for cb_object in bot.client.event_callbacks:
+            if cb_object.func == callback:
+                self.logger.info("remove callback")
+                bot.client.event_callbacks.remove(cb_object)
+
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
 
@@ -148,7 +154,8 @@ class Bot:
                 except CommandRequiresOwner:
                     await self.send_text(room, f'Sorry, only bot owner can run that command.')
                 except Exception:
-                    await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                    await self.send_text(room,
+                                         f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                     traceback.print_exc(file=sys.stderr)
         else:
             self.logger.error(f"Unknown command: {command}")

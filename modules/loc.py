@@ -1,5 +1,6 @@
 from geopy.geocoders import Nominatim
-from nio import RoomMessageUnknown
+from nio import RoomMessageUnknown, AsyncClient
+from modules.common.module import BotModule
 
 from modules.common.module import BotModule
 
@@ -11,6 +12,10 @@ class MatrixModule(BotModule):
         super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.unknown_cb, RoomMessageUnknown)
+
+    def matrix_stop(self, bot):
+        super().matrix_stop(bot)
+        bot.remove_callback(self.unknown_cb)
 
     async def unknown_cb(self, room, event):
         if event.msgtype != 'm.location':

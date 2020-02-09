@@ -20,14 +20,17 @@ from modules.common.module import BotModule
 
 
 class MatrixModule(BotModule):
-    def matrix_start(self, bot):
-        super().matrix_start(bot)
-        self.bot = bot
-        self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+    def __init__(self, name):
+        super().__init__(name)
         self.credentials_file = "credentials.json"
+        self.SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+        self.bot = None
         self.service = None
         self.calendar_rooms = dict()  # Contains room_id -> [calid, calid] ..
 
+    def matrix_start(self, bot):
+        super().matrix_start(bot)
+        self.bot = bot
         creds = None
 
         if not os.path.exists(self.credentials_file) or os.path.getsize(self.credentials_file) == 0:
@@ -43,8 +46,7 @@ class MatrixModule(BotModule):
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_file, self.SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, self.SCOPES)
                 # urn:ietf:wg:oauth:2.0:oob
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
