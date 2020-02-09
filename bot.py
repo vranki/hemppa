@@ -10,6 +10,7 @@ import sys
 import traceback
 import urllib.parse
 import logging
+import logging.config
 from importlib import reload
 
 import requests
@@ -46,13 +47,17 @@ class Bot:
         self.logger.debug("Initialized")
 
     def initializeLogger(self):
-        log_format = '%(levelname)s - %(name)s - %(message)s'
+
+        if os.path.exists('config/logging.config'):
+            logging.config.fileConfig('config/logging.config')
+        else:
+            log_format = '%(levelname)s - %(name)s - %(message)s'
+            logging.basicConfig(format=log_format)
+
         if self.debug:
             logging.root.setLevel(logging.DEBUG)
         else:
             logging.root.setLevel(logging.INFO)
-
-        logging.basicConfig(format=log_format)
 
     async def send_text(self, room, body):
         msg = {
