@@ -215,6 +215,7 @@ MATRIX_ACCESS_TOKEN=MDAxOGxvYlotofcharacters53CgYAYFgo
 MATRIX_SERVER=https://matrix.org
 JOIN_ON_INVITE=True
 BOT_OWNERS=@user1:matrix.org,@user2:matrix.org
+DEBUG=False
 ```
 
 Note: without quotes!
@@ -227,15 +228,19 @@ docker-compose up
 
 ## Env variables
 
-User, access token and server should be self-explanatory. Set JOIN_ON_INVITE to anything if you want the bot to
-join invites automatically (do not set it if you don't want it to join).
+`MATRIX_USER`, `MATRIX_ACCESS_TOKEN` and `MATRIX_SERVER` should be self-explanatory.
+Set `JOIN_ON_INVITE` to anything if you want the bot to join invites automatically (do not set it if you don't want it to join).
 
-You can set MATRIX_PASSWORD if you want to get access token. Normally you can use Riot to get it.
+You can set `MATRIX_PASSWORD` if you want to get an access token automatically with a login. 
+Normally you can use Riot to get it.
 
-BOT_OWNERS is a comma-separated list of matrix id's for the owners of the bot. Some commands require
-sender to be bot owner. Typically set your own id into it. Don't include bot itself in BOT_OWNERS if cron
-or any other module that can cause bot to send custom commands is used as it could potentially be used to run
-owner commands as the bot itself.
+`BOT_OWNERS` is a comma-separated list of matrix id's for the owners of the bot. 
+Some commands require sender to be bot owner. 
+Typically set your own id into it. 
+
+__*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other module that can cause bot to send custom commands is used, as it could potentially be used to run owner commands as the bot itself.
+
+To enable debugging for the root logger set `DEBUG=True`.
 
 ## Module API
 
