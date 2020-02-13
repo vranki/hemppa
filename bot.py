@@ -113,7 +113,7 @@ class Bot:
         body = event.body
         if len(body) == 0:
             return
-        if body[0] != '!':
+        if self.starts_with_command(body) is None:
             return
 
         command = body.split().pop(0)
@@ -139,6 +139,10 @@ class Bot:
             print(f"Unknown command: {command}")
             await self.send_text(room,
                                  f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
+
+    @staticmethod
+    def starts_with_command(body):
+        return re.match(r"^!\w.*", body)
 
     async def invite_cb(self, room, event):
         room: MatrixRoom
