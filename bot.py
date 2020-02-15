@@ -111,9 +111,7 @@ class Bot:
     async def message_cb(self, room, event):
         # Figure out the command
         body = event.body
-        if len(body) == 0:
-            return
-        if self.starts_with_command(body) is None:
+        if not self.starts_with_command(body):
             return
 
         command = body.split().pop(0)
@@ -142,7 +140,8 @@ class Bot:
 
     @staticmethod
     def starts_with_command(body):
-        return re.match(r"^!\w.*", body)
+        """Checks if body starts with ! and has one or more letters after it"""
+        return re.match(r"^!\w.*", body) is not None
 
     async def invite_cb(self, room, event):
         room: MatrixRoom
