@@ -44,6 +44,7 @@ class MatrixModule(BotModule):
     async def matrix_message(self, bot, room, event):
 
         # todo: add subcommand to add administrators
+        # todo: add subcommand to add known matterbridge bot
         # todo: needs a mechanism to hook into admin check of the bot
         pass
 
@@ -60,6 +61,10 @@ class MatrixModule(BotModule):
         bot.remove_callback(self.dispatch_cb)
 
     async def dispatch_cb(self, room, event):
+
+        # todo: only accept messages from matterbridge bot
+        #       like event.sender in self.known_matterbridge_bots
+
         # no content at all?
         if len(event.body) < 1:
             return
@@ -69,7 +74,7 @@ class MatrixModule(BotModule):
         if matter_message is None:
             return
 
-        self.logger.info(f"room: {room.name} - dispatch matterbridge message to bot")
+        self.logger.info(f"room: {room.name} protocol: {matter_message.protocol} user: {matter_message.username} - dispatch matterbridge message to bot")
 
         # dispatch. changing the body of the event triggers message_cb of the bot
         event.body = matter_message.message
