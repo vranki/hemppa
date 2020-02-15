@@ -42,13 +42,12 @@ class Bot:
         self.pollcount = 0
         self.poll_task = None
         self.owners = []
-        self.debug = os.getenv("DEBUG")
+        self.debug = os.getenv("DEBUG", "false").lower() == "true"
+        self.logger = None
 
-        self.initializeLogger()
-        self.logger = logging.getLogger("hemppa")
-        self.logger.debug("Initialized")
+        self.initialize_logger()
 
-    def initializeLogger(self):
+    def initialize_logger(self):
 
         if os.path.exists('config/logging.yml'):
             with open('config/logging.yml') as f:
@@ -58,10 +57,13 @@ class Bot:
             log_format = '%(levelname)s - %(name)s - %(message)s'
             logging.basicConfig(format=log_format)
 
+        self.logger = logging.getLogger("hemppa")
+
         if self.debug:
             logging.root.setLevel(logging.DEBUG)
-        else:
-            logging.root.setLevel(logging.INFO)
+            self.logger.info("enabled debugging")
+
+        self.logger.debug("Logger initialized")
 
     async def send_text(self, room, body):
         msg = {
