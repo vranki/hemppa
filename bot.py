@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
 import asyncio
+import functools
 import glob
 import importlib
-import json
+import yaml
 import os
 import re
+import signal
 import sys
 import traceback
 import urllib.parse
+import logging
+import logging.config
 from importlib import reload
 
 import requests
@@ -28,14 +32,38 @@ class CommandRequiresOwner(Exception):
 
 
 class Bot:
-    appid = 'org.vranki.hemppa'
-    version = '1.2'
-    client = None
-    join_on_invite = False
-    modules = dict()
-    pollcount = 0
-    poll_task = None
-    owners = []
+
+    def __init__(self):
+        self.appid = 'org.vranki.hemppa'
+        self.version = '1.2'
+        self.client = None
+        self.join_on_invite = False
+        self.modules = dict()
+        self.pollcount = 0
+        self.poll_task = None
+        self.owners = []
+        self.debug = os.getenv("DEBUG", "false").lower() == "true"
+        self.logger = None
+
+        self.initialize_logger()
+
+    def initialize_logger(self):
+
+        if os.path.exists('config/logging.yml'):
+            with open('config/logging.yml') as f:
+                config = yaml.load(f, Loader=yaml.Loader)
+                logging.config.dictConfig(config)
+        else:
+            log_format = '%(levelname)s - %(name)s - %(message)s'
+            logging.basicConfig(format=log_format)
+
+        self.logger = logging.getLogger("hemppa")
+
+        if self.debug:
+            logging.root.setLevel(logging.DEBUG)
+            self.logger.info("enabled debugging")
+
+        self.logger.debug("Logger initialized")
 
     async def send_text(self, room, body):
         msg = {
@@ -54,10 +82,10 @@ class Bot:
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     def remove_callback(self, callback):
-        for cb_object in bot.client.event_callbacks:
+        for cb_object in self.client.event_callbacks:
             if cb_object.func == callback:
-                print("remove callback")
-                bot.client.event_callbacks.remove(cb_object)
+                self.logger.info("remove callback")
+                self.client.event_callbacks.remove(cb_object)
 
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
@@ -124,17 +152,16 @@ class Bot:
         if moduleobject is not None:
             if moduleobject.enabled:
                 try:
-                    await moduleobject.matrix_message(bot, room, event)
+                    await moduleobject.matrix_message(self, room, event)
                 except CommandRequiresAdmin:
                     await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
                 except CommandRequiresOwner:
                     await self.send_text(room, f'Sorry, only bot owner can run that command.')
                 except Exception:
-                    await self.send_text(room,
-                                         f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                    await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
                     traceback.print_exc(file=sys.stderr)
         else:
-            print(f"Unknown command: {command}")
+            self.logger.error(f"Unknown command: {command}")
             # TODO Make this configurable
             # await self.send_text(room,
             #                     f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
@@ -152,31 +179,28 @@ class Bot:
             for attempt in range(3):
                 result = await self.client.join(room.room_id)
                 if type(result) == JoinError:
-                    print(f"Error joining room {room.room_id} (attempt %d): %s",
-                          attempt, result.message,
-                          )
+                    self.logger.error(f"Error joining room %s (attempt %d): %s", room.room_id, attempt, result.message)
                 else:
-                    print(f"joining room '{room.display_name}'({room.room_id}) invited by '{event.sender}'")
+                    self.logger.info(f"joining room '{room.display_name}'({room.room_id}) invited by '{event.sender}'")
                     break
         else:
-            print(
-                f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
+            self.logger.warning(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
     def load_module(self, modulename):
         try:
-            print("load module: " + modulename)
+            self.logger.info(f'load module: {modulename}')
             module = importlib.import_module('modules.' + modulename)
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
         except ModuleNotFoundError:
-            print('Module ', modulename, ' failed to load!')
+            self.logger.error(f'Module {modulename} failed to load!')
             traceback.print_exc(file=sys.stderr)
             return None
 
     def reload_modules(self):
         for modulename in bot.modules:
-            print('Reloading', modulename, '..')
+            self.logger.info(f'Reloading {modulename} ..')
             self.modules[modulename] = self.load_module(modulename)
 
         self.load_settings(self.get_account_data())
@@ -199,7 +223,7 @@ class Bot:
             for modulename, moduleobject in self.modules.items():
                 if moduleobject.enabled:
                     try:
-                        await moduleobject.matrix_poll(bot, self.pollcount)
+                        await moduleobject.matrix_poll(self, self.pollcount)
                     except Exception:
                         traceback.print_exc(file=sys.stderr)
             await asyncio.sleep(10)
@@ -213,7 +237,7 @@ class Bot:
         self.__handle_error_response(response)
 
         if response.status_code != 200:
-            print('Setting account data failed:', response, response.json())
+            self.logger.error('Setting account data failed. response: %s json: %s', response, response.json())
 
     def get_account_data(self):
         userid = urllib.parse.quote(self.matrix_user)
@@ -225,14 +249,13 @@ class Bot:
 
         if response.status_code == 200:
             return response.json()
-        print(
-            f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
+        self.logger.error(f'Getting account data failed: {response} {response.json()} - this is normal if you have not saved any settings yet.')
         return None
 
     def __handle_error_response(self, response):
         if response.status_code == 401:
-            print("ERROR: access token is invalid or missing")
-            print("NOTE: check MATRIX_ACCESS_TOKEN or set MATRIX_PASSWORD")
+            self.logger.error("access token is invalid or missing")
+            self.logger.info("NOTE: check MATRIX_ACCESS_TOKEN or set MATRIX_PASSWORD")
             sys.exit(2)
 
     def init(self):
@@ -250,7 +273,7 @@ class Bot:
 
             if self.client.access_token is None:
                 if self.matrix_pass is None:
-                    print("Either MATRIX_ACCESS_TOKEN or MATRIX_PASSWORD need to be set")
+                    self.logger.error("Either MATRIX_ACCESS_TOKEN or MATRIX_PASSWORD need to be set")
                     sys.exit(1)
 
             self.join_on_invite = join_on_invite is not None
@@ -258,25 +281,25 @@ class Bot:
             self.get_modules()
 
         else:
-            print("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
+            self.logger.error("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
             sys.exit(1)
 
     def start(self):
         self.load_settings(self.get_account_data())
         enabled_modules = [module for module_name, module in self.modules.items() if module.enabled]
-        print(f'Starting {len(enabled_modules)} modules..')
+        self.logger.info(f'Starting {len(enabled_modules)} modules..')
         for modulename, moduleobject in self.modules.items():
             if moduleobject.enabled:
                 try:
-                    moduleobject.matrix_start(bot)
+                    moduleobject.matrix_start(self)
                 except Exception:
                     traceback.print_exc(file=sys.stderr)
 
     def stop(self):
-        print(f'Stopping {len(self.modules)} modules..')
+        self.logger.info(f'Stopping {len(self.modules)} modules..')
         for modulename, moduleobject in self.modules.items():
             try:
-                moduleobject.matrix_stop(bot)
+                moduleobject.matrix_stop(self)
             except Exception:
                 traceback.print_exc(file=sys.stderr)
 
@@ -285,18 +308,18 @@ class Bot:
             login_response = await self.client.login(self.matrix_pass)
 
             if isinstance(login_response, LoginError):
-                print(f"Failed to login: {login_response.message}")
+                self.logger.error(f"Failed to login: {login_response.message}")
                 return
 
             last_16 = self.client.access_token[-16:]
-            print(f"Logged in with password, access token: ...{last_16}")
+            self.logger.info(f"Logged in with password, access token: ...{last_16}")
 
         await self.client.sync()
         for roomid, room in self.client.rooms.items():
-            print(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
+            self.logger.info(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
             if len(room.users) == 1:
-                print(f'Room {roomid} has no other users - leaving it.')
-                print(await self.client.room_leave(roomid))
+                self.logger.info(f'Room {roomid} has no other users - leaving it.')
+                self.logger.info(await self.client.room_leave(roomid))
 
         self.start()
 
@@ -308,12 +331,12 @@ class Bot:
             self.client.add_event_callback(self.invite_cb, (InviteEvent,))
 
             if self.join_on_invite:
-                print('Note: Bot will join rooms if invited')
-            print('Bot running as', self.client.user, ', owners', self.owners)
+                self.logger.info('Note: Bot will join rooms if invited')
+            self.logger.info('Bot running as %s, owners %s', self.client.user, self.owners)
             self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
             await self.bot_task
         else:
-            print('Client was not able to log in, check env variables!')
+            self.logger.error('Client was not able to log in, check env variables!')
 
     async def shutdown(self):
 
@@ -321,28 +344,43 @@ class Bot:
             logout = await self.client.logout()
 
             if isinstance(logout, LogoutResponse):
-                print("Logout successful")
+                self.logger.info("Logout successful")
                 try:
                     await self.client.close()
-                    print("Connection closed")
+                    self.logger.info("Connection closed")
                 except Exception as e:
-                    print("error while closing client", e)
+                    self.logger.error("error while closing client: %s", e)
 
             else:
                 logout: LogoutError
-                print(f"Logout unsuccessful. msg: {logout.message}")
+                self.logger.error(f"Logout unsuccessful. msg: {logout.message}")
         else:
             await self.client.client_session.close()
 
+    def handle_exit(self, signame, loop):
+        self.logger.info(f"Received signal {signame}")
+        if self.poll_task:
+            self.poll_task.cancel()
+        self.bot_task.cancel()
+        self.stop()
 
-bot = Bot()
-bot.init()
+
+async def main():
+    bot = Bot()
+    bot.init()
+
+    loop = asyncio.get_running_loop()
+
+    for signame in {'SIGINT', 'SIGTERM'}:
+        loop.add_signal_handler(
+            getattr(signal, signame),
+            functools.partial(bot.handle_exit, signame, loop))
+
+    await bot.run()
+    await bot.shutdown()
+
+
 try:
-    asyncio.get_event_loop().run_until_complete(bot.run())
-except KeyboardInterrupt:
-    if bot.poll_task:
-        bot.poll_task.cancel()
-    bot.bot_task.cancel()
-
-bot.stop()
-asyncio.get_event_loop().run_until_complete(bot.shutdown())
+    asyncio.run(main())
+except Exception as e:
+    print(e)

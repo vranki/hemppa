@@ -15,6 +15,7 @@ requests = "*"
 igramscraper = "*"
 twitterscraper = "*"
 httpx = "*"
+pyyaml = "==5.3"
 
 [dev-packages]
 pylint = "*"

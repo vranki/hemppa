@@ -1,0 +1,15 @@
+version: 1
+formatters:
+  hemppa:
+    format: '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: hemppa
+    stream: ext://sys.stdout
+loggers:
+  hemppa:
+    level: NOTSET
+root:
+  level: INFO
+  handlers: [console]
