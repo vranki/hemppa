@@ -41,7 +41,10 @@ class MatrixModule(BotModule):
                 await self.disable_module(bot, room, event, args[2])
 
         else:
-            await bot.send_text(room, 'Unknown command, sorry.')
+            pass
+
+        # TODO: Make this configurable. By default don't say anything.
+        #    await bot.send_text(room, 'Unknown command, sorry.')
 
     async def leave(self, bot, room, event):
         bot.must_be_admin(room, event)
@@ -121,9 +124,8 @@ class MatrixModule(BotModule):
     async def show_modules(self, bot, room):
         await bot.send_text(room, "Modules:\n")
         for modulename, module in collections.OrderedDict(sorted(bot.modules.items())).items():
-            module_message = f"Name: {modulename}\n"\
-                             f"Enabled: {module.enabled} (Can be disabled: {module.can_be_disabled})\n"\
-                             f"Description: {module.help()}\n"
+            state = 'Enabled' if module.enabled else 'Disabled'
+            module_message = f"{state}: {modulename} - {module.help()}"
             await bot.send_text(room, module_message)
 
     def help(self):
