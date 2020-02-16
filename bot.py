@@ -135,8 +135,9 @@ class Bot:
                     traceback.print_exc(file=sys.stderr)
         else:
             print(f"Unknown command: {command}")
-            await self.send_text(room,
-                                 f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
+            # TODO Make this configurable
+            # await self.send_text(room,
+            #                     f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
 
     @staticmethod
     def starts_with_command(body):
