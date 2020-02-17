@@ -95,7 +95,6 @@ class MatrixModule(BotModule):
     async def enable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
         self.logger.info(f"asked to enable {module_name}")
-
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             module.enable()
@@ -108,7 +107,6 @@ class MatrixModule(BotModule):
     async def disable_module(self, bot, room, event, module_name):
         bot.must_be_admin(room, event)
         self.logger.info(f"asked to disable {module_name}")
-
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             if module.can_be_disabled:

@@ -215,6 +215,7 @@ MATRIX_ACCESS_TOKEN=MDAxOGxvYlotofcharacters53CgYAYFgo
 MATRIX_SERVER=https://matrix.org
 JOIN_ON_INVITE=True
 BOT_OWNERS=@user1:matrix.org,@user2:matrix.org
+DEBUG=False
 ```
 
 Note: without quotes!
@@ -227,20 +228,47 @@ docker-compose up
 
 ## Env variables
 
-User, access token and server should be self-explanatory. Set JOIN_ON_INVITE to anything if you want the bot to
-join invites automatically (do not set it if you don't want it to join).
+`MATRIX_USER`, `MATRIX_ACCESS_TOKEN` and `MATRIX_SERVER` should be self-explanatory.
+Set `JOIN_ON_INVITE` to anything if you want the bot to join invites automatically (do not set it if you don't want it to join).
 
-You can set MATRIX_PASSWORD if you want to get access token. Normally you can use Riot to get it.
+You can set `MATRIX_PASSWORD` if you want to get an access token automatically with a login. 
+Normally you can use Riot to get it.
 
-BOT_OWNERS is a comma-separated list of matrix id's for the owners of the bot. Some commands require
-sender to be bot owner. Typically set your own id into it. Don't include bot itself in BOT_OWNERS if cron
-or any other module that can cause bot to send custom commands is used as it could potentially be used to run
-owner commands as the bot itself.
+`BOT_OWNERS` is a comma-separated list of matrix id's for the owners of the bot. 
+Some commands require sender to be bot owner. 
+Typically set your own id into it. 
+
+__*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other module that can cause bot to send custom commands is used, as it could potentially be used to run owner commands as the bot itself.
+
+To enable debugging for the root logger set `DEBUG=True`.
+
+## Logging
+
+Uses [python logging facility](https://docs.python.org/3/library/logging.html) to print information to the console. Customize it to your needs editing `config/logging.yml`.
+See [logging.config documentation](https://docs.python.org/3/library/logging.config.html) for further information. 
 
 ## Module API
 
 Just write a python file with desired command name and place it in modules. See current modules for
 examples. No need to register it anywhere else.
+
+*Simple skeleton for a bot module:*
+```python
+
+class MatrixModule(BotModule):
+    
+    async def matrix_message(self, bot, room, event):
+        args = event.body.split()
+        args.pop(0)
+        
+        # Echo what they said back
+        self.logger.debug(f"room: {room.name} sender: {event.sender} wants an echo")
+        await bot.send_text(room, ' '.join(args))
+
+    def help(self):
+        return 'Echoes back what user has said'
+
+``` 
 
 Functions:
 
@@ -253,6 +281,10 @@ Functions:
 * set_settings - Load these settings. It should be the same JSON you returned in previous get_settings
 
 You only need to implement the ones you need. See existing bots for examples.
+
+Logging:
+
+Use `self.logger` in your module to print information to the console.
 
 Module settings are stored in Matrix account data.
 

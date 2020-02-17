@@ -3,7 +3,6 @@ from datetime import datetime
 
 from pyteamup import Calendar
 
-
 #
 # TeamUp calendar notifications
 #

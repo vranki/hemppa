@@ -32,7 +32,6 @@ class BotModule(ABC):
         self.can_be_disabled = True
         self.name = name
         self.logger = logging.getLogger("module " + self.name)
-        self.subcommands = dict()
 
     def matrix_start(self, bot):
         """Called once on startup
