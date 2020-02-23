@@ -4,6 +4,8 @@ import asyncio
 import functools
 import glob
 import importlib
+import json
+
 import yaml
 import os
 import re
@@ -199,7 +201,7 @@ class Bot:
             return None
 
     def reload_modules(self):
-        for modulename in bot.modules:
+        for modulename in self.modules:
             self.logger.info(f'Reloading {modulename} ..')
             self.modules[modulename] = self.load_module(modulename)
 
