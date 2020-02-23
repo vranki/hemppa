@@ -341,23 +341,23 @@ class Bot:
             self.logger.error('Client was not able to log in, check env variables!')
 
     async def shutdown(self):
+        await self.logout()
+        await self.close()
 
-        if self.client.logged_in:
-            logout = await self.client.logout()
-
-            if isinstance(logout, LogoutResponse):
+    async def logout(self):
+        if self.matrix_pass is not None and self.client.logged_in:
+            response = await self.client.logout()
+            if isinstance(response, LogoutResponse):
                 self.logger.info("Logout successful")
-                try:
-                    await self.client.close()
-                    self.logger.info("Connection closed")
-                except Exception as e:
-                    self.logger.error("error while closing client: %s", e)
-
             else:
-                logout: LogoutError
-                self.logger.error(f"Logout unsuccessful. msg: {logout.message}")
-        else:
-            await self.client.client_session.close()
+                self.logger.error(f"Logout unsuccessful. msg: {response.message}")
+
+    async def close(self):
+        try:
+            await self.client.close()
+            self.logger.info("Connection closed")
+        except Exception as ex:
+            self.logger.error("error while closing client: %s", ex)
 
     def handle_exit(self, signame, loop):
         self.logger.info(f"Received signal {signame}")
