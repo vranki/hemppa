@@ -187,6 +187,37 @@ Example:
 
 * !url status
 
+#### Cmd
+
+Can be used to pre-configure shell commands run by bot. This is easy way to add
+security issues to your bot so be careful.
+
+Pre-defined commands can be set only by bot owner, but anyone can run them.
+It's your responsibility as owner to make sure you don't allow running anything dangerous.
+
+Commands have 5 second timeout so don't try to run long processes.
+
+Environ variables seen by commands:
+
+* MATRIX_USER: User who ran the command
+* MATRIX_ROOM: Room the command was run (avoid using, may cause vulnerabilities)
+
+Commands:
+
+* !cmd run "command"         - Run command "command" (Must be done as bot owner)
+* !cmd add cmdname "command" - Add new named command "command"  (Must be done as bot owner)
+* !cmd remove cmdname        - Remove named command (Must be done as bot owner)
+* !cmd list                  - List named commands
+* !cmd cmdname               - Run a named command
+
+Example:
+
+* !cmd run "hostname"
+* !cmd add systemstats "uname -a && uptime"
+* !cmd systemstats
+* !cmd add df "df -h"
+* !cmd add whoami "echo You are $MATRIX_USER in room $MATRIX_ROOM."
+
 ## Bot setup
 
 * Create a Matrix user
