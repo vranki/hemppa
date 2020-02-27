@@ -14,7 +14,7 @@ class MatrixModule(BotModule):
                 except AttributeError:
                     pass
                 msg = msg + '\n'
-        msg = msg + "\nAdd your own commands at https://github.com/vranki/hemppa"
+        msg = msg + "\nMore information at https://github.com/vranki/hemppa"
         await bot.send_text(room, msg)
 
     def help(self):
