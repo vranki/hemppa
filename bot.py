@@ -15,11 +15,11 @@ import traceback
 import urllib.parse
 import logging
 import logging.config
+import datetime
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LogoutError, \
-    LoginError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LoginError
 
 
 # Couple of custom exceptions
@@ -37,7 +37,7 @@ class Bot:
 
     def __init__(self):
         self.appid = 'org.vranki.hemppa'
-        self.version = '1.2'
+        self.version = '1.3'
         self.client = None
         self.join_on_invite = False
         self.modules = dict()
@@ -46,6 +46,9 @@ class Bot:
         self.owners = []
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
         self.logger = None
+
+        self.jointime = None  # HACKHACKHACK to avoid running old commands after join
+        self.join_hack_time = 5  # Seconds
 
         self.initialize_logger()
 
@@ -144,6 +147,13 @@ class Bot:
         if not self.starts_with_command(body):
             return
 
+        # HACK to ignore messages for some time after joining.
+        if self.jointime:
+            if (datetime.datetime.now() - self.jointime).seconds < self.join_hack_time:
+                self.logger.info(f"Waiting for join delay, ignoring message: {body}")
+                return
+            self.jointime = None
+
         command = body.split().pop(0)
 
         # Strip away non-alphanumeric characters, including leading ! for security
@@ -179,12 +189,13 @@ class Bot:
 
         if self.join_on_invite or self.is_owner(event):
             for attempt in range(3):
+                self.jointime = datetime.datetime.now()
                 result = await self.client.join(room.room_id)
                 if type(result) == JoinError:
                     self.logger.error(f"Error joining room %s (attempt %d): %s", room.room_id, attempt, result.message)
                 else:
                     self.logger.info(f"joining room '{room.display_name}'({room.room_id}) invited by '{event.sender}'")
-                    break
+                    return
         else:
             self.logger.warning(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
 
