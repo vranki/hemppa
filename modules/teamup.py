@@ -131,6 +131,9 @@ class MatrixModule(BotModule):
                 s = s + ' ' + \
                     startdt.strftime("%H:%M") + \
                     ' (' + str(event['duration']) + ' min)'
+        # todo: proper html stripper..
+        s = s.replace('<p>', '')
+        s = s.replace('</p>', '\n')
         return s
 
     def setup_calendars(self):
