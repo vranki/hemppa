@@ -218,6 +218,21 @@ Example:
 * !cmd add df "df -h"
 * !cmd add whoami "echo You are $MATRIX_USER in room $MATRIX_ROOM."
 
+### Astronomy Picture of the Day
+
+Upload and send latest astronomy picture of the day to the room.
+See https://apod.nasa.gov/apod/astropix.html
+
+Command:
+
+* !apod - Sends latest Astronomy Picture of the Day to the room
+
+API Key:
+
+The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY`. 
+
+You can create one at https://api.nasa.gov/#signUp 
+
 ## Bot setup
 
 * Create a Matrix user

@@ -86,6 +86,21 @@ class Bot:
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
+    async def send_image(self, room, url, body):
+        """
+
+        :param room: A MatrixRoom the image should be send to
+        :param url: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
+        :param body: A textual representation of the image
+        :return:
+        """
+        msg = {
+            "url": url,
+            "body": body,
+            "msgtype": "m.image"
+        }
+        await self.client.room_send(room.room_id, 'm.room.message', msg)
+
     def remove_callback(self, callback):
         for cb_object in self.client.event_callbacks:
             if cb_object.func == callback:
