@@ -19,7 +19,7 @@ import datetime
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LogoutResponse, LoginError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError
 
 
 # Couple of custom exceptions
@@ -37,7 +37,7 @@ class Bot:
 
     def __init__(self):
         self.appid = 'org.vranki.hemppa'
-        self.version = '1.3'
+        self.version = '1.4'
         self.client = None
         self.join_on_invite = False
         self.modules = dict()
@@ -268,33 +268,26 @@ class Bot:
     def __handle_error_response(self, response):
         if response.status_code == 401:
             self.logger.error("access token is invalid or missing")
-            self.logger.info("NOTE: check MATRIX_ACCESS_TOKEN or set MATRIX_PASSWORD")
+            self.logger.info("NOTE: check MATRIX_ACCESS_TOKEN")
             sys.exit(2)
 
     def init(self):
 
         self.matrix_user = os.getenv('MATRIX_USER')
-        self.matrix_pass = os.getenv('MATRIX_PASSWORD')
         matrix_server = os.getenv('MATRIX_SERVER')
         bot_owners = os.getenv('BOT_OWNERS')
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         join_on_invite = os.getenv('JOIN_ON_INVITE')
 
-        if matrix_server and self.matrix_user and bot_owners:
+        if matrix_server and self.matrix_user and bot_owners and access_token:
             self.client = AsyncClient(matrix_server, self.matrix_user)
             self.client.access_token = access_token
-
-            if self.client.access_token is None:
-                if self.matrix_pass is None:
-                    self.logger.error("Either MATRIX_ACCESS_TOKEN or MATRIX_PASSWORD need to be set")
-                    sys.exit(1)
-
             self.join_on_invite = join_on_invite is not None
             self.owners = bot_owners.split(',')
             self.get_modules()
 
         else:
-            self.logger.error("The environment variables MATRIX_SERVER, MATRIX_USER and BOT_OWNERS are mandatory")
+            self.logger.error("The environment variables MATRIX_SERVER, MATRIX_USER, MATRIX_ACCESS_TOKEN and BOT_OWNERS are mandatory")
             sys.exit(1)
 
     def start(self):
@@ -317,16 +310,6 @@ class Bot:
                 traceback.print_exc(file=sys.stderr)
 
     async def run(self):
-        if not self.client.access_token:
-            login_response = await self.client.login(self.matrix_pass)
-
-            if isinstance(login_response, LoginError):
-                self.logger.error(f"Failed to login: {login_response.message}")
-                return
-
-            last_16 = self.client.access_token[-16:]
-            self.logger.info(f"Logged in with password, access token: ...{last_16}")
-
         await self.client.sync()
         for roomid, room in self.client.rooms.items():
             self.logger.info(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
@@ -352,16 +335,7 @@ class Bot:
             self.logger.error('Client was not able to log in, check env variables!')
 
     async def shutdown(self):
-        await self.logout()
         await self.close()
-
-    async def logout(self):
-        if self.matrix_pass is not None and self.client.logged_in:
-            response = await self.client.logout()
-            if isinstance(response, LogoutResponse):
-                self.logger.info("Logout successful")
-            else:
-                self.logger.error(f"Logout unsuccessful. msg: {response.message}")
 
     async def close(self):
         try:

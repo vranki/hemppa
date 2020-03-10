@@ -9,7 +9,6 @@ services:
     environment:
       - MATRIX_ACCESS_TOKEN
       - MATRIX_USER
-      - MATRIX_PASSWORD
       - MATRIX_SERVER
       - JOIN_ON_INVITE
       - BOT_OWNERS
