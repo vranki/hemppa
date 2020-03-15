@@ -229,11 +229,12 @@ Command:
 * !apod YYYY-MM-DD - date of the APOD image to retrieve (ex. !apod 2020-03-15)
 * !apod stats - show information about uri cache
 * !apod clear - clear uri cache (Must be done as admin)
+* !apod apikey [api-key] - set the nasa api key (Must be done as bot owner)
 * !apod help - show command help
 
 API Key:
 
-The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY`. 
+The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY` or by setting the api key as a bot owner with command `!apod apikey [apikey]`. 
 
 You can create one at https://api.nasa.gov/#signUp 
 
