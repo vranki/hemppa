@@ -226,6 +226,10 @@ See https://apod.nasa.gov/apod/astropix.html
 Command:
 
 * !apod - Sends latest Astronomy Picture of the Day to the room
+* !apod YYYY-MM-DD - date of the APOD image to retrieve (ex. !apod 2020-03-15)
+* !apod stats - show information about uri cache
+* !apod clear - clear uri cache (Must be done as admin)
+* !apod help - show command help
 
 API Key:
 

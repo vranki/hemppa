@@ -48,12 +48,20 @@ class MatrixModule(BotModule):
         if len(args) == 1:
             await self.send_apod(bot, room, self.apod_api_url)
         if len(args) == 2:
-            date = args[1]
-            if re.match(self.APOD_DATE_PATTERN, date) is not None:
-                uri = self.apod_by_date_pi_url + date
-                await self.send_apod(bot, room, uri)
+            if args[1] == "stats":
+                await self.send_stats(bot, room)
+            elif args[1] == "clear":
+                bot.must_be_admin(room, event)
+                await self.clear_uri_cache(bot, room)
+            elif args[1] == "help":
+                await self.command_help(bot, room)
             else:
-                await bot.send_text(room, "invalid date. accpeted: YYYY-MM-DD")
+                date = args[1]
+                if re.match(self.APOD_DATE_PATTERN, date) is not None:
+                    uri = self.apod_by_date_pi_url + date
+                    await self.send_apod(bot, room, uri)
+                else:
+                    await bot.send_text(room, "invalid date. accpeted: YYYY-MM-DD")
 
     async def send_apod(self, bot, room, uri):
         self.logger.debug(f"send request using uri {uri}")
@@ -125,3 +133,21 @@ class MatrixModule(BotModule):
 
     def help(self):
         return 'Sends latest Astronomy Picture of the Day to the room. (https://apod.nasa.gov/apod/astropix.html)'
+
+    async def send_stats(self, bot, room):
+        msg = f"collected {len(self.matrix_uri_cache)} upload matrix uri's"
+        await bot.send_text(room, msg)
+
+    async def clear_uri_cache(self, bot, room):
+        self.matrix_uri_cache.clear()
+        bot.save_settings()
+        await bot.send_text(room, "cleared uri cache")
+
+    async def command_help(self, bot, room):
+        msg = """commands:
+        - YYYY-MM-DD - date of the APOD image to retrieve (ex. 2020-03-15)
+        - stats - show information about uri cache
+        - clear - clear uri cache (Must be done as admin)
+        - help - show command help
+        """
+        await bot.send_text(room, msg)
