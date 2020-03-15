@@ -1,8 +1,8 @@
-import json
 import os
+import os
+import re
 
 import requests
-from dateutil import parser
 from nio import AsyncClient, UploadError
 from nio import UploadResponse
 
@@ -36,38 +36,41 @@ class MatrixModule(BotModule):
         super().__init__(name)
         self.api_key = os.getenv("APOD_API_KEY", "DEMO_KEY")
         self.apod_api_url = f"https://api.nasa.gov/planetary/apod?api_key={self.api_key}&hd=true"
-        self.last_update = None
-        self.last_apod = None
-        self.last_matrix_uri = None
+        self.apod_by_date_pi_url = self.apod_api_url + "&date="
+        self.matrix_uri_cache = dict()
+        self.APOD_DATE_PATTERN = r"^\d\d\d\d-\d\d-\d\d$"
 
     async def matrix_message(self, bot, room, event):
         self.logger.debug(f"room: {room.name} sender: {event.sender} wants latest astronomy picture of the day")
-        await self.send_apod(bot, room)
 
-    async def send_apod(self, bot, room):
-        response = requests.get(self.apod_api_url)
+        args = event.body.split()
+
+        if len(args) == 1:
+            await self.send_apod(bot, room, self.apod_api_url)
+        if len(args) == 2:
+            date = args[1]
+            if re.match(self.APOD_DATE_PATTERN, date) is not None:
+                uri = self.apod_by_date_pi_url + date
+                await self.send_apod(bot, room, uri)
+            else:
+                await bot.send_text(room, "invalid date. accpeted: YYYY-MM-DD")
+
+    async def send_apod(self, bot, room, uri):
+        self.logger.debug(f"send request using uri {uri}")
+        response = requests.get(uri)
         if response.status_code == 200:
             apod = Apod.create_from_json(response.json())
-            current_date = parser.parse(apod.date).date()
+
             self.logger.debug(apod)
-
-            if (self.last_apod is None) or (current_date > self.last_update):
-                self.last_apod = apod
-                self.last_update = current_date
-
-                if apod.media_type == "image":
-                    await self.upload_and_send_image(room, bot, apod)
-                else:
-                    await self.send_unknown_mediatype(room, bot, apod)
+            if apod.media_type == "image":
+                await self.upload_and_send_image(room, bot, apod)
             else:
-                self.logger.debug("latest apod already requested. sending last response: %s", self.last_apod)
-                if self.last_apod.media_type == "image":
-                    await bot.send_image(room, self.last_matrix_uri, self.last_apod.__str__())
-                else:
-                    await self.send_unknown_mediatype(room, bot, self.last_apod)
-
+                await self.send_unknown_mediatype(room, bot, apod)
+        elif response.status_code == 400:
+            self.logger.error("unable to request apod api. status: %d text: %s", response.status_code, response.text)
+            await bot.send_text(room, response.json().get("msg"))
         else:
-            self.logger.error("unable to request apod api. response: %s", response.text)
+            self.logger.error("unable to request apod api. response: [status: %d text: %s]", response.status_code, response.text)
             await bot.send_text(room, "sorry. something went wrong accessing the api :(")
 
     async def send_unknown_mediatype(self, room, bot, apod):
@@ -76,9 +79,15 @@ class MatrixModule(BotModule):
 
     async def upload_and_send_image(self, room, bot, apod):
         url = apod.hdurl if apod.hdurl is not None else apod.url
-        matrix_uri = await self.upload_image(bot, url)
+
+        if apod.date in self.matrix_uri_cache:
+            matrix_uri = self.matrix_uri_cache.get(apod.date)
+            self.logger.debug(f"already uploaded picture {matrix_uri} for date {apod.date}")
+        else:
+            matrix_uri = await self.upload_image(bot, url)
+
         if matrix_uri is not None:
-            self.last_matrix_uri = matrix_uri
+            self.matrix_uri_cache[apod.date] = matrix_uri
             bot.save_settings()
             await bot.send_image(room, matrix_uri, apod.__str__())
         else:
@@ -106,19 +115,13 @@ class MatrixModule(BotModule):
 
     def get_settings(self):
         data = super().get_settings()
-        data["last_update"] = self.last_update.__str__()
-        data["last_matrix_uri"] = self.last_matrix_uri
-        data["last_apod"] = json.dumps(self.last_apod.__dict__)
+        data["matrix_uri_cache"] = self.matrix_uri_cache
         return data
 
     def set_settings(self, data):
         super().set_settings(data)
-        if data.get("last_update"):
-            self.last_update = parser.parse(data["last_update"]).date()
-        if data.get("last_matrix_uri"):
-            self.last_matrix_uri = data["last_matrix_uri"]
-        if data.get("last_apod"):
-            self.last_apod = Apod.create_from_json(json.loads(data["last_apod"]))
+        if data.get("matrix_uri_cache"):
+            self.matrix_uri_cache = data["matrix_uri_cache"]
 
     def help(self):
         return 'Sends latest Astronomy Picture of the Day to the room. (https://apod.nasa.gov/apod/astropix.html)'
