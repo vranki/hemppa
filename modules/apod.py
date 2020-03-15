@@ -87,7 +87,7 @@ class MatrixModule(BotModule):
             await bot.send_text(room, "sorry. something went wrong accessing the api :(")
 
     async def send_unknown_mediatype(self, room, bot, apod):
-        await bot.send_text(room, f"unsupported media_type: {apod.media_type}")
+        self.logger.debug(f"unknown media_type: {apod.media_type}. sending raw information")
         await bot.send_text(room, f"title: {apod.title}\n\nexplanation:\n{apod.explanation}\n\nurl: {apod.url}")
 
     async def upload_and_send_image(self, room, bot, apod):
