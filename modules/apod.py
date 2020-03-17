@@ -103,9 +103,10 @@ class MatrixModule(BotModule):
         if matrix_uri is not None:
             self.matrix_uri_cache[apod.date] = matrix_uri
             bot.save_settings()
-            await bot.send_text(room, f"{apod.title}")
-            await bot.send_image(room, matrix_uri, f"{apod.title} - url: {url} date: {apod.date}")
-            await bot.send_text(room, f"{apod.explanation} || date: {apod.date} || original-url: {apod.url}")
+            await bot.send_text(room, f"{apod.title} ({apod.date})")
+            await bot.send_image(room, matrix_uri, f"{apod.title}")
+            await bot.send_text(room, f"original-url: {url}")
+            await bot.send_text(room, f"{apod.explanation}")
         else:
             await bot.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
 
