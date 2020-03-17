@@ -73,13 +73,13 @@ class Bot:
     async def send_text(self, room, body):
         msg = {
             "body": body,
-            "msgtype": "m.text"
+            "msgtype": "m.notice"
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_html(self, room, html, plaintext):
         msg = {
-            "msgtype": "m.text",
+            "msgtype": "m.notice",
             "format": "org.matrix.custom.html",
             "formatted_body": html,
             "body": plaintext
