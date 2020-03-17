@@ -70,16 +70,16 @@ class Bot:
 
         self.logger.debug("Logger initialized")
 
-    async def send_text(self, room, body):
+    async def send_text(self, room, body, msgtype="m.notice"):
         msg = {
             "body": body,
-            "msgtype": "m.notice"
+            "msgtype": msgtype
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
-    async def send_html(self, room, html, plaintext):
+    async def send_html(self, room, html, plaintext, msgtype="m.notice"):
         msg = {
-            "msgtype": "m.notice",
+            "msgtype": msgtype,
             "format": "org.matrix.custom.html",
             "formatted_body": html,
             "body": plaintext

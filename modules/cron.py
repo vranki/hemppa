@@ -54,7 +54,7 @@ class MatrixModule(BotModule):
                     commands = self.daily_commands[room_id]
                     for command in commands:
                         if int(command['time']) == self.last_hour:
-                            await bot.send_text(bot.get_room_by_id(room_id), command['command'])
+                            await bot.send_text(bot.get_room_by_id(room_id), command['command'], 'm.text')
                 else:
                     delete_rooms.append(room_id)
 
