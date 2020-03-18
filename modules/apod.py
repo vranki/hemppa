@@ -89,7 +89,7 @@ class MatrixModule(BotModule):
     async def send_unknown_mediatype(self, room, bot, apod):
         self.logger.debug(f"unknown media_type: {apod.media_type}. sending raw information")
         await bot.send_text(room, f"{apod.title}")
-        await bot.send_text(room, f"explanation: {apod.explanation} date: {apod.date} url: {apod.url}")
+        await bot.send_text(room, f"{apod.explanation} || date: {apod.date} || original-url: {apod.url}")
 
     async def upload_and_send_image(self, room, bot, apod):
         url = apod.hdurl if apod.hdurl is not None else apod.url
@@ -103,9 +103,10 @@ class MatrixModule(BotModule):
         if matrix_uri is not None:
             self.matrix_uri_cache[apod.date] = matrix_uri
             bot.save_settings()
-            await bot.send_image(room, matrix_uri, f"{apod.title} - url: {url} date: {apod.date}")
-            await bot.send_text(room, f"{apod.title}")
-            await bot.send_text(room, f"explanation: {apod.explanation} date: {apod.date} url: {apod.url}")
+            await bot.send_text(room, f"{apod.title} ({apod.date})")
+            await bot.send_image(room, matrix_uri, f"{apod.title}")
+            await bot.send_text(room, f"original-url: {url}")
+            await bot.send_text(room, f"{apod.explanation}")
         else:
             await bot.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
 
