@@ -288,6 +288,8 @@ You can get access token by logging in with Riot and looking from Settings / Hel
 Some commands require sender to be bot owner.
 Typically set your own id into it.
 
+`OWNERS_ONLY` is an optional variable once defined only the owners can operate the bot (this is a form of whitelisting)
+
 __*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other module that can cause bot to send custom commands is used, as it could potentially be used to run owner commands as the bot itself.
 
 To enable debugging for the root logger set `DEBUG=True`.
