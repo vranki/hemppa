@@ -118,6 +118,11 @@ class MatrixModule(BotModule):
             self.logger.error(f"Failed parsing response from url {url}. Error: {e}")
             return (title, description)
 
+        # Issue 63 patch - Title should not contain newlines or tabs
+        if title is not None:
+            assert isinstance(title, str)
+            title = title.replace('\n', '')
+            title = title.replace('\t', '')
         return (title, description)
 
     async def matrix_message(self, bot, room, event):
