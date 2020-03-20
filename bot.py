@@ -162,6 +162,11 @@ class Bot:
         if not self.starts_with_command(body):
             return
 
+        if self.owners_only and not self.is_owner(event):
+            self.logger.info(f"Ignoring {event.sender}, because they're not an owner")
+            await self.send_text(room, "Sorry, only bot owner can run commands.")
+            return
+
         # HACK to ignore messages for some time after joining.
         if self.jointime:
             if (datetime.datetime.now() - self.jointime).seconds < self.join_hack_time:
@@ -293,12 +298,14 @@ class Bot:
         bot_owners = os.getenv('BOT_OWNERS')
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         join_on_invite = os.getenv('JOIN_ON_INVITE')
+        owners_only = os.getenv('OWNERS_ONLY') is not None
 
         if matrix_server and self.matrix_user and bot_owners and access_token:
             self.client = AsyncClient(matrix_server, self.matrix_user)
             self.client.access_token = access_token
             self.join_on_invite = join_on_invite is not None
             self.owners = bot_owners.split(',')
+            self.owners_only = owners_only
             self.get_modules()
 
         else:
