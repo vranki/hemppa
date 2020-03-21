@@ -113,14 +113,19 @@ class MatrixModule(BotModule):
     async def upload_image(self, bot, url):
         self.client: AsyncClient
         response: UploadResponse
+
+        self.logger.debug(f"start downloading image from url {url}")
         url_response = requests.get(url)
+        self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
 
         if url_response.status_code == 200:
             content_type = url_response.headers.get("content-type")
+            self.logger.info(f"uploading content to matrix server [size={len(url_response.content)}, content-type: {content_type}]")
             (response, alist) = await bot.client.upload(lambda a, b: url_response.content, content_type)
+            self.logger.debug("response: %s", response)
 
             if isinstance(response, UploadResponse):
-                self.logger.debug("uploaded file to %s", response.content_uri)
+                self.logger.info("uploaded file to %s", response.content_uri)
                 return response.content_uri
             else:
                 response: UploadError
