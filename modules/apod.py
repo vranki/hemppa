@@ -101,17 +101,17 @@ class MatrixModule(BotModule):
                 self.logger.warning("unable to upload hdurl. try url next.")
                 matrix_uri = await self.upload_image(bot, apod.url)
 
+        await bot.send_text(room, f"{apod.title} ({apod.date})")
         if matrix_uri is not None:
             self.matrix_uri_cache[apod.date] = matrix_uri
             bot.save_settings()
-            await bot.send_text(room, f"{apod.title} ({apod.date})")
             await bot.send_image(room, matrix_uri, f"{apod.title}")
-            if apod.hdurl is not None:
-                await bot.send_text(room, f"original-hdurl: {apod.hdurl}")
-            await bot.send_text(room, f"original-url: {apod.url}")
-            await bot.send_text(room, f"{apod.explanation}")
         else:
             await bot.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+        if apod.hdurl is not None:
+            await bot.send_text(room, f"original-hdurl: {apod.hdurl}")
+        await bot.send_text(room, f"original-url: {apod.url}")
+        await bot.send_text(room, f"{apod.explanation}")
 
     async def upload_image(self, bot, url):
         self.client: AsyncClient
