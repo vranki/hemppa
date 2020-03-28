@@ -13,7 +13,6 @@ class MatrixModule(BotModule):
                     msg = msg + ' - ' + moduleobject.help() + '\n'
                 except AttributeError:
                     pass
-                msg = msg + '\n'
         msg = msg + "\nMore information at https://github.com/vranki/hemppa"
         await bot.send_text(room, msg)
 
