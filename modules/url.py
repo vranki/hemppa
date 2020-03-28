@@ -21,6 +21,7 @@ class MatrixModule(BotModule):
 
         self.bot = None
         self.status = dict()  # room_id -> what to do with urls
+        self.type = "m.notice"  # notice or text
 
         self.STATUSES = {
             "OFF": "Not spamming this channel",
@@ -87,7 +88,7 @@ class MatrixModule(BotModule):
                 msg = f"Description: {description}"
 
             if msg is not None:
-                await self.bot.send_text(room, msg)
+                await self.bot.send_text(room, msg, self.type)
 
     @lru_cache(maxsize=128)
     def get_content_from_url(self, url):
@@ -150,10 +151,30 @@ class MatrixModule(BotModule):
             )
             return
 
+        # set type to notice
+        elif len(args) == 1 and args[0] == "notice":
+            bot.must_be_owner(event)
+            self.type = "m.notice"
+            bot.save_settings()
+            await bot.send_text(
+                room, "Sending titles as notices from now on."
+            )
+            return
+
+        # show status
+        elif len(args) == 1 and args[0] == "text":
+            bot.must_be_owner(event)
+            self.type = "m.text"
+            bot.save_settings()
+            await bot.send_text(
+                room, "Sending titles as text from now on."
+            )
+            return
+
         # invalid command
         await bot.send_text(
             room,
-            "Sorry, I did not understand. I only understand 'title', 'description', 'both' and 'status' commands",
+            "Sorry, I did not understand. See README for command list.",
         )
 
         return
@@ -167,6 +188,8 @@ class MatrixModule(BotModule):
         super().set_settings(data)
         if data.get("status"):
             self.status = data["status"]
+        if data.get("type"):
+            self.type = data["type"]
 
     def help(self):
         return "If I see a url in a message I will try to get the title from the page and spit it out"

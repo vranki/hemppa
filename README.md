@@ -171,9 +171,12 @@ See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 #### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
-spit out the title if found. 
+spit out the title if found.
 
 Defaults to off and needs to be activated on every room you want this.
+
+You can choose to send titles as notices (as in Matrix spec) or normal
+messages (IRC users might prefer this). This is a global setting currently.
 
 Commands:
 
@@ -182,6 +185,8 @@ Commands:
 * !url description  - spam descriptions
 * !url both         - spam both title and description
 * !url off          - stop spamming
+* !url text         - send titles as normal text (must be owner)
+* !url notice       - sends titles as notices (must be owner)
 
 Example:
 
