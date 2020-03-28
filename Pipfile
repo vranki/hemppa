@@ -16,6 +16,7 @@ igramscraper = "*"
 twitterscraper = "*"
 httpx = "*"
 pyyaml = "==5.3"
+wolframalpha = "*"
 
 [dev-packages]
 pylint = "*"

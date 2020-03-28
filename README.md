@@ -13,6 +13,15 @@ If you don't want some modules, just delete the files from modules directory.
 
 Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
 
+## Hint: RSS Bridge
+
+RSS Bridge is awesome project that creates RSS feeds for sites that don't have them:
+https://github.com/RSS-Bridge/rss-bridge
+
+If you want bot to notify on new posts on a service, check out if RSS Bridge
+supports it! You can use the stock Matrix RSS bot to subscribe to feeds created
+by RSS bridge.
+
 ## Module list
 
 ### Bot
@@ -242,6 +251,22 @@ API Key:
 The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY` or by setting the api key as a bot owner with command `!apod apikey [apikey]`. 
 
 You can create one at https://api.nasa.gov/#signUp 
+
+### Wolfram Alpha
+
+Make queries to Wolfram Alpha
+
+You'll need to get an appid from https://products.wolframalpha.com/simple-api/documentation/
+
+Examples:
+
+* !wa 1+1
+* !wa airspeed of unladen swallow
+
+Commands:
+
+* !wa [query] - Query wolfram alpha
+* !wa appid [appid] - Set appid (must be done as bot owner)
 
 ## Bot setup
 
