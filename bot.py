@@ -19,7 +19,7 @@ import datetime
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError
 
 
 # Couple of custom exceptions
@@ -105,6 +105,35 @@ class Bot:
             "msgtype": "m.image"
         }
         await self.client.room_send(room.room_id, 'm.room.message', msg)
+
+    async def send_msg(self, mxid, roomname, message):
+        # Sends private message to user. Returns true on success.
+
+        # Find if we already have a common room with user:
+        msg_room = None
+        for croomid in self.client.rooms:
+            roomobj = self.client.rooms[croomid]
+            if len(roomobj.users) == 2:
+                for user in roomobj.users:
+                    if user == mxid:
+                        msg_room = roomobj
+
+        # Nope, let's create one
+        if not msg_room:
+            msg_room = await self.client.room_create(visibility=RoomVisibility.private,
+                name=roomname,
+                is_direct=True,
+                preset=RoomPreset.private_chat,
+                invite={mxid},
+                )
+
+        if not msg_room or (type(msg_room) is RoomCreateError):
+            self.logger.error(f'Unable to create room when trying to message {mxid}')
+            return False
+
+        # Send message to the room
+        await self.send_text(msg_room, message)
+        return True
 
     def remove_callback(self, callback):
         for cb_object in self.client.event_callbacks:
@@ -232,6 +261,12 @@ class Bot:
                     return
         else:
             self.logger.warning(f'Received invite event, but not joining as sender is not owner or bot not configured to join on invite. {event}')
+
+    async def memberevent_cb(self, room, event):
+        # Automatically leaves rooms where bot is alone.
+        if room.member_count == 1 and event.membership=='leave':
+            self.logger.info(f"membership event in {room.display_name} ({room.room_id}) with {room.member_count} members by '{event.sender}' - leaving room as i don't want to be left alone!")
+            await self.client.room_leave(room.room_id)
 
     def load_module(self, modulename):
         try:
@@ -361,6 +396,7 @@ class Bot:
             self.load_settings(self.get_account_data())
             self.client.add_event_callback(self.message_cb, RoomMessageText)
             self.client.add_event_callback(self.invite_cb, (InviteEvent,))
+            self.client.add_event_callback(self.memberevent_cb, (RoomMemberEvent,))
 
             if self.join_on_invite:
                 self.logger.info('Note: Bot will join rooms if invited')
