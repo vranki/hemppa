@@ -70,20 +70,25 @@ class Bot:
 
         self.logger.debug("Logger initialized")
 
-    async def send_text(self, room, body, msgtype="m.notice"):
+    async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
         msg = {
             "body": body,
-            "msgtype": msgtype
+            "msgtype": msgtype,
         }
+        if bot_ignore:
+            msg["org.vranki.hemppa.ignore"] = "true"
+
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
-    async def send_html(self, room, html, plaintext, msgtype="m.notice"):
+    async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
         msg = {
             "msgtype": msgtype,
             "format": "org.matrix.custom.html",
             "formatted_body": html,
             "body": plaintext
         }
+        if bot_ignore:
+            msg["org.vranki.hemppa.ignore"] = "true"
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_image(self, room, url, body):
@@ -133,6 +138,10 @@ class Bot:
     def is_owner(self, event):
         return event.sender in self.owners
 
+    # Checks if this event should be ignored by bot, including custom property
+    def should_ignore_event(self, event):
+        return "org.vranki.hemppa.ignore" in event.source['content']
+
     def save_settings(self):
         module_settings = dict()
         for modulename, moduleobject in self.modules.items():
@@ -157,8 +166,13 @@ class Bot:
                     traceback.print_exc(file=sys.stderr)
 
     async def message_cb(self, room, event):
-        # Figure out the command
+        # Ignore if asked to ignore
+        if self.should_ignore_event(event):
+            print('Ignoring this!')
+            return
+
         body = event.body
+        # Figure out the command
         if not self.starts_with_command(body):
             return
 

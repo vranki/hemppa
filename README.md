@@ -324,11 +324,6 @@ __*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other m
 
 To enable debugging for the root logger set `DEBUG=True`.
 
-## Logging
-
-Uses [python logging facility](https://docs.python.org/3/library/logging.html) to print information to the console. Customize it to your needs editing `config/logging.yml`.
-See [logging.config documentation](https://docs.python.org/3/library/logging.config.html) for further information. 
-
 ## Module API
 
 Just write a python file with desired command name and place it in modules. See current modules for
@@ -338,11 +333,11 @@ examples. No need to register it anywhere else.
 ```python
 
 class MatrixModule(BotModule):
-    
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         args.pop(0)
-        
+
         # Echo what they said back
         self.logger.debug(f"room: {room.name} sender: {event.sender} wants an echo")
         await bot.send_text(room, ' '.join(args))
@@ -350,9 +345,9 @@ class MatrixModule(BotModule):
     def help(self):
         return 'Echoes back what user has said'
 
-``` 
+```
 
-Functions:
+### Functions
 
 * matrix_start - Called once on startup
 * async matrix_message - Called when a message is sent to room starting with !module_name
@@ -364,10 +359,22 @@ Functions:
 
 You only need to implement the ones you need. See existing bots for examples.
 
-Logging:
+### Logging
+
+Uses [python logging facility](https://docs.python.org/3/library/logging.html) to print information to the console. Customize it to your needs editing `config/logging.yml`.
+See [logging.config documentation](https://docs.python.org/3/library/logging.config.html) for further information. 
 
 Use `self.logger` in your module to print information to the console.
 
 Module settings are stored in Matrix account data.
+
+### Ignoring text messages
+
+If you want to send a m.text message that bot should always ignore, set "org.vranki.hemppa.ignore" property in the event. Bot will ignore events with this set. 
+Set the bot_ignore parameter to True in sender functions to acheive this.
+
+If you write a module that installs a custom message handler, use bot.should_ignore_event(event) to check if event should be ignored.
+
+## Contributing
 
 If you write a new module, please make a PR if it's something useful for others.

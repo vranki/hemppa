@@ -46,6 +46,9 @@ class MatrixModule(BotModule):
         """
         Handle client callbacks for all room text events
         """
+        if self.bot.should_ignore_event(event):
+            return
+
         # no content at all?
         if len(event.body) < 1:
             return
@@ -88,7 +91,7 @@ class MatrixModule(BotModule):
                 msg = f"Description: {description}"
 
             if msg is not None:
-                await self.bot.send_text(room, msg, self.type)
+                await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
 
     @lru_cache(maxsize=128)
     def get_content_from_url(self, url):
@@ -182,6 +185,7 @@ class MatrixModule(BotModule):
     def get_settings(self):
         data = super().get_settings()
         data['status'] = self.status
+        data['type'] = self.type
         return data
 
     def set_settings(self, data):
