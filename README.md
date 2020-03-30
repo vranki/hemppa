@@ -218,11 +218,11 @@ Environ variables seen by commands:
 
 Commands:
 
-* !cmd run "command"         - Run command "command" (Must be done as bot owner)
-* !cmd add cmdname "command" - Add new named command "command"  (Must be done as bot owner)
-* !cmd remove cmdname        - Remove named command (Must be done as bot owner)
-* !cmd list                  - List named commands
-* !cmd cmdname               - Run a named command
+* !cmd run command              - Run command "command" (Must be done as bot owner)
+* !cmd add "cmdname" command    - Add new named command "command"  (Must be done as bot owner)
+* !cmd remove "cmdname"         - Remove named command (Must be done as bot owner)
+* !cmd list                     - List named commands
+* !cmd "cmdname"                - Run a named command
 
 Example:
 
