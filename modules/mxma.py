@@ -10,6 +10,8 @@ class MatrixModule(PollingService):
         self.service_name = 'MXMA'
         self.poll_interval_min = 5
         self.poll_interval_random = 2
+        self.owner_only = True
+        self.send_all = True
 
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:

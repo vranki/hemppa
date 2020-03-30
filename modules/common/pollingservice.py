@@ -13,6 +13,8 @@ class PollingService(BotModule):
         self.service_name = "Service"
         self.poll_interval_min = 30  # TODO: Configurable
         self.poll_interval_random = 30
+        self.owner_only = False # Set to true if service can be run only by bot owner
+        self.send_all = False # Set to true to send all received items, even on first sync
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.account_rooms):
@@ -27,7 +29,9 @@ class PollingService(BotModule):
                 # First poll
                 if not self.next_poll_time.get(roomid, None):
                     self.next_poll_time[roomid] = now + timedelta(hours=-1)
-                    send_messages = False
+                    if not self.send_all:
+                        send_messages = False
+                        self.logger.debug(f'Polling all accounts for room {roomid} - but this is first sync so I wont send messages')
                 if now >= self.next_poll_time.get(roomid):
                     accounts = self.account_rooms[roomid]
                     for account in accounts:
@@ -50,6 +54,9 @@ class PollingService(BotModule):
         await self.poll_implementation(bot, account, roomid, send_messages)
 
     async def matrix_message(self, bot, room, event):
+        if self.owner_only:
+            bot.must_be_owner(event)
+
         args = event.body.split()
 
         if len(args) == 2:

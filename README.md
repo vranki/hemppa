@@ -177,7 +177,42 @@ without any authentication or api key.
 
 See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 
-#### Url
+#### Matrix Messaging API (mxma)
+
+This is a simple API to ask bot to send messages in Matrix using JSON file from external service.
+
+You'll need an API endpoint (webserver) that contains a message queue. It must respond with following JSON to a HTTP GET request:
+
+```json
+{
+   "messages":[
+      {
+         "to": "@example:matrix.org",
+         "title": "Room Title",
+         "message": "Hello from Hemppa"
+      },
+      {
+         "to": "@another:matrix.user",
+         "title": "Room 2 Title",
+         "message": "Second message"
+      }
+   ]
+}
+```
+
+Normally you want to clear the messages when the endpoint is GETted or the messages will repeat
+every time bot updates itself.
+
+These messages are sent to given Matrix users in private message with given room title.
+Messages are sent "best effort" - if sending fails, it will be logged to bot output log.
+
+Then just:
+
+* !mxma add http://url.to.the/endpoint.json
+
+mxma requires all commands to be run as bot owner.
+
+### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
 spit out the title if found.
@@ -201,7 +236,7 @@ Example:
 
 * !url status
 
-#### Cmd
+### Cmd
 
 Can be used to pre-configure shell commands run by bot. This is easy way to add
 security issues to your bot so be careful.
@@ -267,38 +302,6 @@ Commands:
 
 * !wa [query] - Query wolfram alpha
 * !wa appid [appid] - Set appid (must be done as bot owner)
-
-### Matrix Messaging API
-
-This is a simple API to ask bot to send messages in Matrix using JSON file from external service.
-
-You'll need an API endpoint (webserver) that contains a message queue. It must respond with following JSON to a HTTP GET request:
-
-```json
-{
-   "messages":[
-      {
-         "to": "@example:matrix.org",
-         "title": "Room Title",
-         "message": "Hello from Hemppa"
-      },
-      {
-         "to": "@another:matrix.user",
-         "title": "Room 2 Title",
-         "message": "Second message"
-      }
-   ]
-}
-```
-
-Normally you want to clear the messages when the endpoint is GETted or the messages will repeat
-every time bot updates itself.
-
-These messages are sent to given Matrix users in private message with given room title.
-Messages are sent "best effort" - if sending fails, it will be logged to bot output log.
-
-Then just:
-* !mxma add http://url.to.the/endpoint.json
 
 ## Bot setup
 
