@@ -147,6 +147,16 @@ Example:
 
 * !loc Tampere
 
+### Room
+
+This module is for interacting with the room that the commands are being executed on.
+
+* !room servers:                                    Lists the servers in the room
+* !room joined:                                     Responds with the joined members count
+* !room banned:                                     Lists the banned users and their provided reason
+* !room kicked:                                     Lists the kicked users and their provided reason
+* !room state [event type] [optional state key]:    Gets a state event with given event type and optional state key
+
 ### Slow polling services
 
 These have the same usage - you can add one or more accounts to a room and bot polls the accounts.
