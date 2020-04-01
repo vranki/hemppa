@@ -15,6 +15,8 @@ class MatrixModule(BotModule):
 
         if args[0] == 'servers':
             await MatrixModule.servers_in_room(bot, room)
+        elif args[0] == 'joined':
+            await MatrixModule.joined_members(bot, room)
 
     @staticmethod
     async def servers_in_room(bot, room: nio.MatrixRoom):
@@ -33,3 +35,7 @@ class MatrixModule(BotModule):
                     servers_in_room += f" - {server}\n"
             servers_in_room = f"({count}) {servers_in_room}"
             await bot.send_text(room, servers_in_room)
+
+    @staticmethod
+    async def joined_members(bot, room: nio.MatrixRoom):
+        await bot.send_text(room, f"Member count: {room.member_count}")
