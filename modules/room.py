@@ -18,7 +18,7 @@ class MatrixModule(BotModule):
         super().__init__(name)
 
     def help(self):
-        pass
+        return "Commands for interacting with the current room "
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
