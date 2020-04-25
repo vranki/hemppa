@@ -100,9 +100,9 @@ class MatrixModule(BotModule):
         """
         title = None
         description = None
-
+        timeout = httpx.Timeout(10.0, connect_timeout=2.0, read_timeout=5.0)
         try:
-            r = httpx.get(url)
+            r = httpx.get(url, timeout=timeout)
         except Exception as e:
             self.logger.error(f"Failed fetching url {url}. Error: {e}")
             return (title, description)
