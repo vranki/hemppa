@@ -89,25 +89,7 @@ class MatrixModule(BotModule):
         if len(args) == 1:
             if room.room_id in self.station_rooms:
                 station = self.station_rooms[room.room_id]
-                data = self.get_flights(station, self.room_timezones.get(room.room_id, 0))
-                out = ""
-                if len(data["sorties"]) == 0:
-                    out = "No known flights today at " + station
-                else:
-                    out = "Flights at " + station.upper() + " today:\n"
-                    for sortie in data["sorties"]:
-                        # Don't show towplanes
-                        if sortie["type"] != 2:
-                            if sortie["ldg"]["time"] == "":
-                                sortie["ldg"]["time"] = u"  \u2708  "
-                            else:
-                                sortie["ldg"]["time"] = "-" + sortie["ldg"]["time"]
-                                if sortie["ldg"]["loc"] != sortie["tkof"]["loc"]:
-                                    sortie["tkof"]["time"] = sortie["tkof"]["time"] + "(" + sortie["tkof"]["loc"] + ")"
-                                    sortie["ldg"]["time"] = sortie["ldg"]["time"] + "(" + sortie["ldg"]["loc"] + ") "
-
-                            out = out + sortie["tkof"]["time"] + sortie["ldg"]["time"] + " " + sortie["dt"] + " " + str(sortie["dalt"]) + "m " + self.glider2string(sortie) + "\n"
-                await bot.send_text(room, out)
+                await self.show_flog(bot, room, station)
             else:
                 await bot.send_text(room, 'No OGN station set for this room - set it first.')
 
@@ -118,25 +100,30 @@ class MatrixModule(BotModule):
                 self.live_rooms.remove(room.room_id)
                 await bot.send_text(room, f'Cleared OGN station for this room')
 
-            if args[1] == 'status':
+            elif args[1] == 'status':
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}, timezone: {self.room_timezones.get(room.room_id, 0)} api key is set: {len(self.api_key) > 0}')
 
-            if args[1] == 'poll':
+            elif args[1] == 'poll':
                 bot.must_be_admin(room, event)
                 await self.poll_implementation(bot)
 
-            if args[1] == 'live':
+            elif args[1] == 'live':
                 bot.must_be_admin(room, event)
                 self.live_rooms.append(room.room_id)
                 bot.save_settings()
                 await bot.send_text(room, f'Sending live updates for station {self.station_rooms.get(room.room_id)} to this room')
 
-            if args[1] == 'rmlive':
+            elif args[1] == 'rmlive':
                 bot.must_be_admin(room, event)
                 self.live_rooms.remove(room.room_id)
                 bot.save_settings()
                 await bot.send_text(room, f'Not sending live updates for station {self.station_rooms.get(room.room_id)} to this room anymore')
+
+            else:
+                # Assume parameter is a station name
+                station = args[1]
+                await self.show_flog(bot, room, station)
 
         elif len(args) == 3:
             if args[1] == 'station':
@@ -162,6 +149,27 @@ class MatrixModule(BotModule):
                 self.room_timezones[room.room_id] = tz
                 bot.save_settings()
                 await bot.send_text(room, f'Timezone set to {tz}')
+
+    async def show_flog(self, bot, room, station):
+        data = self.get_flights(station, self.room_timezones.get(room.room_id, 0))
+        out = ""
+        if len(data["sorties"]) == 0:
+            out = "No known flights today at " + station
+        else:
+            out = "Flights at " + station.upper() + " today:\n"
+            for sortie in data["sorties"]:
+                # Don't show towplanes
+                if sortie["type"] != 2:
+                    if sortie["ldg"]["time"] == "":
+                        sortie["ldg"]["time"] = u"  \u2708  "
+                    else:
+                        sortie["ldg"]["time"] = "-" + sortie["ldg"]["time"]
+                        if sortie["ldg"]["loc"] != sortie["tkof"]["loc"]:
+                            sortie["tkof"]["time"] = sortie["tkof"]["time"] + "(" + sortie["tkof"]["loc"] + ")"
+                            sortie["ldg"]["time"] = sortie["ldg"]["time"] + "(" + sortie["ldg"]["loc"] + ") "
+
+                    out = out + sortie["tkof"]["time"] + sortie["ldg"]["time"] + " " + sortie["dt"] + " " + str(sortie["dalt"]) + "m " + self.glider2string(sortie) + "\n"
+        await bot.send_text(room, out)
 
     def get_settings(self):
         data = super().get_settings()

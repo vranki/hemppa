@@ -344,6 +344,7 @@ bot ownership)
 * !flog station EFJM - set the default station to track for this room
 * !flog rmstation - remove station from this room
 * !flog - Show field flog for the room's station (can be used by any user)
+* !flog EFJM - Show field flog for any station (can be used by any user)
 * !flog status - print status of this room
 * !flog live - enable live field log for this room
 * !flog rmlive - disable live field log for this room
