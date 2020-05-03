@@ -313,6 +313,42 @@ Commands:
 * !wa [query] - Query wolfram alpha
 * !wa appid [appid] - Set appid (must be done as bot owner)
 
+### OGN Field Log (FLOG)
+
+Open Glider Network maintains a unified tracking platform for gliders, drones and other aircraft.
+
+Read more about OGN at https://www.glidernet.org/
+
+FLOG module supports showing field logs for OGN receivers and can display live
+field log in a room.
+
+It uses KTrax service. Please read https://ktrax.kisstech.ch/api-usage and request a
+API key for yourself.
+
+Real life field log output looks something like:
+
+```
+Flights at ESGE today:
+12:02-12:13 0:11 290m Ultralight SE-VSL
+12:17-13:18 1:01 1080m ASG-32 MI SE-SKV VH
+12:26-13:52 1:25 1090m DG-1000 SE-UMY VF
+12:34-16:32 3:57 1710m Duo Discus xlt SE-UXF XF
+```
+
+Commands and examples:
+
+(You must be room admin for all commands, except apikey which requires
+bot ownership)
+
+* !flog apikey FLOG-123456 - Set api key
+* !flog station EFJM - set the default station to track for this room
+* !flog rmstation - remove station from this room
+* !flog - Show field flog for the room's station (can be used by any user)
+* !flog status - print status of this room
+* !flog live - enable live field log for this room
+* !flog rmlive - disable live field log for this room
+* !flog timezone 3 - set timezone (relative to UTC, see API docs)
+
 ## Bot setup
 
 * Create a Matrix user

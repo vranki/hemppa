@@ -39,8 +39,11 @@ class PollingService(BotModule):
             else:
                 self.logger.warning(f'Bot is no longer in room {roomid} - deleting it from {self.service_name} room list')
                 delete_rooms.append(roomid)
-        for roomid in delete_rooms:
-            self.account_rooms.pop(roomid, None)
+
+        if len(delete_rooms):
+            for roomid in delete_rooms:
+                self.account_rooms.pop(roomid, None)
+            bot.save_settings()
 
         self.first_run = False
 
