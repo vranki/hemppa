@@ -293,9 +293,9 @@ Command:
 
 API Key:
 
-The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY` or by setting the api key as a bot owner with command `!apod apikey [apikey]`. 
+The module uses a demo API Key which can be replaced by your own api key by setting the environment variable `APOD_API_KEY` or by setting the api key as a bot owner with command `!apod apikey [apikey]`.
 
-You can create one at https://api.nasa.gov/#signUp 
+You can create one at https://api.nasa.gov/#signUp
 
 ### Wolfram Alpha
 
@@ -367,6 +367,8 @@ pipenv install --pre
 MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53CgYAYFgo" MATRIX_SERVER="https://matrix.org" JOIN_ON_INVITE=True BOT_OWNERS=@botowner:matrix.org
  python3 bot.py
 ```
+
+NOTE: The Pipfile does not define the python version as it is always strict and causes problems. See https://github.com/pypa/pipenv/issues/1050 . Python 3.7 and 3.8 should both work fine.
 
 ## Running with Docker
 
@@ -444,7 +446,7 @@ You only need to implement the ones you need. See existing bots for examples.
 ### Logging
 
 Uses [python logging facility](https://docs.python.org/3/library/logging.html) to print information to the console. Customize it to your needs editing `config/logging.yml`.
-See [logging.config documentation](https://docs.python.org/3/library/logging.config.html) for further information. 
+See [logging.config documentation](https://docs.python.org/3/library/logging.config.html) for further information.
 
 Use `self.logger` in your module to print information to the console.
 
@@ -452,7 +454,7 @@ Module settings are stored in Matrix account data.
 
 ### Ignoring text messages
 
-If you want to send a m.text message that bot should always ignore, set "org.vranki.hemppa.ignore" property in the event. Bot will ignore events with this set. 
+If you want to send a m.text message that bot should always ignore, set "org.vranki.hemppa.ignore" property in the event. Bot will ignore events with this set.
 Set the bot_ignore parameter to True in sender functions to acheive this.
 
 If you write a module that installs a custom message handler, use bot.should_ignore_event(event) to check if event should be ignored.
