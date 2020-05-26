@@ -129,6 +129,7 @@ Commands:
 * !cron daily [hour] [command] - Run command on start of hour (Must be done as room admin)
 * !cron list - List commands in this room
 * !cron clear - Clear command s in this room (Must be done as room admin)
+* !cron time - Print the current datetime and time zone that the cron command will use (time zone set using the `TZ` environment variable)
 
 Examples:
 
@@ -381,6 +382,7 @@ MATRIX_SERVER=https://matrix.org
 JOIN_ON_INVITE=True
 BOT_OWNERS=@user1:matrix.org,@user2:matrix.org
 DEBUG=False
+TZ=America/New_York
 ```
 
 Note: without quotes!
@@ -407,6 +409,8 @@ Typically set your own id into it.
 __*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other module that can cause bot to send custom commands is used, as it could potentially be used to run owner commands as the bot itself.
 
 To enable debugging for the root logger set `DEBUG=True`.
+
+`TZ` takes any valid [TZ database name](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) value and sets the bot server to the appropriate zone.
 
 ## Module API
 
