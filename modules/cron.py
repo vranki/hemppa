@@ -1,4 +1,5 @@
 import shlex
+import os
 from datetime import datetime
 
 from .common.module import BotModule
@@ -30,6 +31,8 @@ class MatrixModule(BotModule):
                 self.daily_commands.pop(room.room_id, None)
                 bot.save_settings()
                 await bot.send_text(room, 'Cleared commands on this room.')
+            elif args[0] == 'time':
+                await bot.send_text(room, '{datetime} {timezone}'.format(datetime=datetime.now(), timezone=os.environ.get('TZ')))
 
     def help(self):
         return ('Runs scheduled commands')

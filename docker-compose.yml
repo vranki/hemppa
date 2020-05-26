@@ -13,6 +13,7 @@ services:
       - JOIN_ON_INVITE
       - BOT_OWNERS
       - DEBUG
+      - TZ
     volumes:
       - ${PWD}/config/:/bot/config
       - ${PWD}/credentials.json:/bot/credentials.json
