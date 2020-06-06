@@ -11,6 +11,9 @@ Type !help in room with this bot running to list active modules.
 
 If you don't want some modules, just delete the files from modules directory.
 
+End-to-end encryption is currently not supported by bot but should be doable.
+Bot won't respond to commands in e2ee rooms. PR for enabling e2ee is welcome!
+
 Support room: #hemppa:hacklab.fi - https://matrix.to/#/#hemppa:hacklab.fi
 
 ## Hint: RSS Bridge
