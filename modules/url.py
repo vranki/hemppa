@@ -114,7 +114,11 @@ class MatrixModule(BotModule):
         # try parse and get the title
         try:
             soup = BeautifulSoup(r.text, "html.parser")
-            if soup.head and soup.head.title:
+            # Prefer og:title first (for example Youtube uses this)
+            ogtitle = soup.find("meta",  property="og:title")
+            if ogtitle:
+                title = ogtitle["content"]
+            elif soup.head and soup.head.title:
                 title = soup.head.title.string.strip()
             descr_tag = soup.find("meta", attrs={"name": "description"})
             if descr_tag:
