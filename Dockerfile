@@ -4,10 +4,9 @@ WORKDIR /bot
 
 COPY Pipfile .
 RUN pip install pipenv && \
-    pipenv install --pre && \
-    pipenv install --deploy --system && \
-    rm -r /root/.cache/* && \
-    rm -r /root/.local/*
+    pip install pipfile-requirements
+RUN pipfile2req Pipfile > requirements.txt
+RUN pip install -r requirements.txt
 
 COPY bot.py *.json *.pickle /bot/
 COPY config config

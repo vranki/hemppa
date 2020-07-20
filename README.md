@@ -354,6 +354,11 @@ bot ownership)
 * !flog rmlive - disable live field log for this room
 * !flog timezone 3 - set timezone (relative to UTC, see API docs)
 
+### Jitsi
+
+If enabled, Jitsi calls created with Matrix clients will be sent as text messages
+to rooms, allowing non-matrix users to join them.
+
 ## Bot setup
 
 * Create a Matrix user

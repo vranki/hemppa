@@ -15,7 +15,7 @@ requests = "*"
 igramscraper = "*"
 twitterscraper = "*"
 httpx = "*"
-pyyaml = "==5.3"
+PyYAML = "==5.3"
 wolframalpha = "*"
 
 [dev-packages]

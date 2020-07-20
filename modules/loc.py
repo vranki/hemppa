@@ -3,8 +3,6 @@ from nio import RoomMessageUnknown
 
 from modules.common.module import BotModule
 
-from modules.common.module import BotModule
-
 
 class MatrixModule(BotModule):
     bot = None
