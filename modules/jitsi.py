@@ -16,7 +16,7 @@ class MatrixModule(BotModule):
         bot.remove_callback(self.unknownevent_cb)
 
     async def unknownevent_cb(self, room, event):
-        if event.type == 'im.vector.modular.widgets' and event.source['content']['type'] == 'jitsi':
+        if 'type' in event.source and event.source['type'] == 'im.vector.modular.widgets' and event.source['content']['type'] == 'jitsi':
             domain = event.source['content']['data']['domain']
             conferenceId = event.source['content']['data']['conferenceId']
             isAudioOnly = event.source['content']['data']['isAudioOnly']
