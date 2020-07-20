@@ -6,6 +6,7 @@ import shlex
 class MatrixModule(BotModule):
     def __init__(self, name):
         super().__init__(name)
+        self.enabled = False
         self.commands = {}
 
     async def matrix_message(self, bot, room, event):
