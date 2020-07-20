@@ -16,23 +16,27 @@ class MatrixModule(BotModule):
         bot.remove_callback(self.unknownevent_cb)
 
     async def unknownevent_cb(self, room, event):
-        if 'type' in event.source and event.source['type'] == 'im.vector.modular.widgets' and event.source['content']['type'] == 'jitsi':
-            domain = event.source['content']['data']['domain']
-            conferenceId = event.source['content']['data']['conferenceId']
-            isAudioOnly = event.source['content']['data']['isAudioOnly']
-            sender = event.source['sender']
-            sender_response = await self.bot.client.get_displayname(event.sender)
-            sender = sender_response.displayname
-            # This is just a guess - is this the proper way to generate URL? Probably not.
-            jitsiUrl = f'https://{domain}/{conferenceId}'
+        try:
+            if 'type' in event.source and event.source['type'] == 'im.vector.modular.widgets' and event.source['content']['type'] == 'jitsi':
+                # Todo: Domain not found in Element Android events!
+                domain = event.source['content']['data']['domain']
+                conferenceId = event.source['content']['data']['conferenceId']
+                isAudioOnly = event.source['content']['data']['isAudioOnly']
+                sender = event.source['sender']
+                sender_response = await self.bot.client.get_displayname(event.sender)
+                sender = sender_response.displayname
+                # This is just a guess - is this the proper way to generate URL? Probably not.
+                jitsiUrl = f'https://{domain}/{conferenceId}'
 
-            calltype = 'video call'
-            if isAudioOnly:
-                calltype = 'audio call'
+                calltype = 'video call'
+                if isAudioOnly:
+                    calltype = 'audio call'
 
-            plainMessage = f'{sender} started a {calltype}: {jitsiUrl}'
-            htmlMessage = f'{sender} started a <a href="{jitsiUrl}">{calltype}</a>'
-            await self.bot.send_html(room, htmlMessage, plainMessage)
+                plainMessage = f'{sender} started a {calltype}: {jitsiUrl}'
+                htmlMessage = f'{sender} started a <a href="{jitsiUrl}">{calltype}</a>'
+                await self.bot.send_html(room, htmlMessage, plainMessage)
+        except Exception as e:
+            self.logger.error(f"Failed parsing Jitsi event. Error: {e}")
 
     async def matrix_message(self, bot, room, event):
         pass
