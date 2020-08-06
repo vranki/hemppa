@@ -359,6 +359,28 @@ bot ownership)
 If enabled, Jitsi calls created with Matrix clients will be sent as text messages
 to rooms, allowing non-matrix users to join them.
 
+Note: Currently supports only calls placed from Element Web. Android version
+sends different messages and has not yet been reverse engineered.
+
+### Mastodon
+
+Send toots to Mastodon. You can login to Mastodon with the bot and toot with it. Login is
+personal - it's mapped to your Matrix ID. You can limit usage to bot owners only or make
+it public.
+
+Commands:
+
+* !md status - print status of mastodon module
+* !md login [instanceurl] [e-mail] [password] - log in your Matrix user to mastodon instance (do in private chat!)
+* !md toot [toot] - send a toot message
+* !md logout - log out the user from the bot
+* !md setpublic - ANY user can use login command to login and use the Mastodon module (must be done as bot owner)
+* !md setprivate - Only bot owners can use Mastodon module (default) (must be done as bot owner)
+
+Example of login command:
+
+* !md login https://my.instance/ me@email.invalid r00tm3
+
 ## Bot setup
 
 * Create a Matrix user

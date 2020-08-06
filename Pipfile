@@ -17,6 +17,7 @@ twitterscraper = "*"
 httpx = "*"
 PyYAML = "==5.3"
 wolframalpha = "*"
+Mastodon-py = "*"
 
 [dev-packages]
 pylint = "*"
