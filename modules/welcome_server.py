@@ -22,7 +22,7 @@ class MatrixModule(BotModule):
 
         # If the provided welcome message is a file path, read the file into
         # the welcome message. Otherwise, use the variable data as the message.
-        if os.path.isFile(os.getenv("WELCOME_MESSAGE")):
+        if os.path.isfile(os.getenv("WELCOME_MESSAGE")):
             with open(os.getenv("WELCOME_MESSAGE"), "r") as file:
                 self.welcome_message = file.read()
         else:
@@ -51,14 +51,15 @@ class MatrixModule(BotModule):
                 "Welcome",
                 self.welcome_message
             )
-        for owner in bot.owners:
-            await bot.send_msg(
-                owner,
-                "Welcome Bot",
-                "Sent a welcome message to: {new_users}".format(
-                    new_users=user_list
+        if len(user_list) > 0:
+            for owner in bot.owners:
+                await bot.send_msg(
+                    owner,
+                    "Welcome Bot",
+                    "Sent a welcome message to: {new_users}".format(
+                        new_users=user_list
+                    )
                 )
-            )
 
     def get_user_list_delta(
         self,

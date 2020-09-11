@@ -11,14 +11,13 @@ class MatrixModule(BotModule):
 
     def __init__(self, name):
         super().__init__(name)
-        room_id = os.getenv("WELCOME_ROOMID")
-        self.room_id = room_id
+        self.room_id = os.getenv("WELCOME_ROOMID")
         self.last_welcome_room_user_count = 0
         self.last_welcome_room_users = []
 
         # If the provided welcome message is a file path, read the file into
         # the welcome message. Otherwise, use the variable data as the message.
-        if os.path.isFile(os.getenv("WELCOME_MESSAGE")):
+        if os.path.isfile(os.getenv("WELCOME_MESSAGE")):
             with open(os.getenv("WELCOME_MESSAGE"), "r") as file:
                 self.welcome_message = file.read()
         else:
@@ -38,13 +37,13 @@ class MatrixModule(BotModule):
 
         if pollcount != 1:
             new_users = newcomer_room_user_delta.get("recently_added", [])
-            if os.getenv("WELCOME_ROOM_NOTIFY_DEPARTURE") and \
+            if os.getenv("WELCOME_ROOM_NOTIFY_DEPARTURE", 0) and \
                     len(newcomer_room_user_delta.get("recently_removed")) > 0:
                 for owner in bot.owners:
                     await bot.send_msg(
                         owner,
                         "Welcome Bot",
-                        "User {left} left the Newcomers channel".format(
+                        "User {left} left the welcome channel".format(
                             left=newcomer_room_user_delta.get(
                                 "recently_removed")
                         )
@@ -61,14 +60,15 @@ class MatrixModule(BotModule):
                 "Welcome",
                 self.welcome_message
             )
-        for owner in bot.owners:
-            await bot.send_msg(
-                owner,
-                "Welcome Bot",
-                "Sent a welcome message to: {noobs}".format(
-                    noobs=user_list
+        if len(user_list) > 0:
+            for owner in bot.owners:
+                await bot.send_msg(
+                    owner,
+                    "Welcome Bot",
+                    "Sent a welcome message to: {noobs}".format(
+                        noobs=user_list
+                    )
                 )
-            )
 
     def get_user_list_delta(
         self,
