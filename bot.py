@@ -162,12 +162,14 @@ class Bot:
 
     # Returns true if event's sender is admin in the room event was sent in,
     # or is bot owner
+    # Note: Bridged userd seem to get PL50 automatically so this has to be 
+    # set to more than 50. TODO: Make configurable
     def is_admin(self, room, event):
         if self.is_owner(event):
             return True
         if event.sender not in room.power_levels.users:
             return False
-        return room.power_levels.users[event.sender] >= 50
+        return room.power_levels.users[event.sender] > 50
 
     # Returns true if event's sender is owner of the bot
     def is_owner(self, event):
