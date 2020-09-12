@@ -14,8 +14,6 @@ class MatrixModule(BotModule):
         args.pop(0)
         if len(args) >= 1:
             if args[0] == "toot":
-                if not self.public:
-                    bot.must_be_owner(event)
                 toot_body = " ".join(args[1:])
                 accesstoken = None
                 if room.room_id in self.roomlogins.keys():
@@ -24,6 +22,8 @@ class MatrixModule(BotModule):
                     accesstoken = self.roomlogins[room.room_id][1]
                     instanceurl = self.roomlogins[room.room_id][2]
                 elif event.sender in self.logins.keys():
+                    if not self.public:
+                        bot.must_be_owner(event)
                     username = self.logins[event.sender][0]
                     accesstoken = self.logins[event.sender][1]
                     instanceurl = self.logins[event.sender][2]
