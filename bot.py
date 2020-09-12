@@ -19,7 +19,7 @@ import datetime
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse
 
 
 # Couple of custom exceptions
@@ -37,7 +37,7 @@ class Bot:
 
     def __init__(self):
         self.appid = 'org.vranki.hemppa'
-        self.version = '1.4'
+        self.version = '1.5'
         self.client = None
         self.join_on_invite = False
         self.modules = dict()
@@ -144,6 +144,12 @@ class Bot:
     def get_room_by_id(self, room_id):
         return self.client.rooms[room_id]
 
+    async def get_room_by_alias(self, alias):
+        rar = await self.client.room_resolve_alias(alias)
+        if type(rar) is RoomResolveAliasResponse:
+            return rar.room_id
+        return None
+
     # Throws exception if event sender is not a room admin
     def must_be_admin(self, room, event):
         if not self.is_admin(room, event):
@@ -197,7 +203,8 @@ class Bot:
     async def message_cb(self, room, event):
         # Ignore if asked to ignore
         if self.should_ignore_event(event):
-            print('Ignoring this!')
+            if self.debug:
+                print('Ignoring event!')
             return
 
         body = event.body
