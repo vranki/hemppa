@@ -18,6 +18,5 @@ services:
       - ${PWD}/config/:/bot/config
       - ${PWD}/credentials.json:/bot/credentials.json
       - ${PWD}/token.pickle:/bot/token.pickle
-      - ${PWD}/welcome.md:/bot/welcome.md
 
     stop_signal: SIGINT
