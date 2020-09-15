@@ -14,9 +14,6 @@ services:
       - BOT_OWNERS
       - DEBUG
       - TZ
-      - WELCOME_ROOMID
-      - WELCOME_MESSAGE
-      - WELCOME_ROOM_NOTIFY_DEPARTURE
     volumes:
       - ${PWD}/config/:/bot/config
       - ${PWD}/credentials.json:/bot/credentials.json
