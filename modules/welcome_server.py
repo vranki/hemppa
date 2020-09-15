@@ -27,10 +27,10 @@ class MatrixModule(BotModule):
         # Message body possibilities:
         #   ["welcome_message", "query_host", "settings"]
         if args[0] == "welcome_message":
-            users = bot.client.rooms[room.room_id].users
+            users = self.get_server_user_list()
             welcome_settings = {
                 "last_server_user_count": len(users),
-                "last_server_users": [username for username in users],
+                "last_server_users": users,
                 "welcome_message": event.body.split("welcome_message", 1)[1],
                 "user_query_host": os.getenv("MATRIX_SERVER")
             }
@@ -51,13 +51,12 @@ class MatrixModule(BotModule):
             self.welcome_settings = data["welcome_settings"]
 
     async def matrix_poll(self, bot, pollcount):
-        server_user_delta = self.get_server_user_delta()
+        server_user_delta = self.get_server_user_delta(bot)
 
         # The first time this bot runs it will detect all users as new, so
         # allow it to one once without taking action.
         if pollcount != 1:
-            new_users = [u.get("name") for u in server_user_delta.get(
-                "recently_added", [])]
+            new_users = server_user_delta.get("recently_added", [])
             await self.welcome_users(
                 new_users,
                 self.welcome_settings["welcome_message"],
@@ -68,6 +67,9 @@ class MatrixModule(BotModule):
         return "Poll for new users on the server and welcome them"
 
     async def welcome_users(self, user_list, message, bot):
+        if len(user_list) > 1:
+            print(user_list)
+            return
         for user in user_list:
             await bot.send_msg(
                 user,
@@ -105,11 +107,22 @@ class MatrixModule(BotModule):
             "recently_added": recently_added
         }
 
-    def get_server_user_delta(self):
+    def get_server_user_delta(self, bot):
         """
         Get the full user list for the server and return the change in users
         since the last run.
         """
+        user_list = self.get_server_user_list()
+        user_delta = self.get_user_list_delta(
+            user_list,
+            self.welcome_settings["last_server_users"]
+        )
+        self.welcome_settings["last_server_users"] = [u for u in user_list]
+        self.welcome_settings["last_server_user_count"] = len(user_list)
+        bot.save_settings()
+        return user_delta
+
+    def get_server_user_list(self):
         user_data = requests.get(
             self.welcome_settings["user_query_host"] + "/_synapse/admin/v2/users",
             headers={"Authorization": "Bearer {token}".format(
@@ -117,11 +130,5 @@ class MatrixModule(BotModule):
             )}
         )
         user_data_json = user_data.json()
-        user_list = user_data_json.get("users", [])
-        user_delta = self.get_user_list_delta(
-            user_list,
-            self.welcome_settings["last_server_users"]
-        )
-        self.welcome_settings["last_server_users"] = [u for u in user_list]
-        self.welcome_settings["last_server_user_count"] = user_data_json.get("total")
-        return user_delta
+        user_list = [u.get("name") for u in user_data_json.get("users", [])]
+        return user_list
