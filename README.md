@@ -161,6 +161,25 @@ This module is for interacting with the room that the commands are being execute
 * !room kicked:                                     Lists the kicked users and their provided reason
 * !room state [event type] [optional state key]:    Gets a state event with given event type and optional state key
 
+### Welcome to Room
+
+When configured in a room, the bot will monitor a room for new users and send new users a welcome message 1:1. It will then notify bot owners of the new user. It will also, optionally, notify of user departure.
+
+Commands:
+
+* !welcome_room welcome_message [message]        Sets the welcome message, along with other variables needed to detect new users.
+* !welcome_room notify_departure [True/False]    Sets whether bot owners will be notified of departure from room. Defaults to False.
+* !welcome_room settings                         Shows the current settings for the welcome_room module.
+
+### Welcome to Server
+
+As a server admin, the bot will monitor new user creation on the server and send the welcome message to new users 1:1. It will then notify bot owners of the new user.
+
+Commands:
+
+* !welcome_server welcome_message [message]    Sets the welcome message, along with other variables needed to detect new users.
+* !welcome_server settings                     Shows current settings for the welcome_server module
+
 ### Slow polling services
 
 These have the same usage - you can add one or more accounts to a room and bot polls the accounts.
