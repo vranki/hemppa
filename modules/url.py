@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import httpx
 from bs4 import BeautifulSoup
-from nio import RoomMessageText, AsyncClient
+from nio import RoomMessageText
 
 from modules.common.module import BotModule
 
@@ -56,7 +56,7 @@ class MatrixModule(BotModule):
         # skip edited content to prevent spamming the same thing multiple times
         if "content" in event.source:
             if "m.new_content" in event.source["content"]:
-                self.logger.debug(f"Skipping edited event to prevent spam")
+                self.logger.debug("Skipping edited event to prevent spam")
                 return
 
         # are we on in this room?
@@ -114,9 +114,29 @@ class MatrixModule(BotModule):
         """
         title = None
         description = None
+        # timeout will still handle network timeouts
         timeout = httpx.Timeout(10.0, connect=2.0, read=5.0)
+        responsetext = ""  # read our response here
         try:
-            r = httpx.get(url, timeout=timeout)
+            self.logger.debug(f"start streaming {url}")
+            # stream the response so that we can set a upper limit on how much we want to fetch.
+            # as we are using stream the r.text wont be available, save our read data ourself
+
+            # maximum size to read of the response in characters (this prevents us from reading stream forever)
+            maxsize = 100000
+            with httpx.stream("GET", url, timeout=timeout) as r:
+                for part in r.iter_text():
+                    self.logger.debug(
+                        f"reading response stream, limiting in {maxsize} bytes"
+                    )
+
+                    responsetext += part
+                    maxsize -= len(part)
+
+                    if maxsize < 0:
+                        break
+
+            self.logger.debug(f"end streaming {url}")
         except Exception as e:
             self.logger.warning(f"Failed fetching url {url}. Error: {e}")
             return (title, description)
@@ -129,7 +149,7 @@ class MatrixModule(BotModule):
 
         # try parse and get the title
         try:
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(responsetext, "html.parser")
             # Prefer og:title first (for example Youtube uses this)
             ogtitle = soup.find("meta", property="og:title")
             if ogtitle:
