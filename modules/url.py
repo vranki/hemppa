@@ -53,10 +53,14 @@ class MatrixModule(BotModule):
         if len(event.body) < 1:
             return
 
-        # skip edited content to prevent spamming the same thing multiple times
         if "content" in event.source:
+            # skip edited content to prevent spamming the same thing multiple times
             if "m.new_content" in event.source["content"]:
                 self.logger.debug("Skipping edited event to prevent spam")
+                return
+            # skip reply messages to prevent spam
+            if "m.relates_to" in event.source["content"]:
+                self.logger.debug("Skipping reply message to prevent spam")
                 return
 
         # are we on in this room?
