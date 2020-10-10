@@ -53,6 +53,12 @@ class MatrixModule(BotModule):
         if len(event.body) < 1:
             return
 
+        # skip edited content to prevent spamming the same thing multiple times
+        if "content" in event.source:
+            if "m.new_content" in event.source["content"]:
+                self.logger.debug(f"Skipping edited event to prevent spam")
+                return
+
         # are we on in this room?
         status = self.status.get(room.room_id, "OFF")
         if status not in self.STATUSES:
@@ -69,10 +75,17 @@ class MatrixModule(BotModule):
 
         # fetch the urls and if we can see a title spit it out
         for url in urls:
+            # fix for #98 a bit ugly, but skip all matrix.to urls
+            # those are 99.99% pills and should not
+            # spam the channel with matrix.to titles
+            if url.startswith("https://matrix.to/#/"):
+                self.logger.debug(f"Skipping matrix.to url (#98): {url}")
+                continue
+
             try:
                 title, description = self.get_content_from_url(url)
             except Exception as e:
-                self.logger.info(f"could not fetch url: {e}")
+                self.logger.warning(f"could not fetch url: {e}")
                 # failed fetching, give up
                 continue
 
@@ -105,18 +118,20 @@ class MatrixModule(BotModule):
         try:
             r = httpx.get(url, timeout=timeout)
         except Exception as e:
-            self.logger.error(f"Failed fetching url {url}. Error: {e}")
+            self.logger.warning(f"Failed fetching url {url}. Error: {e}")
             return (title, description)
 
         if r.status_code != 200:
-            self.logger.info(f"Failed fetching url {url}. Status code: {r.status_code}")
+            self.logger.warning(
+                f"Failed fetching url {url}. Status code: {r.status_code}"
+            )
             return (title, description)
 
         # try parse and get the title
         try:
             soup = BeautifulSoup(r.text, "html.parser")
             # Prefer og:title first (for example Youtube uses this)
-            ogtitle = soup.find("meta",  property="og:title")
+            ogtitle = soup.find("meta", property="og:title")
             if ogtitle:
                 title = ogtitle["content"]
             elif soup.head and soup.head.title:
@@ -125,14 +140,14 @@ class MatrixModule(BotModule):
             if descr_tag:
                 description = descr_tag.get("content", None)
         except Exception as e:
-            self.logger.error(f"Failed parsing response from url {url}. Error: {e}")
+            self.logger.warning(f"Failed parsing response from url {url}. Error: {e}")
             return (title, description)
 
         # Issue 63 patch - Title should not contain newlines or tabs
         if title is not None:
             assert isinstance(title, str)
-            title = title.replace('\n', '')
-            title = title.replace('\t', '')
+            title = title.replace("\n", "")
+            title = title.replace("\t", "")
         return (title, description)
 
     async def matrix_message(self, bot, room, event):
@@ -165,9 +180,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.notice"
             bot.save_settings()
-            await bot.send_text(
-                room, "Sending titles as notices from now on."
-            )
+            await bot.send_text(room, "Sending titles as notices from now on.")
             return
 
         # show status
@@ -175,9 +188,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.text"
             bot.save_settings()
-            await bot.send_text(
-                room, "Sending titles as text from now on."
-            )
+            await bot.send_text(room, "Sending titles as text from now on.")
             return
 
         # invalid command
@@ -190,8 +201,8 @@ class MatrixModule(BotModule):
 
     def get_settings(self):
         data = super().get_settings()
-        data['status'] = self.status
-        data['type'] = self.type
+        data["status"] = self.status
+        data["type"] = self.type
         return data
 
     def set_settings(self, data):
