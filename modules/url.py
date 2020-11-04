@@ -122,7 +122,7 @@ class MatrixModule(BotModule):
         title = None
         description = None
         # timeout will still handle network timeouts
-        timeout = httpx.Timeout(10.0, connect=2.0, read=5.0)
+        timeout = httpx.Timeout(10.0)
         responsetext = ""  # read our response here
         try:
             self.logger.debug(f"start streaming {url}")
@@ -130,7 +130,7 @@ class MatrixModule(BotModule):
             # as we are using stream the r.text wont be available, save our read data ourself
 
             # maximum size to read of the response in characters (this prevents us from reading stream forever)
-            maxsize = 100000
+            maxsize = 800000
             with httpx.stream("GET", url, timeout=timeout) as r:
                 for part in r.iter_text():
                     self.logger.debug(
