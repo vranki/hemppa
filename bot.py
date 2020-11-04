@@ -142,7 +142,10 @@ class Bot:
                 self.client.event_callbacks.remove(cb_object)
 
     def get_room_by_id(self, room_id):
-        return self.client.rooms[room_id]
+        try:
+            return self.client.rooms[room_id]
+        except KeyError:
+            return None
 
     async def get_room_by_alias(self, alias):
         rar = await self.client.room_resolve_alias(alias)
@@ -205,7 +208,7 @@ class Bot:
         # Ignore if asked to ignore
         if self.should_ignore_event(event):
             if self.debug:
-                print('Ignoring event!')
+                self.logger.debug('Ignoring event!')
             return
 
         body = event.body
@@ -450,4 +453,4 @@ async def main():
 try:
     asyncio.run(main())
 except Exception as e:
-    print(e)
+    traceback.print_exc(file=sys.stderr)

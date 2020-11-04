@@ -3,6 +3,8 @@ import shlex
 from functools import lru_cache
 
 import httpx
+import sys
+import traceback
 from bs4 import BeautifulSoup
 from nio import RoomMessageText
 
@@ -90,6 +92,7 @@ class MatrixModule(BotModule):
                 title, description = self.get_content_from_url(url)
             except Exception as e:
                 self.logger.warning(f"could not fetch url: {e}")
+                traceback.print_exc(file=sys.stderr)
                 # failed fetching, give up
                 continue
 

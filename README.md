@@ -411,6 +411,26 @@ Example commands:
 * !md login https://my.instance/ me@email.invalid r00tm3
 * !md roomlogin #myroom:matrix.org https://my.instance/ me@email.invalid r00tm3
 
+### Relay bridge
+
+Bridges two or more Matrix rooms together via relaybot. 
+
+Note: Room ID is not same as room alias! Rooms can exist without aliases so ID's are more flexible. Room id is usually in format !123LotOfRandomChars:server.org
+
+To get room ID, it's in Element Web room settings | Advanced | Internal room ID
+
+Before bridging the bot must be present on both rooms.
+
+Commands:
+
+* !relay bridge [roomid] - Bridge room with given ID to this room (must be done as bot owner)
+* !relay list - List bridged rooms (and their index numbers) (must be done as bot owner)
+* !relay unbridge [number] - Remove the given bridge number (must be done as bot owner)
+
+File uploads, joins, leaves or other special events are not (yet) handled. Contributions welcome.
+
+Relaybots are stupid. Please prefer real Matrix bridges to this. Sometimes there's no alternative.
+
 ## Bot setup
 
 * Create a Matrix user
