@@ -24,6 +24,8 @@ class MatrixModule(BotModule):
         self.bot = None
         self.status = dict()  # room_id -> what to do with urls
         self.type = "m.notice"  # notice or text
+        # this will be extended when matrix_start is called
+        self.useragent = "Mozilla/5.0 (compatible; Hemppa; +https://github.com/vranki/hemppa/)"
 
         self.STATUSES = {
             "OFF": "Not spamming this channel",
@@ -39,6 +41,10 @@ class MatrixModule(BotModule):
         super().matrix_start(bot)
         self.bot = bot
         bot.client.add_event_callback(self.text_cb, RoomMessageText)
+        # extend the useragent string to contain version and bot name
+        self.useragent = f"Mozilla/5.0 (compatible; Hemppa/{self.bot.version}; {self.bot.client.user}; +https://github.com/vranki/hemppa/)"
+        self.logger.debug(f"useragent: {self.useragent}")
+
 
     def matrix_stop(self, bot):
         super().matrix_stop(bot)
@@ -131,7 +137,10 @@ class MatrixModule(BotModule):
 
             # maximum size to read of the response in characters (this prevents us from reading stream forever)
             maxsize = 800000
-            with httpx.stream("GET", url, timeout=timeout) as r:
+            headers = {
+                'user-agent': self.useragent
+            }
+            with httpx.stream("GET", url, timeout=timeout, headers=headers) as r:
                 for part in r.iter_text():
                     self.logger.debug(
                         f"reading response stream, limiting in {maxsize} bytes"
