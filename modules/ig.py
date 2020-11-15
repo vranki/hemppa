@@ -15,6 +15,7 @@ class MatrixModule(PollingService):
         super().__init__(name)
         self.instagram = Instagram()
         self.service_name = 'Instagram'
+        self.enabled = False
 
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:

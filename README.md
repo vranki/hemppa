@@ -123,6 +123,8 @@ Commands:
 * !googlecal del [calendar id] - Delete calendar from room (Must be done as room admin)
 * !googlecal list - List calendars in this room
 
+NOTE: disabled by default
+
 ### Cron
 
 Can schedule things to be done.
@@ -187,7 +189,7 @@ New posts are sent to room.  Polls only randomly every 30 to 60 minutes to keep 
 
 Commands:
 
-Prefix with selected service, for example "!ig add accountname" or "!twitter list"
+Prefix with selected service, for example "!ig add accountname" or "!teamup list"
 
 * add [accountname] - Add account to this room (Must be done as room admin)
 * del [accountname] - Delete account from room (Must be done as room admin)
@@ -203,12 +205,7 @@ without any authentication or api key.
 
 See: https://github.com/realsirjoe/instagram-scraper/
 
-#### Twitter
-
-Polls twitter account(s). Uses twitter scraper library
-without any authentication or api key.
-
-See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
+NOTE: disabled by default
 
 #### Matrix Messaging API (mxma)
 
@@ -268,6 +265,8 @@ Commands:
 Example:
 
 * !url status
+
+NOTE: Disabled by default, i.e. you also need to enable it before activating it
 
 ### Cmd
 
@@ -372,6 +371,8 @@ bot ownership)
 * !flog live - enable live field log for this room
 * !flog rmlive - disable live field log for this room
 * !flog timezone 3 - set timezone (relative to UTC, see API docs)
+
+NOTE: disabled by default
 
 ### Jitsi
 

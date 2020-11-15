@@ -34,6 +34,8 @@ class MatrixModule(BotModule):
             "BOTH": "Spamming this channel with both title and description",
         }
 
+        self.enabled = False
+
     def matrix_start(self, bot):
         """
         Register callback for all RoomMessageText events on startup
