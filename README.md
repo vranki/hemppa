@@ -189,7 +189,7 @@ New posts are sent to room.  Polls only randomly every 30 to 60 minutes to keep 
 
 Commands:
 
-Prefix with selected service, for example "!ig add accountname" or "!twitter list"
+Prefix with selected service, for example "!ig add accountname" or "!teamup list"
 
 * add [accountname] - Add account to this room (Must be done as room admin)
 * del [accountname] - Delete account from room (Must be done as room admin)
@@ -206,13 +206,6 @@ without any authentication or api key.
 See: https://github.com/realsirjoe/instagram-scraper/
 
 NOTE: disabled by default
-
-#### Twitter
-
-Polls twitter account(s). Uses twitter scraper library
-without any authentication or api key.
-
-See: https://github.com/taspinar/twitterscraper/tree/master/twitterscraper
 
 #### Matrix Messaging API (mxma)
 

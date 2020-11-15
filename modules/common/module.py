@@ -98,8 +98,6 @@ class BotModule(ABC):
 
     def enable(self):
         self.enabled = True
-        if hasattr(self, "__init_enabled"):
-            self.__init_enabled(self.name)
 
     def disable(self):
         self.enabled = False
