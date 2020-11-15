@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+bs4 = "*"
 pyTeamUp = "*"
 pandas = "*"
 matrix-nio = "*"
