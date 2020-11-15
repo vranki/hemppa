@@ -17,7 +17,7 @@ class PollingService(BotModule):
         self.send_all = False # Set to true to send all received items, even on first sync
 
     async def matrix_poll(self, bot, pollcount):
-        if len(self.account_rooms):
+        if self.enabled and len(self.account_rooms):
             await self.poll_all_accounts(bot)
 
     async def poll_all_accounts(self, bot):

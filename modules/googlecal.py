@@ -27,6 +27,7 @@ class MatrixModule(BotModule):
         self.bot = None
         self.service = None
         self.calendar_rooms = dict()  # Contains room_id -> [calid, calid] ..
+        self.enabled = False
 
     def matrix_start(self, bot):
         super().matrix_start(bot)

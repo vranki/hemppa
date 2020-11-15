@@ -21,6 +21,7 @@ class MatrixModule(BotModule):
         self.logged_flights = []
         self.logged_flights_date = ""
         self.first_poll = True
+        self.enabled = False
 
     async def matrix_poll(self, bot, pollcount):
         if len(self.api_key) > 0:

@@ -1,8 +1,6 @@
 import sys
 import traceback
 
-from twitterscraper import query_tweets_from_user
-
 from modules.common.pollingservice import PollingService
 
 
@@ -12,6 +10,11 @@ class MatrixModule(PollingService):
     def __init__(self, name):
         super().__init__(name)
         self.service_name = 'Twitter'
+        self.enabled = False
+
+    def __init_enabled(self, name):
+        # importing this has massive sideeffects, so let's only do that when enabled
+        from twitterscraper import query_tweets_from_user
 
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:
