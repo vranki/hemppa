@@ -123,6 +123,8 @@ Commands:
 * !googlecal del [calendar id] - Delete calendar from room (Must be done as room admin)
 * !googlecal list - List calendars in this room
 
+NOTE: disabled by default
+
 ### Cron
 
 Can schedule things to be done.
@@ -203,6 +205,8 @@ without any authentication or api key.
 
 See: https://github.com/realsirjoe/instagram-scraper/
 
+NOTE: disabled by default
+
 #### Twitter
 
 Polls twitter account(s). Uses twitter scraper library
@@ -268,6 +272,8 @@ Commands:
 Example:
 
 * !url status
+
+NOTE: Disabled by default, i.e. you also need to enable it before activating it
 
 ### Cmd
 
@@ -372,6 +378,8 @@ bot ownership)
 * !flog live - enable live field log for this room
 * !flog rmlive - disable live field log for this room
 * !flog timezone 3 - set timezone (relative to UTC, see API docs)
+
+NOTE: disabled by default
 
 ### Jitsi
 
