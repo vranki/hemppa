@@ -361,7 +361,7 @@ class Bot:
         owners_only = os.getenv('OWNERS_ONLY') is not None
 
         if matrix_server and self.matrix_user and bot_owners and access_token:
-            self.client = AsyncClient(matrix_server, self.matrix_user)
+            self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
             self.join_on_invite = join_on_invite is not None
             self.owners = bot_owners.split(',')
