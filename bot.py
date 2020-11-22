@@ -382,6 +382,7 @@ class Bot:
                     moduleobject.matrix_start(self)
                 except Exception:
                     traceback.print_exc(file=sys.stderr)
+        self.logger.info(f'All modules started.')
 
     def stop(self):
         self.logger.info(f'Stopping {len(self.modules)} modules..')
@@ -390,6 +391,7 @@ class Bot:
                 moduleobject.matrix_stop(self)
             except Exception:
                 traceback.print_exc(file=sys.stderr)
+        self.logger.info(f'All modules stopped.')
 
     async def run(self):
         await self.client.sync()
