@@ -379,9 +379,6 @@ NOTE: disabled by default
 If enabled, Jitsi calls created with Matrix clients will be sent as text messages
 to rooms, allowing non-matrix users to join them.
 
-Note: Currently supports only calls placed from Element Web. Android version
-sends different messages and has not yet been reverse engineered.
-
 ### Mastodon
 
 Send toots to Mastodon. You can login to Mastodon with the bot and toot with it.
@@ -431,6 +428,26 @@ Commands:
 File uploads, joins, leaves or other special events are not (yet) handled. Contributions welcome.
 
 Relaybots are stupid. Please prefer real Matrix bridges to this. Sometimes there's no alternative.
+
+### Printing
+
+With this module you can set up a room to print any uploaded files on a specified printer.
+The printer must be visible to bot via CUPS.
+
+Commands (all can be done by bot owner only):
+
+* !printing list - Lists available printers and their rooms
+* !printing setroomprinter [printername] - Assignes given printer to this room
+* !printing rmroomprinter - Deletes printer from this room
+
+The module sends the files to CUPS for printing so please see CUPS documentation
+on what works and what doesn't.
+
+Tested formats: PDF, JPG, PNG
+
+SVG files are printed as text currently, avoid printing them.
+
+This module is disabled by default.
 
 ## Bot setup
 

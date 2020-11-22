@@ -18,6 +18,7 @@ httpx = "*"
 PyYAML = "==5.3"
 wolframalpha = "*"
 Mastodon-py = "*"
+pycups = "*"
 
 [dev-packages]
 pylint = "*"
