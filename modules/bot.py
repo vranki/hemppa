@@ -17,8 +17,8 @@ class MatrixModule(BotModule):
         
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
-        if len(args) == 2:
 
+        if len(args) == 2:
             if args[1] == 'quit':
                 await self.quit(bot, room, event)
             elif args[1] == 'version':
@@ -77,7 +77,7 @@ class MatrixModule(BotModule):
                             f'Uptime {uptime} - system time is {datetime.now()} - loaded {len(bot.modules)} modules.')
 
     async def reload(self, bot, room, event):
-        bot.must_be_admin(room, event)
+        bot.must_be_owner(event)
         await bot.send_text(room, f'Reloading modules..')
         bot.stop()
         bot.reload_modules()
@@ -87,14 +87,14 @@ class MatrixModule(BotModule):
         await bot.send_text(room, f'Hemppa version {bot.version} - https://github.com/vranki/hemppa')
 
     async def quit(self, bot, room, event):
-        bot.must_be_admin(room, event)
+        bot.must_be_owner(event)
         await bot.send_text(room, f'Quitting, as requested')
         self.logger.info(f'{event.sender} commanded bot to quit, so quitting..')
         bot.bot_task.cancel()
 
     async def enable_module(self, bot, room, event, module_name):
-        bot.must_be_admin(room, event)
-        self.logger.info(f"asked to enable {module_name}")
+        bot.must_be_owner(event)
+        self.logger.info(f"Asked to enable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
             module.enable()
@@ -105,7 +105,7 @@ class MatrixModule(BotModule):
             await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
 
     async def disable_module(self, bot, room, event, module_name):
-        bot.must_be_admin(room, event)
+        bot.must_be_owner(event)
         self.logger.info(f"asked to disable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
