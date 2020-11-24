@@ -4,12 +4,13 @@ This bot is meant to be super easy platform to write Matrix bot functionality
 in Python. It uses matrix-nio library https://github.com/poljar/matrix-nio/ for
 Matrix communications.
 
-Zero configuration except minimal Matrix account info is needed. Everything else can
+Zero configuration except Matrix account info is needed. Everything else can
 be done with bot commands.
 
 Type !help in room with this bot running to list active modules.
 
-If you don't want some modules, just delete the files from modules directory.
+If you don't want some modules, just delete the files from modules directory or
+disable them with !bot disable command.
 
 End-to-end encryption is currently not supported by bot but should be doable.
 Bot won't respond to commands in e2ee rooms. PR for enabling e2ee is welcome!
@@ -439,6 +440,7 @@ Commands (all can be done by bot owner only):
 * !printing list - Lists available printers and their rooms
 * !printing setroomprinter [printername] - Assignes given printer to this room
 * !printing rmroomprinter - Deletes printer from this room
+* !printing setpapersize [papersize] - Set global paper size. Default is A4. See printer settings for valid values.
 
 The module sends the files to CUPS for printing so please see CUPS documentation
 on what works and what doesn't.
@@ -452,17 +454,18 @@ This module is disabled by default.
 ## Bot setup
 
 * Create a Matrix user
-* Get user's access token - In Riot Web see Settings / Help & about
+* Log in as the newly created user (easiest is Element Web in private window)
+* Get user's access token (In Element Web see Settings / Help & about)
 
 ## Running on host
 
 Run something like (tested on Ubuntu):
 
 ``` bash
-sudo apt install python3-pip
+sudo apt install python3-pip libcups2-dev libatlas-base-dev gcc
 sudo pip3 install pipenv
 pipenv shell
-pipenv install --pre
+pipenv install --pre                       (this takes ages, go make a sandwich)
 MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53CgYAYFgo" MATRIX_SERVER="https://matrix.org" JOIN_ON_INVITE=True BOT_OWNERS=@botowner:matrix.org
  python3 bot.py
 ```

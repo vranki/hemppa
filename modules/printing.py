@@ -95,6 +95,10 @@ class MatrixModule(BotModule):
                     bot.save_settings()
                 else:
                     await bot.send_text(room, f'No printer called {printer} in your CUPS.')
+            if args[0] == 'setpapersize':
+                self.paper_size = args[1]
+                bot.save_settings()
+                await bot.send_text(room, f'Paper size set to {self.paper_size}.')
 
     def help(self):
         return 'Print files from Matrix'
@@ -102,9 +106,12 @@ class MatrixModule(BotModule):
     def get_settings(self):
         data = super().get_settings()
         data["printers"] = self.printers
+        data["paper_size"] = self.paper_size
         return data
 
     def set_settings(self, data):
         super().set_settings(data)
         if data.get("printers"):
             self.printers = data["printers"]
+        if data.get("paper_size"):
+            self.paper_size = data["paper_size"]
