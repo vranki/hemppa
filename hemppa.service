@@ -1,0 +1,19 @@
+[Unit]
+Description=Hemppa the Bot
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/hemppa/
+ExecStart=/opt/hemppa/run.sh
+StandardInput=tty-force
+Restart=always
+RestartSec=5s
+User=pi
+Group=pi
+
+[Install]
+WantedBy=multi-user.target

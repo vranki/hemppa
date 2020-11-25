@@ -6,6 +6,7 @@ class MatrixModule(BotModule):
         super().__init__(name)
         self.bridges = dict()
         self.bot = None
+        self.enabled = False
 
     async def message_cb(self, room, event):
         if self.bot.should_ignore_event(event):

@@ -457,7 +457,7 @@ This module is disabled by default.
 * Log in as the newly created user (easiest is Element Web in private window)
 * Get user's access token (In Element Web see Settings / Help & about)
 
-## Running on host
+## Running locally
 
 Run something like (tested on Ubuntu):
 
@@ -471,6 +471,27 @@ MATRIX_USER="@user:matrix.org" MATRIX_ACCESS_TOKEN="MDAxOGxvYlotofcharacters53Cg
 ```
 
 NOTE: The Pipfile does not define the python version as it is always strict and causes problems. See https://github.com/pypa/pipenv/issues/1050 . Python 3.7 and 3.8 should both work fine.
+
+## Running locally with systemd unit file (Raspberry Pi etc)
+
+First modify run.sh and make sure Hemppa starts successfully with it.
+
+There's a systemd unit file you can use. It assumes hemppa is installed to /opt/hemppa and
+is run as user pi in group pi. Note: this is probably not the smartest way to do this, feel free
+to do a PR for better way.
+
+If your user is not pi, modify hemppa.service first.
+
+``` bash
+sudo ln -s `pwd` /opt/hemppa
+sudo ln -s hemppa.service /lib/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable hemppa.service
+sudo systemctl start hemppa.service
+sudo systemctl status hemppa.service
+```
+
+Status should show "Active: active (running)"
 
 ## Running with Docker
 

@@ -10,9 +10,12 @@ from modules.common.module import BotModule
 
 
 class MatrixModule(BotModule):
-    api_key = None
-    calendar_rooms = dict()  # Roomid -> [calid, calid..]
-    calendars = dict()  # calid -> Calendar
+    def __init__(self, name):
+        super().__init__(name)
+        self.api_key = None
+        self.calendar_rooms = dict()  # Roomid -> [calid, calid..]
+        self.calendars = dict()  # calid -> Calendar
+        self.enabled = False
 
     async def matrix_poll(self, bot, pollcount):
         if self.api_key:

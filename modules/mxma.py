@@ -12,6 +12,7 @@ class MatrixModule(PollingService):
         self.poll_interval_random = 2
         self.owner_only = True
         self.send_all = True
+        self.enabled = False
 
     async def poll_implementation(self, bot, account, roomid, send_messages):
         try:
