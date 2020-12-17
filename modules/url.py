@@ -45,6 +45,9 @@ class MatrixModule(BotModule):
         bot.client.add_event_callback(self.text_cb, RoomMessageText)
         # extend the useragent string to contain version and bot name
         self.useragent = f"Mozilla/5.0 (compatible; Hemppa/{self.bot.version}; {self.bot.client.user}; +https://github.com/vranki/hemppa/)"
+        # Actually no - for example Youtube doesn't server titles for proper Hemppa user agent!
+        # Lie and say we are generic Firefox. Blame Youtube..
+        self.useragent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
         self.logger.debug(f"useragent: {self.useragent}")
 
 
@@ -168,12 +171,18 @@ class MatrixModule(BotModule):
         # try parse and get the title
         try:
             soup = BeautifulSoup(responsetext, "html.parser")
-            # Prefer og:title first (for example Youtube uses this)
-            ogtitle = soup.find("meta", property="og:title")
-            if ogtitle:
-                title = ogtitle["content"]
-            elif soup.head and soup.head.title:
-                title = soup.head.title.string.strip()
+
+            if soup.title and len(soup.title.string) > 0:
+                title = soup.title.string
+            else:
+                title_tag = soup.find("meta", attrs={"name": "title"})
+                ogtitle = soup.find("meta", property="og:title")
+                if title_tag:
+                    title = descr_tag.get("content", None)
+                elif ogtitle:
+                    title = ogtitle["content"]
+                elif soup.head and soup.head.title:
+                    title = soup.head.title.string.strip()
             descr_tag = soup.find("meta", attrs={"name": "description"})
             if descr_tag:
                 description = descr_tag.get("content", None)
@@ -181,7 +190,7 @@ class MatrixModule(BotModule):
             self.logger.warning(f"Failed parsing response from url {url}. Error: {e}")
             return (title, description)
 
-        # Issue 63 patch - Title should not contain newlines or tabs
+        # Title should not contain newlines or tabs
         if title is not None:
             assert isinstance(title, str)
             title = title.replace("\n", "")
