@@ -147,9 +147,9 @@ class MatrixModule(BotModule):
             }
             with httpx.stream("GET", url, timeout=timeout, headers=headers) as r:
                 for part in r.iter_text():
-                    self.logger.debug(
-                        f"reading response stream, limiting in {maxsize} bytes"
-                    )
+                    # self.logger.debug(
+                    #     f"reading response stream, limiting in {maxsize} bytes"
+                    # )
 
                     responsetext += part
                     maxsize -= len(part)
