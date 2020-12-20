@@ -19,8 +19,7 @@ import datetime
 from importlib import reload
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse
-
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse
 
 # Couple of custom exceptions
 
@@ -180,6 +179,33 @@ class Bot:
     # Checks if this event should be ignored by bot, including custom property
     def should_ignore_event(self, event):
         return "org.vranki.hemppa.ignore" in event.source['content']
+
+    # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
+    async def upload_image(self, url):
+        self.client: AsyncClient
+        response: UploadResponse
+
+        self.logger.debug(f"start downloading image from url {url}")
+        url_response = requests.get(url)
+        self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
+
+        if url_response.status_code == 200:
+            content_type = url_response.headers.get("content-type")
+            self.logger.info(f"uploading content to matrix server [size={len(url_response.content)}, content-type: {content_type}]")
+            (response, alist) = await self.client.upload(lambda a, b: url_response.content, content_type)
+            self.logger.debug("response: %s", response)
+
+            if isinstance(response, UploadResponse):
+                self.logger.info("uploaded file to %s", response.content_uri)
+                return response.content_uri
+            else:
+                response: UploadError
+                self.logger.error("unable to upload file. msg: %s", response.message)
+        else:
+            self.logger.error("unable to request url: %s", url_response)
+
+        return None
+
 
     def save_settings(self):
         module_settings = dict()

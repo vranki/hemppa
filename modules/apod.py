@@ -96,10 +96,10 @@ class MatrixModule(BotModule):
             matrix_uri = self.matrix_uri_cache.get(apod.date)
             self.logger.debug(f"already uploaded picture {matrix_uri} for date {apod.date}")
         else:
-            matrix_uri = await self.upload_image(bot, apod.hdurl)
+            matrix_uri = await bot.upload_image(apod.hdurl)
             if matrix_uri is None:
                 self.logger.warning("unable to upload hdurl. try url next.")
-                matrix_uri = await self.upload_image(bot, apod.url)
+                matrix_uri = await bot.upload_image(apod.url)
 
         await bot.send_text(room, f"{apod.title} ({apod.date})")
         if matrix_uri is not None:
@@ -107,36 +107,8 @@ class MatrixModule(BotModule):
             bot.save_settings()
             await bot.send_image(room, matrix_uri, f"{apod.title}")
         else:
-            await bot.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
-        if apod.hdurl is not None:
-            await bot.send_text(room, f"original-hdurl: {apod.hdurl}")
-        await bot.send_text(room, f"original-url: {apod.url}")
+            await bot.send_text(room, "Sorry. Something went wrong uploading the image to Matrix server :(")
         await bot.send_text(room, f"{apod.explanation}")
-
-    async def upload_image(self, bot, url):
-        self.client: AsyncClient
-        response: UploadResponse
-
-        self.logger.debug(f"start downloading image from url {url}")
-        url_response = requests.get(url)
-        self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
-
-        if url_response.status_code == 200:
-            content_type = url_response.headers.get("content-type")
-            self.logger.info(f"uploading content to matrix server [size={len(url_response.content)}, content-type: {content_type}]")
-            (response, alist) = await bot.client.upload(lambda a, b: url_response.content, content_type)
-            self.logger.debug("response: %s", response)
-
-            if isinstance(response, UploadResponse):
-                self.logger.info("uploaded file to %s", response.content_uri)
-                return response.content_uri
-            else:
-                response: UploadError
-                self.logger.error("unable to upload file. msg: %s", response.message)
-        else:
-            self.logger.error("unable to request url: %s", url_response)
-
-        return None
 
     def get_settings(self):
         data = super().get_settings()
