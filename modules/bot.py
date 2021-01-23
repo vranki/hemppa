@@ -14,7 +14,7 @@ class MatrixModule(BotModule):
     def matrix_start(self, bot):
         super().matrix_start(bot)
         self.starttime = datetime.now()
-        
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
 
@@ -120,11 +120,11 @@ class MatrixModule(BotModule):
             await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
 
     async def show_modules(self, bot, room):
-        await bot.send_text(room, "Modules:\n")
+        modules_message = "Modules:\n"
         for modulename, module in collections.OrderedDict(sorted(bot.modules.items())).items():
             state = 'Enabled' if module.enabled else 'Disabled'
-            module_message = f"{state}: {modulename} - {module.help()}"
-            await bot.send_text(room, module_message)
+            modules_message += f"{state}: {modulename} - {module.help()}\n"
+        await bot.send_text(room, modules_message)
 
     def help(self):
         return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'
