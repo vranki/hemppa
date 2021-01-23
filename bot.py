@@ -40,6 +40,7 @@ class Bot:
         self.client = None
         self.join_on_invite = False
         self.modules = dict()
+        self.leave_empty_rooms = True
         self.pollcount = 0
         self.poll_task = None
         self.owners = []
@@ -385,11 +386,13 @@ class Bot:
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         join_on_invite = os.getenv('JOIN_ON_INVITE')
         owners_only = os.getenv('OWNERS_ONLY') is not None
+        leave_empty_rooms = os.getenv('LEAVE_EMPTY_ROOMS')
 
         if matrix_server and self.matrix_user and bot_owners and access_token:
             self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
             self.join_on_invite = (join_on_invite or '').lower() == 'true'
+            self.leave_empty_rooms = (leave_empty_rooms or 'true').lower() == 'true'
             self.owners = bot_owners.split(',')
             self.owners_only = owners_only
             self.get_modules()
@@ -423,7 +426,7 @@ class Bot:
         await self.client.sync()
         for roomid, room in self.client.rooms.items():
             self.logger.info(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
-            if len(room.users) == 1:
+            if len(room.users) == 1 and self.leave_empty_rooms:
                 self.logger.info(f'Room {roomid} has no other users - leaving it.')
                 self.logger.info(await self.client.room_leave(roomid))
 

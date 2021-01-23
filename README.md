@@ -528,6 +528,8 @@ Typically set your own id into it.
 
 `OWNERS_ONLY` is an optional variable once defined only the owners can operate the bot (this is a form of whitelisting)
 
+`LEAVE_EMPTY_ROOMS` (default true) if this is set to false, the bot will stay in empty rooms
+
 __*ATTENTION:*__ Don't include bot itself in `BOT_OWNERS` if cron or any other module that can cause bot to send custom commands is used, as it could potentially be used to run owner commands as the bot itself.
 
 To enable debugging for the root logger set `DEBUG=True`.
