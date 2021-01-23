@@ -412,7 +412,7 @@ Example commands:
 
 ### Relay bridge
 
-Bridges two or more Matrix rooms together via relaybot. 
+Bridges two or more Matrix rooms together via relaybot.
 
 Note: Room ID is not same as room alias! Rooms can exist without aliases so ID's are more flexible. Room id is usually in format !123LotOfRandomChars:server.org
 
@@ -518,7 +518,7 @@ docker-compose up
 ## Env variables
 
 `MATRIX_USER`, `MATRIX_ACCESS_TOKEN` and `MATRIX_SERVER` should be self-explanatory.
-Set `JOIN_ON_INVITE` to anything if you want the bot to join invites automatically (do not set it if you don't want it to join).
+Set `JOIN_ON_INVITE` (default true) to false if you don't want the bot automatically joining rooms.
 
 You can get access token by logging in with Riot and looking from Settings / Help & About.
 
