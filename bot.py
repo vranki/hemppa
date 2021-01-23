@@ -389,7 +389,7 @@ class Bot:
         if matrix_server and self.matrix_user and bot_owners and access_token:
             self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
-            self.join_on_invite = join_on_invite is not None
+            self.join_on_invite = (join_on_invite or '').lower() == 'true'
             self.owners = bot_owners.split(',')
             self.owners_only = owners_only
             self.get_modules()
