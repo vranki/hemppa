@@ -19,6 +19,7 @@ PyYAML = "==5.3"
 wolframalpha = "*"
 Mastodon-py = "*"
 pycups = "*"
+pygithub = "*"
 
 [dev-packages]
 pylint = "*"

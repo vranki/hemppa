@@ -451,6 +451,30 @@ SVG files are printed as text currently, avoid printing them.
 
 This module is disabled by default.
 
+### Github based hackerspace asset management
+
+This module was written for asset (machines, tasks and todo) management with
+GitHub issues and labels.
+
+Create labels to github that represent machines (M: ) and spaces (S: ).
+When creating issues, assign machine and/or space labels for them.
+For example, if a wood lathe is broken, create issue with labels
+"M: Wood lathe" and "S: Wood working room".
+
+Usage:
+
+* !ghproj setrepo [repository] - Set repository for this room (room admin only)
+* !ghproj repo - Shows which repository this room tracks
+* !ghproj rmrepo - Remove repository from this room (room admin only)
+* !ghproj machines - List machine statuses for this room
+* !ghproj spaces - List statuses of spaces
+
+Repository name must be in format TampereHacklab/Inventaario - you can
+use this as a example to see how the labels work.
+
+In future this might be used as general purpose project management
+module. PR's welcome!
+
 ## Bot setup
 
 * Create a Matrix user
