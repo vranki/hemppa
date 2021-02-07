@@ -451,29 +451,41 @@ SVG files are printed as text currently, avoid printing them.
 
 This module is disabled by default.
 
-### Github based hackerspace asset management
+### Github based asset management
 
-This module was written for asset (machines, tasks and todo) management with
-GitHub issues and labels.
+This module was written for asset (machines, tasks and todo) management by
+mis-using GitHub issues and labels. It has been designed to be used with hackerspace
+environment but can be extended to any purpose.
 
-Create labels to github that represent machines (M: ) and spaces (S: ).
-When creating issues, assign machine and/or space labels for them.
+#### Github project setup
+
+* Create labels to github that represent for example different machines and spaces.
+You can create any number of them.
+* Define label colors for each type of asset. These are called domains in this module. 
+For example set all machine labels to be #B60205 and space labels to be #0E8A16. These 
+can be easily picked from color chooser.
+* Edit the repository description and add a json block describing the
+label domains and their colors. For example:
+
+```
+Hackerspace machines, todo and stuff. domains={ "machines": "#B60205", "spaces" : "#0E8A16"} 
+```
+
+Make sure you type the description on one line - this is a silly Github limitation.
+
+* When creating issues, assign machine and/or space labels for them.
 For example, if a wood lathe is broken, create issue with labels
-"M: Wood lathe" and "S: Wood working room".
+"Wood lathe" and "Wood working room".
 
-Usage:
+#### Usage
 
 * !ghproj setrepo [repository] - Set repository for this room (room admin only)
 * !ghproj repo - Shows which repository this room tracks
 * !ghproj rmrepo - Remove repository from this room (room admin only)
-* !ghproj machines - List machine statuses for this room
-* !ghproj spaces - List statuses of spaces
+* !ghproj [domain] - List machine statuses in this domain
 
 Repository name must be in format TampereHacklab/Inventaario - you can
 use this as a example to see how the labels work.
-
-In future this might be used as general purpose project management
-module. PR's welcome!
 
 ## Bot setup
 
