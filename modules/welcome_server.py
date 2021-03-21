@@ -27,13 +27,13 @@ class MatrixModule(BotModule):
         # Message body possibilities:
         #   ["welcome_message", "query_host", "settings"]
         if args[0] == "welcome_message":
+            welcome_settings = {"user_query_host": os.getenv("MATRIX_SERVER")}
             users = self.get_server_user_list()
-            welcome_settings = {
+            welcome_settings.update({
                 "last_server_user_count": len(users),
                 "last_server_users": users,
-                "welcome_message": event.body.split("welcome_message", 1)[1],
-                "user_query_host": os.getenv("MATRIX_SERVER")
-            }
+                "welcome_message": event.body.split("welcome_message", 1)[1] 
+            })
             self.welcome_settings = welcome_settings
             bot.save_settings()
             await bot.send_text(room, "Welcome settings configured for server: {settings}".format(settings=welcome_settings))
