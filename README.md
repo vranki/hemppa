@@ -623,6 +623,21 @@ Set the bot_ignore parameter to True in sender functions to acheive this.
 
 If you write a module that installs a custom message handler, use bot.should_ignore_event(event) to check if event should be ignored.
 
+### Aliasing modules
+
+A module can declare its own _aliases_ with the `add_module_aliases` command.
+You probably want to call it during `matrix_start`:
+
+```python
+class MatrixModule(BotModule):
+
+	def matrix_start(self, bot):
+		super().matrix_start(bot)
+		self.add_module_aliases(bot, ['new_name', 'another_name'])
+```
+
+Then you can call this module with its original name, `!new_name`, or `!another_name`
+
 ## Contributing
 
 If you write a new module, please make a PR if it's something useful for others.
