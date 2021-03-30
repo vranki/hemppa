@@ -96,6 +96,26 @@ class BotModule(ABC):
         if data.get('can_be_disabled') is not None:
             self.can_be_disabled = data['can_be_disabled']
 
+    def add_module_aliases(self, bot, args, force=False):
+        """Add a list of aliases for this module.
+
+        :param args: a list of strings by which this module can be called
+        :type args: list
+        :param force: override any existing aliases
+        :type force: bool, optional
+        """
+        for name in args:
+            if bot.modules.get(name):
+                self.logger.info(f"aliases: {name} is already a module!")
+                continue
+            prev = bot.module_aliases.get(name)
+            if prev and not force:
+                self.logger.info(f"aliases: {name} already exists for module {prev}")
+                continue
+            if prev:
+                self.logger.info(f"aliases: {name} from module {prev}")
+            bot.module_aliases[name] = self.name
+
     def enable(self):
         self.enabled = True
 
