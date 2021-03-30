@@ -46,6 +46,14 @@ Bot management commands.
 
 Prints help on existing modules.
 
+### Alias
+
+Add or remove aliases for a module.
+
+* !alias add osm loc
+* !alias list
+* !alias remove osm
+
 ### Echo
 
 Simple example module that just echoes what user said.
