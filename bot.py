@@ -40,6 +40,7 @@ class Bot:
         self.client = None
         self.join_on_invite = False
         self.modules = dict()
+        self.module_aliases = dict()
         self.leave_empty_rooms = True
         self.pollcount = 0
         self.poll_task = None
@@ -260,7 +261,8 @@ class Bot:
         # Strip away non-alphanumeric characters, including leading ! for security
         command = re.sub(r'\W+', '', command)
 
-        moduleobject = self.modules.get(command)
+        # Fallback to any declared aliases
+        moduleobject = self.modules.get(command) or self.modules.get(self.module_aliases.get(command))
 
         if moduleobject is not None:
             if moduleobject.enabled:

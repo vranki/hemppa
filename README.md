@@ -46,6 +46,14 @@ Bot management commands.
 
 Prints help on existing modules.
 
+### Alias
+
+Add or remove aliases for a module.
+
+* !alias add osm loc
+* !alias list
+* !alias remove osm
+
 ### Echo
 
 Simple example module that just echoes what user said.
@@ -622,6 +630,21 @@ If you want to send a m.text message that bot should always ignore, set "org.vra
 Set the bot_ignore parameter to True in sender functions to acheive this.
 
 If you write a module that installs a custom message handler, use bot.should_ignore_event(event) to check if event should be ignored.
+
+### Aliasing modules
+
+A module can declare its own _aliases_ with the `add_module_aliases` command.
+You probably want to call it during `matrix_start`:
+
+```python
+class MatrixModule(BotModule):
+
+	def matrix_start(self, bot):
+		super().matrix_start(bot)
+		self.add_module_aliases(bot, ['new_name', 'another_name'])
+```
+
+Then you can call this module with its original name, `!new_name`, or `!another_name`
 
 ## Contributing
 
