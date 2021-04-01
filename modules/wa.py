@@ -7,6 +7,10 @@ from modules.common.module import BotModule
 class MatrixModule(BotModule):
     app_id = ''
 
+    def matrix_start(self, bot):
+        super().matrix_start(bot)
+        self.add_module_aliases(bot, ['wafull'])
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 3:
@@ -25,18 +29,21 @@ class MatrixModule(BotModule):
 
             query = event.body[len(args[0])+1:]
             client = wolframalpha.Client(self.app_id)
-            answer = query + ': '
-            try:
-                res = client.query(query)
-                result = "?SYNTAX ERROR"
-                if res['@success']=='true':
-                    pod0=res['pod'][0]['subpod']['plaintext']
-                    pod1=res['pod'][1]
-                    if (('definition' in pod1['@title'].lower()) or ('result' in  pod1['@title'].lower()) or (pod1.get('@primary','false') == 'true')):
-                        result = pod1['subpod']['plaintext']
-                answer += result + "\n"
-            except Exception as exc:
-                answer = "Wolfram Alpha has technical difficulty: " + str(exc)
+            res = client.query(query)
+            result = "?SYNTAX ERROR"
+            if res['@success']:
+                self.logger.debug(f"room: {room.name} sender: {event.sender} sent a valid query to wa")
+            else:
+                self.logger.info(f"wa error: {res['@error']}")
+            primary, items, fallback = self.parse_api_response(res)
+            if len(items) and 'full' in args[0]:
+                answer = '\n'.join(items)
+            elif primary:
+                answer = query + ': ' + primary
+            elif fallback:
+                answer = query + ': ' + fallback
+            else:
+                answer = 'Could not find response for ' + query
 
             await bot.send_text(room, answer)
         else:
@@ -51,6 +58,28 @@ class MatrixModule(BotModule):
         super().set_settings(data)
         if data.get("app_id"):
             self.app_id = data["app_id"]
+
+    def parse_api_response(self, res, key='plaintext'):
+        fallback = None
+        primary = None
+        items = list()
+        # workaround for bug in upstream wa package
+        if hasattr(res['pod'], 'get'):
+            res['pod'] = [res['pod']]
+        for pod in res['pod']:
+            title = pod['@title'].lower()
+            if 'input' in title:
+                continue
+            for sub in pod.subpods:
+                print(sub)
+                item = sub.get(key)
+                if not item:
+                    continue
+                items.append(item)
+                fallback = fallback or item
+                if ('definition' in title) or ('result' in title) or pod.get('@primary'):
+                    primary = primary or item
+        return (primary, items, fallback)
 
     def help(self):
         return ('Wolfram Alpha search')
