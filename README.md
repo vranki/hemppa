@@ -337,11 +337,12 @@ You'll need to get an appid from https://products.wolframalpha.com/simple-api/do
 Examples:
 
 * !wa 1+1
-* !wa airspeed of unladen swallow
+* !wafull airspeed of unladen swallow
 
 Commands:
 
-* !wa [query] - Query wolfram alpha
+* !wa [query] - Query wolfram alpha and return the primary pod.
+* !wafull [query] - Query wolfram alpha and return all pods.
 * !wa appid [appid] - Set appid (must be done as bot owner)
 
 ### OGN Field Log (FLOG)
