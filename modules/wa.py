@@ -58,6 +58,13 @@ class MatrixModule(BotModule):
             self.app_id = data["app_id"]
 
     def parse_api_response(self, res):
+        """Parses the pods from wa and prepares texts to send to matrix
+
+        :param res: the result from wolframalpha.Client
+        :type res: dict
+        :return: a tuple of tuples: ((primary_html, primary_plaintext), (full_html, full_plaintext))
+        :rtype: tuple
+        """
         htmls = []
         texts = []
         primary = None
