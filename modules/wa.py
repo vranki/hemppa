@@ -1,6 +1,6 @@
 import urllib.request
 import wolframalpha
-
+from html import escape
 from modules.common.module import BotModule
 
 
@@ -19,7 +19,6 @@ class MatrixModule(BotModule):
                 self.app_id = args[2]
                 bot.save_settings()
                 await bot.send_text(room, 'App id set')
-                print('Appid', self.app_id)
                 return
 
         if len(args) > 1:
@@ -35,17 +34,16 @@ class MatrixModule(BotModule):
                 self.logger.debug(f"room: {room.name} sender: {event.sender} sent a valid query to wa")
             else:
                 self.logger.info(f"wa error: {res['@error']}")
-            primary, items, fallback = self.parse_api_response(res)
-            if len(items) and 'full' in args[0]:
-                answer = '\n'.join(items)
-            elif primary:
-                answer = query + ': ' + primary
-            elif fallback:
-                answer = query + ': ' + fallback
+            short, full = self.parse_api_response(res)
+            if full[0] and 'full' in args[0]:
+                html, plain = full
+            elif short[0]:
+                html, plain = short
             else:
-                answer = 'Could not find response for ' + query
-
-            await bot.send_text(room, answer)
+                print(short)
+                plain = 'Could not find response for ' + query
+                html = plain
+            await bot.send_html(room, html, plain)
         else:
             await bot.send_text(room, 'Usage: !wa <query>')
 
@@ -59,27 +57,55 @@ class MatrixModule(BotModule):
         if data.get("app_id"):
             self.app_id = data["app_id"]
 
-    def parse_api_response(self, res, key='plaintext'):
-        fallback = None
+    def parse_api_response(self, res):
+        htmls = []
+        texts = []
         primary = None
-        items = list()
-        # workaround for bug in upstream wa package
+        fallback = None
+
+        # workaround for bug(?) in upstream wa package
         if hasattr(res['pod'], 'get'):
             res['pod'] = [res['pod']]
         for pod in res['pod']:
-            title = pod['@title'].lower()
-            if 'input' in title:
+            pod_htmls = []
+            pod_texts = []
+            spods = pod.get('subpod')
+            if not spods:
                 continue
-            for sub in pod.subpods:
-                print(sub)
-                item = sub.get(key)
-                if not item:
+
+            # workaround for bug(?) in upstream wa package
+            if hasattr(spods, 'get'):
+                spods = [spods]
+            for spod in spods:
+                title = spod.get('@title')
+                text  = spod.get('plaintext')
+                if not text:
                     continue
-                items.append(item)
-                fallback = fallback or item
-                if ('definition' in title) or ('result' in title) or pod.get('@primary'):
-                    primary = primary or item
-        return (primary, items, fallback)
+
+                if title:
+                    html = f'<strong>{escape(title)}</strong>: {escape(text)}'
+                    text = f'title: text'
+                else:
+                    html  = escape(text)
+                    plain = text
+                pod_htmls += [f'<li>{s}</li>' for s in html.split('\n')]
+                pod_texts += [f'- {s}'        for s in text.split('\n')]
+
+            if pod_texts:
+                title = pod.get('@title')
+                pod_html = '\n'.join([f'<p><strong>{escape(title)}</strong>\n<ul>'] + pod_htmls + ['</ul></p>'])
+                pod_text = '\n'.join([title] + pod_texts)
+                htmls.append(pod_html)
+                texts.append(pod_text)
+                if not primary and self.is_primary(pod):
+                    primary = (pod_html, pod_text)
+                else:
+                    fallback = fallback or (pod_html, pod_text)
+
+        return (primary or fallback, ('\n'.join(htmls), '\n'.join(texts)))
+
+    def is_primary(self, pod):
+        return pod.get('@primary') or 'Definition' in pod.get('@title') or 'Result' in pod.get('@title')
 
     def help(self):
         return ('Wolfram Alpha search')
