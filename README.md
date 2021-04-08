@@ -260,20 +260,24 @@ Defaults to off and needs to be activated on every room you want this.
 
 You can choose to send titles as notices (as in Matrix spec) or normal
 messages (IRC users might prefer this). This is a global setting currently.
+You can set a blacklist to ignore URLs containing words from the blacklist.
 
 Commands:
 
-* !url status       - show current status
-* !url title        - spam titles to room
-* !url description  - spam descriptions
-* !url both         - spam both title and description
-* !url off          - stop spamming
-* !url text         - send titles as normal text (must be owner)
-* !url notice       - sends titles as notices (must be owner)
+* !url status          - show current status
+* !url title           - spam titles to room
+* !url description     - spam descriptions
+* !url both            - spam both title and description
+* !url off             - stop spamming
+* !url text            - send titles as normal text (must be owner)
+* !url notice          - sends titles as notices (must be owner)
+* !url blacklist list  - blacklist comma separated list of url substrings
+* !url blacklist clear - clear blacklist
 
 Example:
 
 * !url status
+* !url blacklist www.youtube.com,www.somethingelse.com
 
 NOTE: Disabled by default, i.e. you also need to enable it before activating it
 

@@ -33,7 +33,7 @@ class MatrixModule(BotModule):
             "DESCRIPTION": "Spamming this channel with descriptions",
             "BOTH": "Spamming this channel with both title and description",
         }
-
+        self.blacklist = [ ]
         self.enabled = False
 
     def matrix_start(self, bot):
@@ -45,9 +45,6 @@ class MatrixModule(BotModule):
         bot.client.add_event_callback(self.text_cb, RoomMessageText)
         # extend the useragent string to contain version and bot name
         self.useragent = f"Mozilla/5.0 (compatible; Hemppa/{self.bot.version}; {self.bot.client.user}; +https://github.com/vranki/hemppa/)"
-        # Actually no - for example Youtube doesn't server titles for proper Hemppa user agent!
-        # Lie and say we are generic Firefox. Blame Youtube..
-        self.useragent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0"
         self.logger.debug(f"useragent: {self.useragent}")
 
 
@@ -83,47 +80,59 @@ class MatrixModule(BotModule):
         if status == "OFF":
             return
 
-        # extract possible urls from message
-        urls = re.findall(r"(https?://\S+)", event.body)
+        try:
+            # extract possible urls from message
+            urls = re.findall(r"(https?://\S+)", event.body)
 
-        # no urls, nothing to do
-        if len(urls) == 0:
-            return
+            # no urls, nothing to do
+            if len(urls) == 0:
+                return
 
-        # fetch the urls and if we can see a title spit it out
-        for url in urls:
-            # fix for #98 a bit ugly, but skip all matrix.to urls
-            # those are 99.99% pills and should not
-            # spam the channel with matrix.to titles
-            if url.startswith("https://matrix.to/#/"):
-                self.logger.debug(f"Skipping matrix.to url (#98): {url}")
-                continue
+            # fetch the urls and if we can see a title spit it out
+            for url in urls:
+                # fix for #98 a bit ugly, but skip all matrix.to urls
+                # those are 99.99% pills and should not
+                # spam the channel with matrix.to titles
+                if url.startswith("https://matrix.to/#/"):
+                    self.logger.debug(f"Skipping matrix.to url (#98): {url}")
+                    continue
 
-            try:
-                title, description = self.get_content_from_url(url)
-            except Exception as e:
-                self.logger.warning(f"could not fetch url: {e}")
-                traceback.print_exc(file=sys.stderr)
-                # failed fetching, give up
-                continue
+                url_blacklisted = False
+                for blacklisted in self.blacklist:
+                    if blacklisted in url:
+                        url_blacklisted = True
+                if url_blacklisted:
+                    self.logger.debug(f"Skipping blacklisted url {url}")
+                    continue
 
-            msg = None
+                try:
+                    title, description = self.get_content_from_url(url)
+                except Exception as e:
+                    self.logger.warning(f"could not fetch url: {e}")
+                    traceback.print_exc(file=sys.stderr)
+                    # failed fetching, give up
+                    continue
 
-            if status == "TITLE" and title is not None:
-                msg = f"Title: {title}"
-            elif status == "DESCRIPTION" and description is not None:
-                msg = f"Description: {description}"
+                msg = None
 
-            elif status == "BOTH" and title is not None and description is not None:
-                msg = f"Title: {title}\nDescription: {description}"
+                if status == "TITLE" and title is not None:
+                    msg = f"Title: {title}"
+                elif status == "DESCRIPTION" and description is not None:
+                    msg = f"Description: {description}"
 
-            elif status == "BOTH" and title is not None:
-                msg = f"Title: {title}"
-            elif status == "BOTH" and description is not None:
-                msg = f"Description: {description}"
+                elif status == "BOTH" and title is not None and description is not None:
+                    msg = f"Title: {title}\nDescription: {description}"
 
-            if msg is not None:
-                await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
+                elif status == "BOTH" and title is not None:
+                    msg = f"Title: {title}"
+                elif status == "BOTH" and description is not None:
+                    msg = f"Description: {description}"
+
+                if msg is not None:
+                    await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
+        except Exception as e:
+            self.logger.warning(f"Unexpected error in url module text_cb: {e}")
+            traceback.print_exc(file=sys.stderr)
 
     @lru_cache(maxsize=128)
     def get_content_from_url(self, url):
@@ -178,7 +187,7 @@ class MatrixModule(BotModule):
                 title_tag = soup.find("meta", attrs={"name": "title"})
                 ogtitle = soup.find("meta", property="og:title")
                 if title_tag:
-                    title = descr_tag.get("content", None)
+                    title = title_tag.get("content", None)
                 elif ogtitle:
                     title = ogtitle["content"]
                 elif soup.head and soup.head.title:
@@ -217,8 +226,9 @@ class MatrixModule(BotModule):
 
         # show status
         elif len(args) == 1 and args[0] == "status":
+            status = self.STATUSES.get(self.status.get(room.room_id, "OFF")) + f', URL blacklist: {self.blacklist}'
             await bot.send_text(
-                room, self.STATUSES.get(self.status.get(room.room_id, "OFF"))
+                room, status
             )
             return
 
@@ -238,6 +248,17 @@ class MatrixModule(BotModule):
             await bot.send_text(room, "Sending titles as text from now on.")
             return
 
+        # set blacklist
+        elif len(args) == 2 and args[0] == "blacklist":
+            bot.must_be_owner(event)
+            if args[1] == 'clear':
+                self.blacklist = []
+            else:
+                self.blacklist = args[1].split(',')
+            bot.save_settings()
+            await bot.send_text(room, f"Blacklisted URLs set to {self.blacklist}")
+            return
+
         # invalid command
         await bot.send_text(
             room,
@@ -250,6 +271,7 @@ class MatrixModule(BotModule):
         data = super().get_settings()
         data["status"] = self.status
         data["type"] = self.type
+        data["blacklist"] = self.blacklist
         return data
 
     def set_settings(self, data):
@@ -258,6 +280,8 @@ class MatrixModule(BotModule):
             self.status = data["status"]
         if data.get("type"):
             self.type = data["type"]
+        if data.get("blacklist"):
+            self.blacklist = data["blacklist"]
 
     def help(self):
         return "If I see a url in a message I will try to get the title from the page and spit it out"
