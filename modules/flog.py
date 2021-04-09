@@ -10,80 +10,100 @@ from random import randrange
 
 from modules.common.module import BotModule
 
+class FlightBook:
+    def __init__(self):
+        self.base_url = 'https://flightbook.glidernet.org/api'
+        self.AC_TYPES = [ '?', 'Glider', 'Towplane', \
+            'Helicopter', 'Parachute', 'Drop plane', 'Hang glider', \
+            'Paraglider', 'Powered', 'Jet', 'UFO', 'Balloon', \
+            'Airship', 'UAV', '?', 'Static object' ]
+
+    def get_flights(self, icao):
+        response = urllib.request.urlopen(self.base_url + "/logbook/" + icao)
+        data = json.loads(response.read().decode("utf-8"))
+        # print(json.dumps(data, sort_keys=True, indent=4))
+        return data
+
+    def format_time(self, time):
+        if not time:
+            return '··:··'
+        time = time.replace('h', ':')
+        return time
+
+    def flight2string(self, flight, data):
+        devices = data['devices']
+        device = devices[flight['device']]
+        start = self.format_time(flight["start"])
+        end = self.format_time(flight["stop"])
+        duration = '     '
+        if flight["duration"]:
+            duration = time.strftime('%H:%M', time.gmtime(flight["duration"]))
+        maxalt = ''
+        if flight["max_alt"]:
+            maxalt = str(flight["max_alt"]) + 'm'
+        
+        identity = f'{device.get("registration") or ""} {device.get("aircraft") or ""} {device.get("competition") or ""} {maxalt}'
+        identity = ' '.join(identity.split())
+        return f'{start} - {end} {duration} {identity}'
+
+    def print_flights(self, data, showtow=False):
+        print(f'✈ Flights at {data["airfield"]["name"]} ({data["airfield"]["code"]}) {data["date"]}:')
+        flights = data['flights']
+        for flight in flights:
+            if not showtow and flight["towing"]:
+                continue
+            print(self.flight2string(flight, data))
+
+    def test():
+        fb = FlightBook()
+        data = fb.get_flights('LFMX')
+        fb.print_flights(data)
+
 class MatrixModule(BotModule):
     def __init__(self, name):
         super().__init__(name)
         self.service_name = 'FLOG'
         self.station_rooms = dict()  # Roomid -> ogn station
         self.live_rooms = []     # Roomid's with live enabled
-        self.room_timezones = dict()  # Roomid -> timezone
-        self.api_key = ''
         self.logged_flights = []
         self.logged_flights_date = ""
         self.first_poll = True
         self.enabled = False
+        self.fb = FlightBook()
 
     async def matrix_poll(self, bot, pollcount):
-        if len(self.api_key) > 0:
-            if pollcount % (6 * 5) == 0:  # Poll every 5 min
-                await self.poll_implementation(bot)
+        if pollcount % (6 * 5) == 0:  # Poll every 5 min
+            await self.poll_implementation(bot)
 
     async def poll_implementation(self, bot):
         for roomid in self.live_rooms:
             station = self.station_rooms[roomid]
-            data = self.get_flights(station, self.room_timezones.get(roomid, 0))
+            data = self.fb.get_flights(station)
 
             # Date changed - reset flight count
-            if data["begin_date"] != self.logged_flights_date:
+            if data["date"] != self.logged_flights_date:
                 self.logged_flights = []
-                self.logged_flights_date = data["begin_date"]
+                self.logged_flights_date = data["date"]
 
-            flights = []
-
-            for sortie in data["sorties"]:
-                # Don't show towplanes
-                if sortie["type"] != 2:
-                    # Count only landed gliders
-                    if sortie["ldg"]["time"] != "":
-                        flights.append(
-                            { 
-                                "takeoff": sortie["tkof"]["time"], 
-                                "landing": sortie["ldg"]["time"],
-                                "duration": sortie["dt"],
-                                "glider": self.glider2string(sortie),
-                                "altitude": str(sortie["dalt"]),
-                                "seq": sortie["seq"]
-                            })
+            flights = data['flights']
             for flight in flights:
-                if flight["seq"] not in self.logged_flights:
+                if flight["towing"]:
+                    continue
+                if flight["stop"]:
+                    self.logged_flights.append(flight)
+
+            for flight in flights:
+                if not self.find_flight_in_list(flight, self.logged_flights):
                     if not self.first_poll:
-                        await bot.send_text(bot.get_room_by_id(roomid), flight["takeoff"] + "-" + flight["landing"] + " (" + flight["duration"] + ") - " + flight["altitude"] + "m " + flight["glider"])
-                    self.logged_flights.append(flight["seq"])
+                        await bot.send_text(bot.get_room_by_id(roomid), self.fb.flight2string(flight, data))
+                    self.logged_flights.append(flight)
         self.first_poll = False
 
-    def get_flights(self, station, timezone):
-        timenow = time.localtime(time.time())
-        today = str(timenow[0]) + "-" + str(timenow[1]) + "-" + str(timenow[2])
-        # Example 'https://ktrax.kisstech.ch/backend/logbook?db=sortie&query_type=ap&tz=3&id=ESGE&dbeg=2020-05-03&dend=2020-05-03'
-        log_url = f'https://ktrax.kisstech.ch/backend/logbook?db=sortie&query_type=ap&tz={timezone}&id={station}&dbeg={today}&dend={today}&apikey={self.api_key}'
-        response = urllib.request.urlopen(log_url)
-        data = json.loads(response.read().decode("utf-8"))
-        # print(json.dumps(data, sort_keys=True, indent=4))
-        return data
-
-    def glider2string(self, sortie):
-        actype = sortie["actype"]
-        cs = sortie["cs"]
-        cn = sortie["cn"]
-        if cs == "-":
-            cs = ""
-        if cn == "-":
-            cn = ""
-
-        if actype == "" and cs == "" and cn == "":
-            return "????"
-        return (actype + " " + cs + " " + cn).strip()
-
+    def find_flight_in_list(self, flight, flight_list):
+        for fl in flight_list:
+            if fl["device"] == flight["device"] and fl["start"] == flight["start"]:
+                return True
+        return False
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
@@ -103,7 +123,7 @@ class MatrixModule(BotModule):
 
             elif args[1] == 'status':
                 bot.must_be_admin(room, event)
-                await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}, timezone: {self.room_timezones.get(room.room_id, 0)} api key is set: {len(self.api_key) > 0}')
+                await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}')
 
             elif args[1] == 'poll':
                 bot.must_be_admin(room, event)
@@ -137,47 +157,42 @@ class MatrixModule(BotModule):
                 bot.save_settings()
                 await bot.send_text(room, f'Set OGN station {station} to this room')
 
-            elif args[1] == 'apikey':
-                bot.must_be_owner(event)
+    def text_flog(self, data, showtow):
+        out = ""
+        if len(data["flights"]) == 0:
+            out = f'No known flights today at {data["airfield"]["name"]}'
+        else:
+            out = f'Flights at {data["airfield"]["name"]} ({data["airfield"]["code"]}) {data["date"]}:' + "\n"
+            flights = data['flights']
+            for flight in flights:
+                if not showtow and flight["towing"]:
+                    continue
+                out = out + self.fb.flight2string(flight, data) + "\n"
+        return out
 
-                self.api_key = args[2]
-                bot.save_settings()
-                await bot.send_text(room, 'Api key set')
-
-            elif args[1] == 'timezone':
-                bot.must_be_admin(room, event)
-                tz = int(args[2])
-                self.room_timezones[room.room_id] = tz
-                bot.save_settings()
-                await bot.send_text(room, f'Timezone set to {tz}')
+    def html_flog(self, data, showtow):
+        out = ""
+        if len(data["flights"]) == 0:
+            out = f'No known flights today at {data["airfield"]["name"]}'
+        else:
+            out = f'<b>✈ Flights at {data["airfield"]["name"]} ({data["airfield"]["code"]}) {data["date"]}:' + "</b>\n"
+            flights = data['flights']
+            out = out + "<ul>"
+            for flight in flights:
+                if not showtow and flight["towing"]:
+                    continue
+                out = out + "<li>" + self.fb.flight2string(flight, data) + "</li>\n"
+            out = out + "</ul>"
+        return out
 
     async def show_flog(self, bot, room, station):
-        data = self.get_flights(station, self.room_timezones.get(room.room_id, 0))
-        out = ""
-        if len(data["sorties"]) == 0:
-            out = "No known flights today at " + station
-        else:
-            out = "Flights at " + station.upper() + " today:\n"
-            for sortie in data["sorties"]:
-                # Don't show towplanes
-                if sortie["type"] != 2:
-                    if sortie["ldg"]["time"] == "":
-                        sortie["ldg"]["time"] = u"  \u2708  "
-                    else:
-                        sortie["ldg"]["time"] = "-" + sortie["ldg"]["time"]
-                        if sortie["ldg"]["loc"] != sortie["tkof"]["loc"]:
-                            sortie["tkof"]["time"] = sortie["tkof"]["time"] + "(" + sortie["tkof"]["loc"] + ")"
-                            sortie["ldg"]["time"] = sortie["ldg"]["time"] + "(" + sortie["ldg"]["loc"] + ") "
-
-                    out = out + sortie["tkof"]["time"] + sortie["ldg"]["time"] + " " + sortie["dt"] + " " + str(sortie["dalt"]) + "m " + self.glider2string(sortie) + "\n"
-        await bot.send_text(room, out)
+        data = self.fb.get_flights(station)
+        await bot.send_html(room, self.html_flog(data, False), self.text_flog(data, False))
 
     def get_settings(self):
         data = super().get_settings()
-        data['apikey'] = self.api_key
         data['station_rooms'] = self.station_rooms
         data['live_rooms'] = self.live_rooms
-        data['room_timezones'] = self.room_timezones
         return data
 
     def set_settings(self, data):
@@ -186,12 +201,6 @@ class MatrixModule(BotModule):
             self.station_rooms = data['station_rooms']
         if data.get('live_rooms'):
             self.live_rooms = data['live_rooms']
-        if data.get('room_timezones'):
-            self.room_timezones = data['room_timezones']
-        if data.get('apikey'):
-            self.api_key = data['apikey']
-        if self.api_key and len(self.api_key) == 0:
-            self.api_key = None
 
     def help(self):
         return ('Open Glider Network Field Log')
