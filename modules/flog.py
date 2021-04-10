@@ -65,8 +65,7 @@ class MatrixModule(BotModule):
         self.service_name = 'FLOG'
         self.station_rooms = dict()  # Roomid -> ogn station
         self.live_rooms = []     # Roomid's with live enabled
-        self.logged_flights = []
-        self.logged_flights_date = ""
+        self.logged_flights = dict() # Station -> number of flights
         self.first_poll = True
         self.enabled = False
         self.fb = FlightBook()
@@ -80,30 +79,25 @@ class MatrixModule(BotModule):
             station = self.station_rooms[roomid]
             data = self.fb.get_flights(station)
 
-            # Date changed - reset flight count
-            if data["date"] != self.logged_flights_date:
-                self.logged_flights = []
-                self.logged_flights_date = data["date"]
-
             flights = data['flights']
+
+            if len(flights) == 0 or (not station in self.logged_flights):
+                self.logged_flights[station] = 0
+#                print('Reset flight count for station ' + station)
+#            else:
+#                print(f'Got {len(flights)} flights at {station}')
+
+            flightindex = 0
             for flight in flights:
                 if flight["towing"]:
                     continue
                 if flight["stop"]:
-                    self.logged_flights.append(flight)
-
-            for flight in flights:
-                if not self.find_flight_in_list(flight, self.logged_flights):
-                    if not self.first_poll:
-                        await bot.send_text(bot.get_room_by_id(roomid), self.fb.flight2string(flight, data))
-                    self.logged_flights.append(flight)
+                    if flightindex >= self.logged_flights[station]:
+                        if not self.first_poll:
+                            await bot.send_text(bot.get_room_by_id(roomid), self.fb.flight2string(flight, data))
+                        self.logged_flights[station] = flightindex + 1
+                flightindex = flightindex + 1
         self.first_poll = False
-
-    def find_flight_in_list(self, flight, flight_list):
-        for fl in flight_list:
-            if fl["device"] == flight["device"] and fl["start"] == flight["start"]:
-                return True
-        return False
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
