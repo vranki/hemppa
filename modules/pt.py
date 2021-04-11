@@ -21,11 +21,13 @@ class PeerTubeClient:
         return data
 
 class MatrixModule(BotModule):
+    def __init__(self, name):
+        super().__init__(name)
+        self.instance_url = 'https://sepiasearch.org/'
+
     def matrix_start(self, bot):
         super().matrix_start(bot)
         self.add_module_aliases(bot, ['ptall'])
-        if not self.instance_url:
-            instance_url = 'https://sepiasearch.org/'
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
