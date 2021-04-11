@@ -500,6 +500,18 @@ For example, if a wood lathe is broken, create issue with labels
 Repository name must be in format TampereHacklab/Inventaario - you can
 use this as a example to see how the labels work.
 
+### PeerTube search
+
+Searches PeerTube instances for videos. Uses Sepia Serch at https://sepiasearch.org/
+by default, but you can set any single instance to search on.
+
+#### Usage
+
+* !pt [query]           - Search for exactly one video matching query
+* !ptall [query]        - Search up to 15 videos matching query
+* !pt setinstance [url] - Set instance url, must end with / (example: https://peertube.cpy.re/)
+* !pt showinstance      - Print which instance is used
+
 ## Bot setup
 
 * Create a Matrix user
