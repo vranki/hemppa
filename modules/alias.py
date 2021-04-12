@@ -51,5 +51,17 @@ class MatrixModule(BotModule):
                 msg = '\n'.join([ f'- {key} => {val}' for key, val in bot.module_aliases.items() ])
                 await bot.send_text(room, 'Aliases:\n' + msg)
 
+            if args.pop(0) == 'help':
+                await bot.send_text(room, self.long_help(bot=bot, event=event))
+
     def help(self):
-        return 'Alias a command'
+        return 'Manage command aliases'
+
+    def long_help(self, bot=None, event=None, **kwargs):
+        text = self.help() + (
+                '\n- "!alias (list|ls)": list defined aliases'
+                '\n- "!alias help": show this help')
+        if bot and event and bot.is_owner(event):
+            text += ('\n- "!alias (remove|rm) [name]": remove an alias'
+                     '\n- "!alias add [name] [command]": add an alias for [command]')
+        return text

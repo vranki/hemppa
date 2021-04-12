@@ -20,6 +20,14 @@ class MatrixModule(BotModule):
     def help(self):
         return "Commands for interacting with the current room "
 
+    def long_help(self, **kwargs):
+        return self.help() + (
+                '\n- "!room servers": List all servers in the current room'
+                '\n- "!room joined": Count how many users are in the current room'
+                '\n- "!room banned": List all users banned from the current room and the provided reason'
+                '\n- "!room kicked": List all users kicked from the current room and the provided reason'
+                '\n- "!room state [event_type] [[state_key]]": Get a state event (state_key optional)')
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         args.pop(0)

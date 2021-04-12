@@ -43,9 +43,6 @@ class MatrixModule(BotModule):
 
 
         if len(args) > 1:
-            if args.pop(0) == '!sethelp':
-                bot.must_be_owner(event)
-
             msg = ''
             modulename = args.pop(0)
             moduleobject = bot.modules.get(modulename)

@@ -174,3 +174,16 @@ class MatrixModule(BotModule):
 
     def help(self):
         return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'
+
+    def long_help(self, bot=None, event=None, **kwargs):
+        text = self.help() + (
+                '\n- "!bot version": get bot version'
+                '\n- "!bot status": get bot uptime and status'
+                '\n- "!bot stats": get current users, rooms, and homeservers')
+        if bot and event and bot.is_owner(event):
+            text += ('\n- "!bot quit": kill the bot :('
+                     '\n- "!bot reload": reload the bot modules'
+                     '\n- "!bot enable [module]": enable a module'
+                     '\n- "!bot disable [module]": disable a module')
+        return text
+
