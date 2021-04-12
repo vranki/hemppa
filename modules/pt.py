@@ -54,7 +54,7 @@ class MatrixModule(BotModule):
             data = p.search(query, count)
             if len(data['data']) > 0:
                 for video in data['data']:
-                    video_url = video["url"] #self.instance_url + 'videos/watch/' + video["uuid"]
+                    video_url = video.get("url") or self.instance_url + 'videos/watch/' + video["uuid"]
                     duration = time.strftime('%H:%M:%S', time.gmtime(video["duration"]))
                     instancedata = video["account"]["host"]
                     html = f'<a href="{video_url}">{video["name"]}</a> {video["description"] or ""} [{duration}] @ {instancedata}'
