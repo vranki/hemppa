@@ -155,8 +155,8 @@ class Bot:
         return None
 
     # Throws exception if event sender is not a room admin
-    def must_be_admin(self, room, event):
-        if not self.is_admin(room, event):
+    def must_be_admin(self, room, event, power_level=50):
+        if not self.is_admin(room, event, power_level=power_level):
             raise CommandRequiresAdmin
 
     # Throws exception if event sender is not a bot owner
@@ -166,13 +166,12 @@ class Bot:
 
     # Returns true if event's sender has PL50 or more in the room event was sent in,
     # or is bot owner
-    # TODO: Make configurable
-    def is_admin(self, room, event):
+    def is_admin(self, room, event, power_level=50):
         if self.is_owner(event):
             return True
         if event.sender not in room.power_levels.users:
             return False
-        return room.power_levels.users[event.sender] >= 50
+        return room.power_levels.users[event.sender] >= power_level
 
     # Returns true if event's sender is owner of the bot
     def is_owner(self, event):
