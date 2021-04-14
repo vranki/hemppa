@@ -17,6 +17,7 @@ class FlightBook:
             'Helicopter', 'Parachute', 'Drop plane', 'Hang glider', \
             'Paraglider', 'Powered', 'Jet', 'UFO', 'Balloon', \
             'Airship', 'UAV', '?', 'Static object' ]
+        self.logged_flights = dict() # station -> [index of flight]
 
     def get_flights(self, icao):
         response = urllib.request.urlopen(self.base_url + "/logbook/" + icao)
@@ -82,8 +83,8 @@ class MatrixModule(BotModule):
             flights = data['flights']
 
             if len(flights) == 0 or (not station in self.logged_flights):
-                self.logged_flights[station] = 0
-#                print('Reset flight count for station ' + station)
+                self.logged_flights[station] = []
+                #print('Reset flight count for station ' + station)
 #            else:
 #                print(f'Got {len(flights)} flights at {station}')
 
@@ -92,10 +93,11 @@ class MatrixModule(BotModule):
                 if flight["towing"]:
                     continue
                 if flight["stop"]:
-                    if flightindex >= self.logged_flights[station]:
+                    if not flightindex in self.logged_flights[station]:
                         if not self.first_poll:
                             await bot.send_text(bot.get_room_by_id(roomid), self.fb.flight2string(flight, data))
-                        self.logged_flights[station] = flightindex + 1
+                        self.logged_flights[station].append(flightindex)
+                        # print(f'Logged flights at {station} now {self.logged_flights[station]}')
                 flightindex = flightindex + 1
         self.first_poll = False
 
@@ -116,6 +118,7 @@ class MatrixModule(BotModule):
                 await bot.send_text(room, f'Cleared OGN station for this room')
 
             elif args[1] == 'status':
+                print(self.logged_flights)
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}')
 
