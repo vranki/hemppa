@@ -52,6 +52,21 @@ class MatrixModule(BotModule):
         super().matrix_stop(bot)
         bot.remove_callback(self.text_cb)
 
+    def user_agent_for_url(self, url):
+        if ('youtube.com' in url) or ('youtu.be' in url) or ('google.com' in url):
+            return 'curl/7.64.0'
+        return self.useragent
+
+    # Currently not used, but for future needs:
+    def cookies_for_url(self, url):
+        if ('youtube.com' in url) or ('youtu.be' in url) or ('google.com' in url):
+            cookies = httpx.Cookies()
+            cookies.set('CONSENT', 'YES', domain='.youtube.com')
+            return cookies
+#            return {'CONSENT': 'YES', 'Domain': '.youtube.com', 
+#                'Path': '/', 'SameSite' : 'None', 'Expires': 'Sun, 10 Jan 2038 07:59:59 GMT', 'Max-Age': '946080000'}
+        return {}
+
     async def text_cb(self, room, event):
         """
         Handle client callbacks for all room text events
@@ -152,8 +167,13 @@ class MatrixModule(BotModule):
             # maximum size to read of the response in characters (this prevents us from reading stream forever)
             maxsize = 800000
             headers = {
-                'user-agent': self.useragent
+                'user-agent': self.user_agent_for_url(url)
             }
+            # Google may break things anytime so here are some things to try:
+            # If needed some day..  'Set-Cookie': "CONSENT=YES; Domain=.youtube.com; Path=/; SameSite=None; Secure; Expires=Sun, 10 Jan 2038 07:59:59 GMT; Max-Age=946080000"
+            # cookies = self.cookies_for_url(url)
+            # print('cookies', url, cookies)
+            # print('headers', headers)
             with httpx.stream("GET", url, timeout=timeout, headers=headers) as r:
                 for part in r.iter_text():
                     # self.logger.debug(
