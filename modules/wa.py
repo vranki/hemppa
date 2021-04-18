@@ -1,6 +1,7 @@
 import urllib.request
 import wolframalpha
 from html import escape
+import json
 from modules.common.module import BotModule
 
 
@@ -40,7 +41,6 @@ class MatrixModule(BotModule):
             elif short[0]:
                 html, plain = short
             else:
-                print(short)
                 plain = 'Could not find response for ' + query
                 html = plain
             await bot.send_html(room, html, plain)
@@ -91,23 +91,26 @@ class MatrixModule(BotModule):
 
                 if title:
                     html = f'<strong>{escape(title)}</strong>: {escape(text)}'
-                    text = f'title: text'
+                    text = f'{title}: {text}'
                 else:
-                    html  = escape(text)
-                    plain = text
-                pod_htmls += [f'<li>{s}</li>' for s in html.split('\n')]
-                pod_texts += [f'- {s}'        for s in text.split('\n')]
+                    html = escape(text)
+                pod_htmls += html.split('\n')
+                pod_texts += text.split('\n')
 
             if pod_texts:
                 title = pod.get('@title')
-                pod_html = '\n'.join([f'<p><strong>{escape(title)}</strong>\n<ul>'] + pod_htmls + ['</ul></p>'])
-                pod_text = '\n'.join([title] + pod_texts)
+                pod_html = '\n'.join([f'<p><strong>{escape(title)}</strong>\n<ul>']
+                        + [f'<li>{s}</li>' for s in pod_htmls]
+                        + ['</ul></p>'])
+                pod_text = '\n'.join([title]
+                        + [f'- {s}' for s in pod_texts])
                 htmls.append(pod_html)
                 texts.append(pod_text)
                 if not primary and self.is_primary(pod):
-                    primary = (pod_html, pod_text)
+                    primary = (f'<strong>{escape(title)}</strong>: ' + ' | '.join(pod_htmls),
+                               f'{title}: ' + ' | '.join(pod_texts))
                 else:
-                    fallback = fallback or (pod_html, pod_text)
+                    fallback = fallback or (' | '.join(pod_htmls), ' | '.join(pod_texts))
 
         return (primary or fallback, ('\n'.join(htmls), '\n'.join(texts)))
 
