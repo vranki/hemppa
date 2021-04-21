@@ -578,10 +578,11 @@ docker-compose up
 
 ## Env variables
 
-`MATRIX_USER`, `MATRIX_ACCESS_TOKEN` and `MATRIX_SERVER` should be self-explanatory.
-Set `JOIN_ON_INVITE` (default true) to false if you don't want the bot automatically joining rooms.
+`MATRIX_USER` is the full MXID (not just username) of the Matrix user. `MATRIX_ACCESS_TOKEN` 
+and `MATRIX_SERVER` should be self-explanatory. Set `JOIN_ON_INVITE` (default true) to false 
+if you don't want the bot automatically joining rooms.
 
-You can get access token by logging in with Riot and looking from Settings / Help & About.
+You can get access token by logging in with Element Android and looking from Settings / Help & About.
 
 `BOT_OWNERS` is a comma-separated list of matrix id's for the owners of the bot.
 Some commands require sender to be bot owner.
