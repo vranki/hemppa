@@ -17,6 +17,8 @@ import logging
 import logging.config
 import datetime
 from importlib import reload
+from io import BytesIO
+from PIL import Image
 
 import requests
 from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse
@@ -71,6 +73,53 @@ class Bot:
 
         self.logger.debug("Logger initialized")
 
+    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png"):
+        matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob, blob_content_type)
+ 
+        if not text and not blob:
+            text = f"{url}"
+
+        if matrix_uri is not None:
+            await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+        else:
+            await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+
+    # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
+    async def upload_image(self, url, blob=False, blob_content_type="image/png"):
+        self.client: AsyncClient
+        response: UploadResponse
+        if blob:
+            (response, alist) = await self.client.upload(lambda a, b: url, blob_content_type)
+            i = Image.open(BytesIO(url))
+            image_length = len(url)
+            content_type = blob_content_type
+        else:
+            self.logger.debug(f"start downloading image from url {url}")
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            url_response = requests.get(url, headers=headers)
+            self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
+
+            if url_response.status_code == 200:
+                content_type = url_response.headers.get("content-type")
+                self.logger.info(f"uploading content to matrix server [size={len(url_response.content)}, content-type: {content_type}]")
+                (response, alist) = await self.client.upload(lambda a, b: url_response.content, content_type)
+                self.logger.debug("response: %s", response)
+                i = Image.open(BytesIO(url_response.content))
+                image_length = len(url_response.content)
+            else:
+                self.logger.error("unable to request url: %s", url_response)
+
+                return None, None, None, None
+
+        if isinstance(response, UploadResponse):
+            self.logger.info("uploaded file to %s", response.content_uri)
+            return response.content_uri, content_type, i.size[0], i.size[1], image_length
+        else:
+            response: UploadError
+            self.logger.error("unable to upload file. msg: %s", response.message)
+
+        return None, None, None, None
+
     async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
         msg = {
             "body": body,
@@ -92,7 +141,7 @@ class Bot:
             msg["org.vranki.hemppa.ignore"] = "true"
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
-    async def send_image(self, room, url, body):
+    async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
         """
 
         :param room: A MatrixRoom the image should be send to
@@ -103,8 +152,21 @@ class Bot:
         msg = {
             "url": url,
             "body": body,
-            "msgtype": "m.image"
+            "msgtype": "m.image",
+            "info": {
+                "thumbnail_info": None,
+                "thumbnail_url": None,
+            }, 
         }
+        if mimetype:
+            msg["info"]["mimetype"] = mimetype
+        if width:
+            msg["info"]["w"] = width 
+        if height:
+            msg["info"]["h"] = height
+        if size:
+            msg["info"]["size"] = size
+
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_msg(self, mxid, roomname, message):
@@ -180,33 +242,6 @@ class Bot:
     # Checks if this event should be ignored by bot, including custom property
     def should_ignore_event(self, event):
         return "org.vranki.hemppa.ignore" in event.source['content']
-
-    # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
-    async def upload_image(self, url):
-        self.client: AsyncClient
-        response: UploadResponse
-
-        self.logger.debug(f"start downloading image from url {url}")
-        url_response = requests.get(url)
-        self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
-
-        if url_response.status_code == 200:
-            content_type = url_response.headers.get("content-type")
-            self.logger.info(f"uploading content to matrix server [size={len(url_response.content)}, content-type: {content_type}]")
-            (response, alist) = await self.client.upload(lambda a, b: url_response.content, content_type)
-            self.logger.debug("response: %s", response)
-
-            if isinstance(response, UploadResponse):
-                self.logger.info("uploaded file to %s", response.content_uri)
-                return response.content_uri
-            else:
-                response: UploadError
-                self.logger.error("unable to upload file. msg: %s", response.message)
-        else:
-            self.logger.error("unable to request url: %s", url_response)
-
-        return None
-
 
     def save_settings(self):
         module_settings = dict()

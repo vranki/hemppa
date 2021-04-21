@@ -20,6 +20,10 @@ wolframalpha = "*"
 Mastodon-py = "*"
 pycups = "*"
 pygithub = "*"
+pillow = "*"
+giphypop = "*"
+tzlocal = "*"
+nest_asyncio = "*"
 
 [dev-packages]
 pylint = "*"
