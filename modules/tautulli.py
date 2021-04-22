@@ -111,7 +111,7 @@ class WebServer:
                 data["directors"] = data["directors"].split(",")
 
             for room_id in self.rooms:
-                room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"), encrypted=rooms[room_id])
+                room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"), encrypted=self.rooms[room_id])
                 await send_entry(self.bot, room, data)
 
         except Exception as exc:
