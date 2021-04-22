@@ -74,6 +74,15 @@ class Bot:
         self.logger.debug("Logger initialized")
 
     async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png"):
+        """
+
+        :param room: A MatrixRoom the image should be send to after uploading
+        :param url: Url of binary content of the image to upload
+        :param text: A textual representation of the image
+        :param blob: Flag to indicate if the second param is an url or a binary content
+        :param blob_content_type: Content type of the image in case of binary content
+        :return:
+        """
         matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob, blob_content_type)
  
         if not text and not blob:
@@ -86,6 +95,14 @@ class Bot:
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):
+        """
+
+        :param url: Url of binary content of the image to upload
+        :param blob: Flag to indicate if the first param is an url or a binary content
+        :param blob_content_type: Content type of the image in case of binary content
+        :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
+        """
+
         self.client: AsyncClient
         response: UploadResponse
         if blob:
@@ -121,6 +138,15 @@ class Bot:
         return None, None, None, None
 
     async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the text should be send to
+        :param body: Textual content of the message
+        :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
+
         msg = {
             "body": body,
             "msgtype": msgtype,
@@ -131,6 +157,16 @@ class Bot:
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the html should be send to
+        :param html: Html content of the message
+        :param plaintext: Plaintext content of the message
+        :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
+
         msg = {
             "msgtype": msgtype,
             "format": "org.matrix.custom.html",
@@ -147,6 +183,10 @@ class Bot:
         :param room: A MatrixRoom the image should be send to
         :param url: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
         :param body: A textual representation of the image
+        :param mimetype: The mimetype of the image
+        :param width: Width in pixel of the image
+        :param height: Height in pixel of the image
+        :param size: Size in bytes of the image
         :return:
         """
         msg = {
@@ -170,6 +210,13 @@ class Bot:
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_msg(self, mxid, roomname, message):
+        """
+
+        :param mxid: A Matrix user id to send the message to
+        :param roomname: A Matrix room id to send the message to
+        :param message: Text to be sent as message
+        :return bool: Success upon sending the message
+        """
         # Sends private message to user. Returns true on success.
 
         # Find if we already have a common room with user:
