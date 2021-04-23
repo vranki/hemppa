@@ -516,7 +516,7 @@ Tautulli instance and API Key:
 The module work with an existing installed instance of Tautulli accessible on the machine at the path defined by env variable `TAUTULLI_PATH`
 You have to provide an api key by using the relevant command.
 
-Environ variables seen by commands:
+Environ variables seen by command:
 
 * TAUTULLI_PATH: Path accessible from the machine to the installed instance of Tautulli
 * TAUTULLI_URL: Url accessible from the machine to the installed instance of Tautulli
@@ -524,6 +524,10 @@ Environ variables seen by commands:
 * TAUTULLI_NOTIFIER_PORT: Listening port for the Tautulli webhook handler target
 * BOT_OWNERS: Owner of the rooms in the list for the notification webhook
 
+Docker environment:
+
+Since the module needs access to the source of the running Tautulli instance volumes on both Docker (hemppa and Tautulli) should be defined and being visible each other.
+When running on Docker the env variables seen by command should be defined for the bot instance. 
 
 Example:
 
