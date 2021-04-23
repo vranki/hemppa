@@ -470,6 +470,77 @@ SVG files are printed as text currently, avoid printing them.
 
 This module is disabled by default.
 
+### Giphy
+
+Can be used to post a picture from giphy given a query string.
+
+API Key:
+
+The module has no API Key set up by default. You have to provide an api key by using the relevant command.
+
+Read the documentation to create one at https://developers.giphy.com/docs/api
+
+Commands:
+
+* !giphy apikey [apikey]    - Set api key (Must be done as bot owner)
+* !giphy [query]            - Post the first image result from giphy for the given [query]  
+  
+
+Example:
+
+* !giphy test
+
+### Gfycat
+
+Can be used to post a picture from Gfycat given a query string.
+
+Commands:
+
+* !gfycat [query]   - Post the first image result from gfycat for the given [query]  
+
+Example:
+
+* !gfycat test
+
+### Tautulli
+
+Can be used to fetch recently added information from Tautulli or receive Tautulli recently added notification webhook
+
+Commands:
+
+* !tautulli apikey [apikey]             - Set api key (Must be done as bot owner)
+* !tautulli movie                       - Show the last 10 recently added movies to Plex library monitered by Tautulli
+* !tautulli show                        - Show the last 10 recently added tv series epsiodes to Plex library monitered by Tautulli
+* !tautulli artist                      - Show the last 10 recently added music artists to Plex library monitered by Tautulli
+* !tautulli add [room_id] encrypted     - Add the provided encrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli add [room_id] plain         - Add the provided unencrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli remove [room_id] encrypted  - Remove the provided encrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli remove [room_id] plain      - Remove the provided unencrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+
+Tautulli instance and API Key:
+
+The module work with an existing installed instance of Tautulli accessible on the machine at the path defined by env variable `TAUTULLI_PATH`
+You have to provide an api key by using the relevant command.
+
+Environ variables seen by command:
+
+* TAUTULLI_PATH: Path accessible from the machine to the installed instance of Tautulli
+* TAUTULLI_URL: Url accessible from the machine to the installed instance of Tautulli
+* TAUTULLI_NOTIFIER_ADDR: Listening address for the Tautulli webhook handler target
+* TAUTULLI_NOTIFIER_PORT: Listening port for the Tautulli webhook handler target
+* BOT_OWNERS: Owner of the rooms in the list for the notification webhook
+
+Docker environment:
+
+Since the module needs access to the source of the running Tautulli instance volumes on both Docker (hemppa and Tautulli) should be defined and being visible each other.
+When running on Docker the env variables seen by command should be defined for the bot instance. 
+
+Example:
+
+* !tautulli movie
+* !tautulli add !OGEhHVWSdvArJzumhm:matrix.org plain
+* !tautulli remove !OGEhHVWSdvArJzumhm:matrix.org plain
+
 ### Github based asset management
 
 This module was written for asset (machines, tasks and todo) management by
@@ -638,6 +709,75 @@ class MatrixModule(BotModule):
 * set_settings - Load these settings. It should be the same JSON you returned in previous get_settings
 
 You only need to implement the ones you need. See existing bots for examples.
+
+## Bot API
+```python
+class Bot:
+    async def send_msg(self, mxid, roomname, message):
+        """
+
+        :param mxid: A Matrix user id to send the message to
+        :param roomname: A Matrix room id to send the message to
+        :param message: Text to be sent as message
+        :return bool: Success upon sending the message
+        """
+
+    async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the text should be send to
+        :param body: Textual content of the message
+        :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
+
+    async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the html should be send to
+        :param html: Html content of the message
+        :param plaintext: Plaintext content of the message
+        :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
+        
+    async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
+        """
+
+        :param room: A MatrixRoom the image should be send to
+        :param url: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
+        :param body: A textual representation of the image
+        :param mimetype: The mimetype of the image
+        :param width: Width in pixel of the image
+        :param height: Height in pixel of the image
+        :param size: Size in bytes of the image
+        :return:
+        """
+    
+    async def upload_image(self, url, blob=False, blob_content_type="image/png"):
+        """
+
+        :param url: Url of binary content of the image to upload
+        :param blob: Flag to indicate if the first param is an url or a binary content 
+        :param blob_content_type: Content type of the image in case of binary content
+        :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
+        """
+    
+        
+    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png"):
+        """
+
+        :param room: A MatrixRoom the image should be send to after uploading
+        :param url: Url of binary content of the image to upload
+        :param text: A textual representation of the image
+        :param blob: Flag to indicate if the second param is an url or a binary content 
+        :param blob_content_type: Content type of the image in case of binary content
+        :return:
+        """
+    
+```
 
 ### Logging
 
