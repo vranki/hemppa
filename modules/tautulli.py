@@ -123,6 +123,7 @@ class WebServer:
 class MatrixModule(BotModule):
     httpd = None
     rooms = dict()
+    api_key = None
 
     def __init__(self, name):
         super().__init__(name)
@@ -151,14 +152,20 @@ class MatrixModule(BotModule):
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
-        if len(args) == 2:
+        if len(args) == 3 and args[1] == 'apikey':
+            bot.must_be_owner(event)
+
+            self.api_key = args[2]
+            bot.save_settings()
+            await bot.send_text(room, 'Api key set')
+        elif len(args) == 2:
             media_type = args[1]
             if media_type != "movie" and media_type != "show" and media_type != "artist":
                 await bot.send_text(room, "media type '%s' provided not valid" % media_type)
                 return
 
             try:
-                url = "{}/api/v2?apikey={}&cmd=get_recently_added&count=10".format(os.getenv("TAUTULLI_URL"), os.getenv("TAUTULLI_API_KEY"))
+                url = "{}/api/v2?apikey={}&cmd=get_recently_added&count=10".format(os.getenv("TAUTULLI_URL"), self.api_key)
                 req = urllib.request.Request(url+"&media_type="+media_type)
                 connection = urllib.request.urlopen(req).read()
                 entries = json.loads(connection)
@@ -194,6 +201,7 @@ class MatrixModule(BotModule):
 
     def get_settings(self):
         data = super().get_settings()
+        data["api_key"] = self.api_key
         data["rooms"] = self.rooms
         self.httpd.rooms = self.rooms
         return data
@@ -203,6 +211,8 @@ class MatrixModule(BotModule):
         if data.get("rooms"):
             self.rooms = data["rooms"]
             self.httpd.rooms = self.rooms
+        if data.get("api_key"):
+            self.api_key = data["api_key"]
 
     def help(self):
         return ('Tautulli recently added bot')

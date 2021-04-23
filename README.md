@@ -470,17 +470,15 @@ Can be used to post a picture from giphy given a query string.
 
 API Key:
 
-The module has no API Key set up by defualt. You have to provide an api key by setting the environment variable `GIPHY_API_KEY`.
+The module has no API Key set up by default. You have to provide an api key by using the relevant command.
 
 Read the documentation to create one at https://developers.giphy.com/docs/api
 
-Environ variables seen by commands:
-
-* GIPHY_API_KEY: API Key for Giphy access
-
 Commands:
 
-* !giphy "query"                - Post the first image result from giphy for the given "query"  
+* !giphy apikey [apikey]    - Set api key (Must be done as bot owner)
+* !giphy [query]            - Post the first image result from giphy for the given [query]  
+  
 
 Example:
 
@@ -492,7 +490,7 @@ Can be used to post a picture from Gfycat given a query string.
 
 Commands:
 
-* !gfycat "query"                - Post the first image result from gfycat for the given "query"  
+* !gfycat [query]   - Post the first image result from gfycat for the given [query]  
 
 Example:
 
@@ -504,26 +502,24 @@ Can be used to fetch recently added information from Tautulli or receive Tautull
 
 Commands:
 
-* !tautulli movie   - Show the last 10 recently added movies to Plex library monitered by Tautulli  
-* !tautulli show   - Show the last 10 recently added tv series epsiodes to Plex library monitered by Tautulli  
-* !tautulli artist   - Show the last 10 recently added music artists to Plex library monitered by Tautulli  
-* !tautulli add "room_id" encrypted - Add the provided encrypted "room_id" to the list of rooms to post the recently added notifications received by the webhook  
-* !tautulli add "room_id" plain - Add the provided unencrypted "room_id" to the list of rooms to post the recently added notifications received by the webhook  
-* !tautulli remove "room_id" encrypted - Remove the provided encrypted "room_id" to the list of rooms to post the recently added notifications received by the webhook  
-* !tautulli remove "room_id" plain - Remove the provided unencrypted "room_id" to the list of rooms to post the recently added notifications received by the webhook  
+* !tautulli apikey [apikey]             - Set api key (Must be done as bot owner)
+* !tautulli movie                       - Show the last 10 recently added movies to Plex library monitered by Tautulli
+* !tautulli show                        - Show the last 10 recently added tv series epsiodes to Plex library monitered by Tautulli
+* !tautulli artist                      - Show the last 10 recently added music artists to Plex library monitered by Tautulli
+* !tautulli add [room_id] encrypted     - Add the provided encrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli add [room_id] plain         - Add the provided unencrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli remove [room_id] encrypted  - Remove the provided encrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
+* !tautulli remove [room_id] plain      - Remove the provided unencrypted [room_id] to the list of rooms to post the recently added notifications received by the webhook
 
 Tautulli instance and API Key:
 
 The module work with an existing installed instance of Tautulli accessible on the machine at the path defined by env variable `TAUTULLI_PATH`
-You have to provide an api key by setting the environment variable `TAUTULLI_API_KEY`.
-
-Read the documentation to create one at https://developers.giphy.com/docs/api
+You have to provide an api key by using the relevant command.
 
 Environ variables seen by commands:
 
 * TAUTULLI_PATH: Path accessible from the machine to the installed instance of Tautulli
 * TAUTULLI_URL: Url accessible from the machine to the installed instance of Tautulli
-* TAUTULLI_API_KEY: API Key for Tautulli access
 * TAUTULLI_NOTIFIER_ADDR: Listening address for the Tautulli webhook handler target
 * TAUTULLI_NOTIFIER_PORT: Listening port for the Tautulli webhook handler target
 * BOT_OWNERS: Owner of the rooms in the list for the notification webhook

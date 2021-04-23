@@ -12,13 +12,21 @@ from collections import namedtuple
 from modules.common.module import BotModule
 
 class MatrixModule(BotModule):
+    api_key = None
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
-        if len(args) > 1:
+        if len(args) == 3 and args[1] == 'apikey':
+            bot.must_be_owner(event)
+
+            self.api_key = args[2]
+            bot.save_settings()
+            await bot.send_text(room, 'Api key set')
+        elif len(args) > 1:
             gif_url = "No image found"
             query = event.body[len(args[0])+1:]
             try:
-                g = giphypop.Giphy(api_key=os.getenv("GIPHY_API_KEY"))
+                g = giphypop.Giphy(api_key=self.api_key)
                 gifs = []
                 try:
                     for x in g.search(phrase=query, limit=1):
@@ -38,8 +46,15 @@ class MatrixModule(BotModule):
         else:
             await bot.send_text(room, 'Usage: !giphy <query>')
 
+    def get_settings(self):
+        data = super().get_settings()
+        data["api_key"] = self.api_key
+        return data
+
     def set_settings(self, data):
         super().set_settings(data)
+        if data.get("api_key"):
+            self.api_key = data["api_key"]
 
     def help(self):
         return ('Giphy bot')
