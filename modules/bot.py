@@ -1,4 +1,5 @@
 import collections
+import json
 from datetime import datetime
 
 from modules.common.module import BotModule
@@ -16,7 +17,7 @@ class MatrixModule(BotModule):
         self.starttime = datetime.now()
 
     async def matrix_message(self, bot, room, event):
-        args = event.body.split()
+        args = event.body.split(None, 2)
 
         if len(args) == 2:
             if args[1] == 'quit':
@@ -33,13 +34,18 @@ class MatrixModule(BotModule):
                 await self.leave(bot, room, event)
             elif args[1] == 'modules':
                 await self.show_modules(bot, room)
+            elif args[1] == 'export':
+                await self.export_settings(bot, event)
 
         elif len(args) == 3:
             if args[1] == 'enable':
                 await self.enable_module(bot, room, event, args[2])
             elif args[1] == 'disable':
                 await self.disable_module(bot, room, event, args[2])
-
+            elif args[1] == 'export':
+                await self.export_settings(bot, event, module_name=args[2])
+            elif args[1] == 'import':
+                await self.import_settings(bot, event)
         else:
             pass
 
@@ -125,6 +131,46 @@ class MatrixModule(BotModule):
             state = 'Enabled' if module.enabled else 'Disabled'
             modules_message += f"{state}: {modulename} - {module.help()}\n"
         await bot.send_text(room, modules_message)
+
+    async def export_settings(self, bot, event, module_name=None):
+        bot.must_be_owner(event)
+        data = bot.get_account_data()['module_settings']
+        if module_name:
+            data = data[module_name]
+            self.logger.info(f"{event.sender} is exporting settings for module {module_name}")
+        else:
+            self.logger.info(f"{event.sender} is exporting all settings")
+        await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', json.dumps(data))
+
+    async def import_settings(self, bot, event):
+        bot.must_be_owner(event)
+
+        self.logger.info(f"{event.sender} is importing settings")
+        try:
+            account_data = bot.get_account_data()
+            child = account_data['module_settings']
+        except KeyError: # no data yet
+            account_data['module_settings'] = dict()
+            child = account_data['module_settings']
+
+        key = None
+        data = event.body.split(None, 2)[2]
+        while not data.startswith('{'):
+            key, data = data.split(None, 1)
+            if child.get(key):
+                child = child[key]
+                key = None
+            else:
+                break
+        data = json.loads(data)
+
+        if not key:
+            child.update(data)
+        else:
+            child[key] = data
+        bot.load_settings(account_data)
+        bot.save_settings()
+        await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
 
     def help(self):
         return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'

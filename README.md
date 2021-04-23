@@ -36,6 +36,12 @@ Bot management commands.
 * !bot version - print version and uptime of the bot
 * !bot quit - quit the bot process (Must be done as bot owner)
 * !bot reload - reload all bot modules  (Must be done as bot owner)
+* !bot export - export all bot settings as json (Must be done as bot owner)
+* !bot export [module] - export a module's settings as json (Must be done as bot owner)
+* !bot import [json object] - Update all bot settings from json (Must be done as bot owner)
+* !bot import [module] [json object] - Update a module's settings from json (Must be done as bot owner)
+* !bot import [module] [key ...] [json object] - Update a sub-object in a module from json (Must be done as bot owner)
+  * Example: !bot import alias aliases {"osm": "loc", "sh": "cmd"}
 * !bot stats - show statistics on matrix users seen by bot
 * !bot leave - ask bot to leave this room (Must be done as admin in room)
 * !bot modules - list all modules including enabled status
