@@ -47,11 +47,17 @@ class MatrixModule(BotModule):
 
         elif len(args) == 1:
             if args.pop(0) in ['ls', 'list']:
+                msg = ['Aliases:']
+                inverted = dict()
+                for k, v in bot.module_aliases.items():
+                    inverted.setdefault(v, list()).append(k)
                 self.logger.debug(f"room: {room.name} sender: {event.sender} wants to list aliases")
-                msg = '\n'.join([ f'- {key} => {val}' for key, val in bot.module_aliases.items() ])
-                await bot.send_text(room, 'Aliases:\n' + msg)
+                for k, v in inverted.items():
+                    v = ', '.join(v)
+                    msg.append(f'- {k} = {v}')
+                await bot.send_text(room, '\n'.join(msg))
 
-            if args.pop(0) == 'help':
+            elif args.pop(0) == 'help':
                 await bot.send_text(room, self.long_help(bot=bot, event=event))
 
     def help(self):
