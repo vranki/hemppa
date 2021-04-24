@@ -119,3 +119,12 @@ class MatrixModule(BotModule):
 
     def help(self):
         return ('Wolfram Alpha search')
+
+    def long_help(self, bot=None, event=None, **kwargs):
+        text = self.help() + (
+            '\n- "!wa [query]": Query WolframAlpha and return the primary pod'
+            '\n- "!wafull [query]": Query WolframAlpha and return all pods'
+            )
+        if bot and event and bot.is_owner(event):
+            text += '\n- "!wa appid [appid]": Set appid'
+        return text

@@ -75,7 +75,18 @@ class BotModule(ABC):
     @abstractmethod
     def help(self):
         """Return one-liner help text"""
-        pass
+        return 'A cool hemppa module'
+
+    def long_help(self, bot=None, room=None, event=None, args=[]):
+        """Return longer help text
+
+        Used by help module as !help modulename [args ...]
+        bot, room, and event are passed to allow a module
+        to give contextual help
+
+        If not defined, falls back to short help
+        """
+        return self.help()
 
     def get_settings(self):
         """Must return a dict object that can be converted to JSON and sent to server
