@@ -177,6 +177,24 @@ class Bot:
             msg["org.vranki.hemppa.ignore"] = "true"
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
+    async def send_location(self, room, body, latitude, longitude, bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the html should be send to
+        :param html: Html content of the message
+        :param body: Plaintext content of the message
+        :param latitude: Latitude in WGS84 coordinates (float)
+        :param longitude: Longitude in WGS84 coordinates (float)
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
+        locationmsg = {
+            "body": str(body),
+            "geo_uri": 'geo:' + str(latitude) + ',' + str(longitude),
+            "msgtype": "m.location",
+            }
+        await self.client.room_send(room.room_id, 'm.room.message', locationmsg)
+
     async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
         """
 
@@ -396,7 +414,7 @@ class Bot:
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
-        except ModuleNotFoundError:
+        except Exception:
             self.logger.error(f'Module {modulename} failed to load!')
             traceback.print_exc(file=sys.stderr)
             return None

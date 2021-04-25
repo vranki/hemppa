@@ -362,7 +362,8 @@ Open Glider Network maintains a unified tracking platform for gliders, drones an
 Read more about OGN at https://www.glidernet.org/
 
 FLOG module supports showing field logs for OGN receivers and can display live
-field log in a room.
+field log in a room. It can also show latest known location of an aircraft
+using !sar command.
 
 It uses FlightBook instance at https://flightbook.glidernet.org/
 
@@ -391,6 +392,7 @@ Commands and examples:
 * !flog status - print status of this room
 * !flog live - enable live field log for this room
 * !flog rmlive - disable live field log for this room
+* !sar OH-123 - Send latest known location of aircraft OH-123
 
 NOTE: disabled by default
 
@@ -776,7 +778,17 @@ class Bot:
         :param blob_content_type: Content type of the image in case of binary content
         :return:
         """
-    
+    async def send_location(self, room, body, latitude, longitude, bot_ignore=False):
+        """
+
+        :param room: A MatrixRoom the html should be send to
+        :param html: Html content of the message
+        :param body: Plaintext content of the message
+        :param latitude: Latitude in WGS84 coordinates (float)
+        :param longitude: Longitude in WGS84 coordinates (float)
+        :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :return:
+        """
 ```
 
 ### Logging
@@ -803,9 +815,9 @@ You probably want to call it during `matrix_start`:
 ```python
 class MatrixModule(BotModule):
 
-	def matrix_start(self, bot):
-		super().matrix_start(bot)
-		self.add_module_aliases(bot, ['new_name', 'another_name'])
+    def matrix_start(self, bot):
+        super().matrix_start(bot)
+        self.add_module_aliases(bot, ['new_name', 'another_name'])
 ```
 
 Then you can call this module with its original name, `!new_name`, or `!another_name`

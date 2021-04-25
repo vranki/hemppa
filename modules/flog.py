@@ -10,6 +10,7 @@ from random import randrange
 
 from modules.common.module import BotModule
 
+# API docs at: https://gitlab.com/lemoidului/ogn-flightbook/-/blob/master/doc/API.md
 class FlightBook:
     def __init__(self):
         self.base_url = 'https://flightbook.glidernet.org/api'
@@ -18,12 +19,26 @@ class FlightBook:
             'Paraglider', 'Powered', 'Jet', 'UFO', 'Balloon', \
             'Airship', 'UAV', '?', 'Static object' ]
         self.logged_flights = dict() # station -> [index of flight]
+        self.device_cache = dict() # Registration -> device address
 
     def get_flights(self, icao):
         response = urllib.request.urlopen(self.base_url + "/logbook/" + icao)
         data = json.loads(response.read().decode("utf-8"))
         # print(json.dumps(data, sort_keys=True, indent=4))
+        self.update_device_cache(data)
         return data
+
+    def update_device_cache(self, data):
+        devices = data['devices']
+        for device in devices:
+            if device["address"] and device["registration"]:
+                self.device_cache[device["registration"]] = device["address"]
+
+    def address_for_registration(self, registration):
+        for reg in self.device_cache.keys():
+            if reg.lower() == registration.lower():
+                return self.device_cache[reg]
+        return None
 
     def format_time(self, time):
         if not time:
@@ -71,6 +86,10 @@ class MatrixModule(BotModule):
         self.enabled = False
         self.fb = FlightBook()
 
+    def matrix_start(self, bot):
+        super().matrix_start(bot)
+        self.add_module_aliases(bot, ['sar'])
+
     async def matrix_poll(self, bot, pollcount):
         if pollcount % (6 * 5) == 0:  # Poll every 5 min
             await self.poll_implementation(bot)
@@ -103,14 +122,14 @@ class MatrixModule(BotModule):
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
-        if len(args) == 1:
+        if len(args) == 1 and args[0] == "!flog":
             if room.room_id in self.station_rooms:
                 station = self.station_rooms[room.room_id]
                 await self.show_flog(bot, room, station)
             else:
                 await bot.send_text(room, 'No OGN station set for this room - set it first.')
 
-        elif len(args) == 2:
+        elif len(args) == 2 and args[0] == "!flog":
             if args[1] == 'rmstation':
                 bot.must_be_admin(room, event)
                 del self.station_rooms[room.room_id]
@@ -119,6 +138,7 @@ class MatrixModule(BotModule):
 
             elif args[1] == 'status':
                 print(self.logged_flights)
+                print(self.fb.device_cache)
                 bot.must_be_admin(room, event)
                 await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}')
 
@@ -142,8 +162,18 @@ class MatrixModule(BotModule):
                 # Assume parameter is a station name
                 station = args[1]
                 await self.show_flog(bot, room, station)
+        elif len(args) == 2 and args[0] == "!sar":
+            registration = args[1]
+            address = self.fb.address_for_registration(registration)
+            coords = None
+            if address:
+                coords = self.get_coords_for_address(address)
+            if coords:
+                await bot.send_location(room, f'{registration} ({coords["utc"]})', coords["lat"], coords["lng"])
+            else:
+                await bot.send_text(room, f'No Flarm ID found for {registration}!')
 
-        elif len(args) == 3:
+        elif len(args) == 3 and args[0] == "!flog":
             if args[1] == 'station':
                 bot.must_be_admin(room, event)
 
@@ -153,6 +183,16 @@ class MatrixModule(BotModule):
 
                 bot.save_settings()
                 await bot.send_text(room, f'Set OGN station {station} to this room')
+
+
+    def get_coords_for_address(self, address):
+        # https://flightbook.glidernet.org/api/live/address/~91DADF5B86
+        url = self.fb.base_url + "/live/address/" + address
+        response = urllib.request.urlopen(self.fb.base_url + "/live/address/" + address)
+        data = json.loads(response.read().decode("utf-8"))
+        # print(json.dumps(data, sort_keys=True, indent=4))
+        return data
+
 
     def text_flog(self, data, showtow):
         out = ""
