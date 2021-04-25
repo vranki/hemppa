@@ -1,6 +1,8 @@
 import collections
 import json
+import requests
 from datetime import datetime
+import time
 
 from modules.common.module import BotModule
 
@@ -36,6 +38,8 @@ class MatrixModule(BotModule):
                 await self.show_modules(bot, room)
             elif args[1] == 'export':
                 await self.export_settings(bot, event)
+            elif args[1] == 'ping':
+                await self.get_ping(bot, room, event)
 
         elif len(args) == 3:
             if args[1] == 'enable':
@@ -51,6 +55,42 @@ class MatrixModule(BotModule):
 
         # TODO: Make this configurable. By default don't say anything.
         #    await bot.send_text(room, 'Unknown command, sorry.')
+
+    async def get_ping(self, bot, room, event):
+        self.logger.info(f'{event.sender} pinged the bot in {room.room_id}')
+
+        # initial pong
+        serv_before  = event.server_timestamp
+        local_before = time.time()
+        pong = await bot.client.room_send(room.room_id, 'm.room.message',
+            {'body': f'Pong!', 'msgtype': 'm.notice'})
+        local_delta = int((time.time() - local_before) * 1000)
+
+        # ask the server what the timestamp was on our pong
+        serv_delta = None
+        event_url = f'{bot.client.homeserver}/_matrix/client/r0/rooms/{room.room_id}/event/{pong.event_id}?access_token={bot.client.access_token}'
+        try:
+            serv_delta = requests.get(event_url).json()['origin_server_ts'] - serv_before
+            delta = f'server response in {local_delta}ms, event created in {serv_delta}ms'
+        except Exception as e:
+            self.logger.error(f"Failed getting server timestamp: {e}")
+            delta = f'server response in {local_delta}ms'
+
+        # update event
+        content = {
+            'm.new_content': {
+                'msgtype': 'm.notice',
+                'body': f'Pong! ({delta})'
+            },
+            'm.relates_to': {
+                'rel_type': 'm.replace',
+                'event_id': pong.event_id
+            },
+            'msgtype': 'm.notice',
+            'body': delta
+        }
+        await bot.client.room_send(room.room_id, 'm.room.message', content)
+
 
     async def leave(self, bot, room, event):
         bot.must_be_admin(room, event)
@@ -173,17 +213,21 @@ class MatrixModule(BotModule):
         await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
 
     def help(self):
-        return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable)'
+        return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable, import, export, ping)'
 
     def long_help(self, bot=None, event=None, **kwargs):
         text = self.help() + (
                 '\n- "!bot version": get bot version'
+                '\n- "!bot ping": get the ping time to the server'
                 '\n- "!bot status": get bot uptime and status'
                 '\n- "!bot stats": get current users, rooms, and homeservers')
         if bot and event and bot.is_owner(event):
             text += ('\n- "!bot quit": kill the bot :('
                      '\n- "!bot reload": reload the bot modules'
                      '\n- "!bot enable [module]": enable a module'
-                     '\n- "!bot disable [module]": disable a module')
+                     '\n- "!bot disable [module]": disable a module'
+                     '\n- "!bot import ([module]) [json]": import settings into the bot'
+                     '\n- "!bot export ([module])": export settings from the bot'
+                     )
         return text
 

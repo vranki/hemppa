@@ -33,6 +33,7 @@ by RSS bridge.
 Bot management commands.
 
 * !bot status - print bot status information
+* !bot ping - print the ping time between the server and the bot
 * !bot version - print version and uptime of the bot
 * !bot quit - quit the bot process (Must be done as bot owner)
 * !bot reload - reload all bot modules  (Must be done as bot owner)
