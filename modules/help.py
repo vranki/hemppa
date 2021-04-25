@@ -42,7 +42,7 @@ class MatrixModule(BotModule):
                 await bot.send_text(room, f'Not a !help setting: {args[0]}')
 
 
-        if len(args) > 1:
+        if len(args) == 1:
             msg = ''
             modulename = args.pop(0)
             moduleobject = bot.modules.get(modulename)
