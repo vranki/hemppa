@@ -70,9 +70,13 @@ class MatrixModule(BotModule):
         primary = None
         fallback = None
 
+        pods = res.get('pod')
+        if not pods:
+            return (('<em>(data not available)</em>', '(data not available)'), ) * 2
+
         # workaround for bug(?) in upstream wa package
-        if hasattr(res['pod'], 'get'):
-            res['pod'] = [res['pod']]
+        if hasattr(pods, 'get'):
+            pods = [pods]
         for pod in res['pod']:
             pod_htmls = []
             pod_texts = []
