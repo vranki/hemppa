@@ -117,14 +117,16 @@ class BotModule(ABC):
         """
         for name in args:
             if bot.modules.get(name):
-                self.logger.info(f"aliases: {name} is already a module!")
+                self.logger.info(f"not aliasing {name}, it is already a module")
                 continue
             prev = bot.module_aliases.get(name)
+            if prev == self.name:
+                continue
             if prev and not force:
-                self.logger.info(f"aliases: {name} already exists for module {prev}")
+                self.logger.info(f"not aliasing {name}, it is already an alias for {prev}")
                 continue
             if prev:
-                self.logger.info(f"aliases: {name} from module {prev}")
+                self.logger.debug(f"overriding alias {name} for {prev}")
             bot.module_aliases[name] = self.name
 
     def enable(self):
