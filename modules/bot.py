@@ -1,11 +1,10 @@
 import collections
 import json
 import requests
-from datetime import datetime
+from datetime import timedelta
 import time
 
 from modules.common.module import BotModule
-
 
 class MatrixModule(BotModule):
 
@@ -16,7 +15,7 @@ class MatrixModule(BotModule):
 
     def matrix_start(self, bot):
         super().matrix_start(bot)
-        self.starttime = datetime.now()
+        self.starttime = time.time()
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split(None, 2)
@@ -91,7 +90,6 @@ class MatrixModule(BotModule):
         }
         await bot.client.room_send(room.room_id, 'm.room.message', content)
 
-
     async def leave(self, bot, room, event):
         bot.must_be_admin(room, event)
         self.logger.info(f'{event.sender} asked bot to leave room {room.room_id}')
@@ -118,9 +116,13 @@ class MatrixModule(BotModule):
                             f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
 
     async def status(self, bot, room):
-        uptime = datetime.now() - self.starttime
-        await bot.send_text(room,
-                            f'Uptime {uptime} - system time is {datetime.now()} - loaded {len(bot.modules)} modules.')
+        systime = time.time()
+        uptime  = str(timedelta(seconds=(systime - self.starttime))).split('.', 1)[0]
+        systime = time.ctime(systime)
+        enabled = sum(1 for module in bot.modules.values() if module.enabled)
+
+        return await bot.send_text(room, f'Uptime: {uptime} - System time: {systime} '
+                f'- {enabled} modules enabled out of {len(bot.modules)} loaded.')
 
     async def reload(self, bot, room, event):
         bot.must_be_owner(event)
