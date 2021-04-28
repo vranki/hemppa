@@ -98,22 +98,26 @@ class MatrixModule(BotModule):
 
     async def stats(self, bot, room):
         roomcount = len(bot.client.rooms)
-        usercount = 0
         homeservers = dict()
         for croomid in bot.client.rooms:
-            roomobj = bot.client.rooms[croomid]
-            usercount = usercount + len(roomobj.users)
-            for user in roomobj.users:
-                hs = user.split(':')[1]
+            try:
+                users = bot.client.rooms[croomid].users
+            except (KeyError, ValueError) as e:
+                self.logger.warning(f"Couldn't get user list in room with id {croomid}, skipping: {repr(e)}")
+                continue
+            for user in users:
+                user, hs = user.split(':', 1)
                 if homeservers.get(hs):
-                    homeservers[hs] = homeservers[hs] + 1
+                    homeservers[hs].add(user)
                 else:
-                    homeservers[hs] = 1
+                    homeservers[hs] = {user}
+        homeservers = {k: len(v) for k, v in homeservers.items()}
+        usercount = sum(homeservers.values())
+        hscount = len(homeservers)
         homeservers = sorted(homeservers.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
-        if len(homeservers) > 10:
-            homeservers = homeservers[0:10]
-        await bot.send_text(room,
-                            f'I\'m seeing {usercount} users in {roomcount} rooms. Top ten homeservers: {homeservers}')
+        homeservers = ', '.join(['{} ({})'.format(*hs) for hs in homeservers[:10]])
+        await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms.'
+                f' Top ten homeservers (out of {hscount}): {homeservers}')
 
     async def status(self, bot, room):
         systime = time.time()
