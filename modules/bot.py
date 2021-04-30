@@ -115,7 +115,8 @@ class MatrixModule(BotModule):
         usercount = sum(homeservers.values())
         hscount = len(homeservers)
         homeservers = sorted(homeservers.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
-        homeservers = ', '.join(['{} ({})'.format(*hs) for hs in homeservers[:10]])
+        homeservers = ', '.join(['{} ({} users, {:.1f}%)'.format(hs[0], hs[1], 100.0 * hs[1] / usercount)
+            for hs in homeservers[:10]])
         await bot.send_text(room, f'I\'m seeing {usercount} users in {roomcount} rooms.'
                 f' Top ten homeservers (out of {hscount}): {homeservers}')
 
