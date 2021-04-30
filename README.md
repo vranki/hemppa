@@ -53,13 +53,18 @@ Bot management commands.
 
 Prints help on existing modules.
 
+* !help - get short help for all currently-enabled modules
+* !help [module] - get long help for the given module, or short help if unavailable
+* !sethelp msg (on|yes|1) - Configure !help to respond to !help requests via a direct message, instead of in the current room
+(Must be done as bot owner)
+
 ### Alias
 
 Add or remove aliases for a module.
 
-* !alias add osm loc
-* !alias list
-* !alias remove osm
+* !alias list - List all aliases
+* !alias add [newname] [module] - Define an alias for [module] (Must be done as bot owner)
+* !alias remove [name] - Remove [name] as an alias (Must be done as bot owner)
 
 ### Echo
 
