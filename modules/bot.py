@@ -4,7 +4,7 @@ import requests
 from datetime import timedelta
 import time
 
-from modules.common.module import BotModule
+from modules.common.module import BotModule, ModuleCannotBeDisabled
 
 class MatrixModule(BotModule):
 
@@ -152,24 +152,24 @@ class MatrixModule(BotModule):
             module.enable()
             module.matrix_start(bot)
             bot.save_settings()
-            await bot.send_text(room, f"module {module_name} enabled")
-        else:
-            await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
+            return await bot.send_text(room, f"Module {module_name} enabled")
+        return await bot.send_text(room, f"Module with name {module_name} not found. Execute !bot modules for a list of available modules")
 
     async def disable_module(self, bot, room, event, module_name):
         bot.must_be_owner(event)
         self.logger.info(f"asked to disable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
-            if module.can_be_disabled:
+            try:
                 module.disable()
-                module.matrix_stop(bot)
-                bot.save_settings()
-                await bot.send_text(room, f"module {module_name} disabled")
-            else:
-                await bot.send_text(room, f"module {module_name} cannot be disabled")
-        else:
-            await bot.send_text(room, f"module with name {module_name} not found. execute !bot modules for a list of available modules")
+            except ModuleCannotBeDisabled:
+                return await bot.send_text(room, f"Module {module_name} cannot be disabled.")
+            except Exception as e:
+                return await bot.send_text(room, f"Module {module_name} was not disabled: {repr(e)}")
+            module.matrix_stop(bot)
+            bot.save_settings()
+            return await bot.send_text(room, f"Module {module_name} disabled")
+        return await bot.send_text(room, f"Module with name {module_name} not found. Execute !bot modules for a list of available modules")
 
     async def show_modules(self, bot, room):
         modules_message = "Modules:\n"
@@ -217,6 +217,9 @@ class MatrixModule(BotModule):
         bot.load_settings(account_data)
         bot.save_settings()
         await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
+
+    def disable(self):
+        raise ModuleCannotBeDisabled
 
     def help(self):
         return 'Bot management commands. (quit, version, reload, status, stats, leave, modules, enable, disable, import, export, ping)'
