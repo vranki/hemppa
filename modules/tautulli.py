@@ -43,10 +43,11 @@ async def send_entry(bot, room, entry):
             global plexpy
             if plexpy:
                 pms = plexpy.pmsconnect.PmsConnect()
-                (image0, image1) = pms.get_image(entry["art"], 600, 300)
-                if not image0 or image1:
+                pms_image = pms.get_image(entry["art"], 600, 300)
+                if not pms_image:
                     return
 
+                (image0, image1) = pms_image
                 matrix_uri = await bot.upload_and_send_image(room, image0, "", True, image1)
 
                 if matrix_uri is not None:
