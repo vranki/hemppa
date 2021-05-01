@@ -102,25 +102,27 @@ class WebServer:
         loop.run_until_complete(site.start())
 
     async def notify(self, request: web.Request) -> web.Response:
+        if not request:
+            return web.Response()
+
         try:
-            if request:
-                data = await request.json()
-                if "genres" in data:
-                    data["genres"] = data["genres"].split(",")
+            data = await request.json()
+            if "genres" in data:
+                data["genres"] = data["genres"].split(",")
 
-                if "actors" in data:
-                    data["actors"] = data["actors"].split(",")
+            if "actors" in data:
+                data["actors"] = data["actors"].split(",")
 
-                if "directors" in data:
-                    data["directors"] = data["directors"].split(",")
+            if "directors" in data:
+                data["directors"] = data["directors"].split(",")
 
-                for room_id in self.rooms:
-                    room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"), encrypted=self.rooms[room_id])
-                    await send_entry(self.bot, room, data)
+            for room_id in self.rooms:
+                room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"), encrypted=self.rooms[room_id])
+                await send_entry(self.bot, room, data)
 
-            except Exception as exc:
-                message = str(exc)
-                return web.HTTPBadRequest(body=message)
+        except Exception as exc:
+            message = str(exc)
+            return web.HTTPBadRequest(body=message)
 
         return web.Response()
 
