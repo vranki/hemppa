@@ -34,32 +34,39 @@ def load_tautulli():
         return None
 
 plexpy = load_tautulli()
+send_entry_lock = asyncio.Lock()
 
 async def send_entry(bot, room, entry):
-    if "art" in entry:
-        global plexpy
-        if plexpy:
-            pms = plexpy.pmsconnect.PmsConnect()
-            (image0, image1) = pms.get_image(entry["art"], 600, 300)
-            matrix_uri = await bot.upload_and_send_image(room, image0, "", True, image1)
+    global send_entry_lock
+    async with send_entry_lock:
+        if "art" in entry:
+            global plexpy
+            if plexpy:
+                pms = plexpy.pmsconnect.PmsConnect()
+                pms_image = pms.get_image(entry["art"], 600, 300)
+                if not pms_image:
+                    return
 
-            if matrix_uri is not None:
-                await bot.send_image(room, matrix_uri, "")
-    
-    fmt_params = {
-        "title": entry["title"],
-        "year": entry["year"],
-        "audience_rating": entry["audience_rating"],
-        "directors": ", ".join(entry["directors"]),
-        "actors": ", ".join(entry["actors"]),
-        "summary": entry["summary"],
-        "tagline": entry["tagline"],
-        "genres": ", ".join(entry["genres"])
-    }
+                (blob, content_type) = pms_image
+                matrix_uri = await bot.upload_and_send_image(room, blob, "", True, content_type)
 
-    await bot.send_html(room,
-        msg_template_html.format(**fmt_params),
-        msg_template_plain.format(**fmt_params))
+                if matrix_uri is not None:
+                    await bot.send_image(room, matrix_uri, "")
+
+        fmt_params = {
+            "title": entry["title"],
+            "year": entry["year"],
+            "audience_rating": entry["audience_rating"],
+            "directors": ", ".join(entry["directors"]),
+            "actors": ", ".join(entry["actors"]),
+            "summary": entry["summary"],
+            "tagline": entry["tagline"],
+            "genres": ", ".join(entry["genres"])
+        }
+
+        await bot.send_html(room,
+            msg_template_html.format(**fmt_params),
+            msg_template_plain.format(**fmt_params))
 
 msg_template_html = """
     <b>{title} -({year})- Rating: {audience_rating}</b><br>
