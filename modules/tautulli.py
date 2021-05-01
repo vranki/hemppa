@@ -44,6 +44,9 @@ async def send_entry(bot, room, entry):
             if plexpy:
                 pms = plexpy.pmsconnect.PmsConnect()
                 (image0, image1) = pms.get_image(entry["art"], 600, 300)
+                if not image0 or image1:
+                    return
+
                 matrix_uri = await bot.upload_and_send_image(room, image0, "", True, image1)
 
                 if matrix_uri is not None:
@@ -102,9 +105,6 @@ class WebServer:
         loop.run_until_complete(site.start())
 
     async def notify(self, request: web.Request) -> web.Response:
-        if not request:
-            return web.Response()
-
         try:
             data = await request.json()
             if "genres" in data:
