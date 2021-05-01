@@ -47,8 +47,8 @@ async def send_entry(bot, room, entry):
                 if not pms_image:
                     return
 
-                (image0, image1) = pms_image
-                matrix_uri = await bot.upload_and_send_image(room, image0, "", True, image1)
+                (blob, content_type) = pms_image
+                matrix_uri = await bot.upload_and_send_image(room, blob, "", True, content_type)
 
                 if matrix_uri is not None:
                     await bot.send_image(room, matrix_uri, "")
