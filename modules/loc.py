@@ -55,7 +55,7 @@ class MatrixModule(BotModule):
             location = geolocator.geocode(query)
             self.logger.info('loc rx %s', location)
             if location:
-                await bot.send_location(room.room_id, location.address, location.latitude, location.longitude)
+                await bot.send_location(room, location.address, location.latitude, location.longitude)
             else:
                 await bot.send_text(room, "Can't find " + query + " on map!")
 
