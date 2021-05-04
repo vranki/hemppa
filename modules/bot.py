@@ -1,10 +1,20 @@
 import collections
+import logging
 import json
 import requests
 from datetime import timedelta
 import time
 
 from modules.common.module import BotModule, ModuleCannotBeDisabled
+
+class LogDequeHandler(logging.Handler):
+    def __init__(self, count):
+        super().__init__(level = logging.NOTSET)
+        self.last_logs = collections.deque([], maxlen=10)
+        self.level = logging.INFO
+
+    def emit(self, record):
+        self.last_logs.append(self.format(record))
 
 class MatrixModule(BotModule):
 
@@ -16,6 +26,9 @@ class MatrixModule(BotModule):
     def matrix_start(self, bot):
         super().matrix_start(bot)
         self.starttime = time.time()
+        self.loghandler = LogDequeHandler(10)
+        self.loghandler.setFormatter(logging.Formatter('%(levelname)s - %(name)s - %(message)s'))
+        logging.root.addHandler(self.loghandler)
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split(None, 2)
@@ -39,6 +52,8 @@ class MatrixModule(BotModule):
                 await self.export_settings(bot, event)
             elif args[1] == 'ping':
                 await self.get_ping(bot, room, event)
+            elif args[1] == 'logs':
+                await self.last_logs(bot, room, event)
 
         elif len(args) == 3:
             if args[1] == 'enable':
@@ -218,6 +233,12 @@ class MatrixModule(BotModule):
         bot.load_settings(account_data)
         bot.save_settings()
         await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
+
+    async def last_logs(self, bot, room, event):
+        bot.must_be_owner(event)
+        res = await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', '\n'.join(self.loghandler.last_logs))
+        self.logger.info(f'{event.sender} asked for the last {len(self.loghandler.last_logs)} log messages.')
+        return res
 
     def disable(self):
         raise ModuleCannotBeDisabled
