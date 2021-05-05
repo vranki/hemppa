@@ -314,7 +314,7 @@ class Bot:
             try:
                 module_settings[modulename] = moduleobject.get_settings()
             except Exception:
-                traceback.print_exc(file=sys.stderr)
+                self.logger.exception(f'unhandled exception {modulename}.get_settings')
         data = {self.appid: self.version, 'module_settings': module_settings}
         self.set_account_data(data)
 
@@ -329,7 +329,7 @@ class Bot:
                     moduleobject.set_settings(
                         data['module_settings'][modulename])
                 except Exception:
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception {modulename}.set_settings')
 
     async def message_cb(self, room, event):
         # Ignore if asked to ignore
@@ -373,7 +373,7 @@ class Bot:
                     await self.send_text(room, f'Sorry, only bot owner can run that command.')
                 except Exception:
                     await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception in !{command}')
         else:
             self.logger.error(f"Unknown command: {command}")
             # TODO Make this configurable
@@ -415,8 +415,7 @@ class Bot:
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
         except Exception:
-            self.logger.error(f'Module {modulename} failed to load!')
-            traceback.print_exc(file=sys.stderr)
+            self.logger.exception(f'Module {modulename} failed to load')
             return None
 
     def reload_modules(self):
@@ -446,7 +445,7 @@ class Bot:
                     try:
                         await moduleobject.matrix_poll(self, self.pollcount)
                     except Exception:
-                        traceback.print_exc(file=sys.stderr)
+                        self.logger.exception(f'unhandled exception from {modulename}.matrix_poll')
             await asyncio.sleep(10)
 
     def set_account_data(self, data):
@@ -511,7 +510,7 @@ class Bot:
                 try:
                     moduleobject.matrix_start(self)
                 except Exception:
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception from {modulename}.matrix_start')
         self.logger.info(f'All modules started.')
 
     def stop(self):
@@ -520,7 +519,7 @@ class Bot:
             try:
                 moduleobject.matrix_stop(self)
             except Exception:
-                traceback.print_exc(file=sys.stderr)
+                self.logger.exception(f'unhandled exception from {modulename}.matrix_stop')
         self.logger.info(f'All modules stopped.')
 
     async def run(self):
