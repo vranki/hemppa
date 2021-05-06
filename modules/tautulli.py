@@ -44,14 +44,12 @@ async def send_entry(bot, room, entry):
             if plexpy:
                 pms = plexpy.pmsconnect.PmsConnect()
                 pms_image = pms.get_image(entry["art"], 600, 300)
-                if not pms_image:
-                    return
+                if pms_image:
+                    (blob, content_type) = pms_image
+                    matrix_uri = await bot.upload_and_send_image(room, blob, "", True, content_type)
 
-                (blob, content_type) = pms_image
-                matrix_uri = await bot.upload_and_send_image(room, blob, "", True, content_type)
-
-                if matrix_uri is not None:
-                    await bot.send_image(room, matrix_uri, "")
+                    if matrix_uri is not None:
+                        await bot.send_image(room, matrix_uri, "")
 
         fmt_params = {
             "title": entry["title"],
