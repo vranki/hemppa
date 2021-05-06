@@ -236,7 +236,16 @@ class Bot:
         :return bool: Success upon sending the message
         """
         # Sends private message to user. Returns true on success.
+        msg_room = await self.find_or_create_private_msg(mxid, roomname)
+        if not msg_room or (type(msg_room) is RoomCreateError):
+            self.logger.error(f'Unable to create room when trying to message {mxid}')
+            return False
 
+        # Send message to the room
+        await self.send_text(msg_room, message)
+        return True
+
+    async def find_or_create_private_msg(self, mxid, roomname):
         # Find if we already have a common room with user:
         msg_room = None
         for croomid in self.client.rooms:
@@ -253,15 +262,9 @@ class Bot:
                 is_direct=True,
                 preset=RoomPreset.private_chat,
                 invite={mxid},
-                )
+            )
+        return msg_room
 
-        if not msg_room or (type(msg_room) is RoomCreateError):
-            self.logger.error(f'Unable to create room when trying to message {mxid}')
-            return False
-
-        # Send message to the room
-        await self.send_text(msg_room, message)
-        return True
 
     def remove_callback(self, callback):
         for cb_object in self.client.event_callbacks:
