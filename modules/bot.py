@@ -2,19 +2,24 @@ import collections
 import logging
 import json
 import requests
+from html import escape
 from datetime import timedelta
 import time
 
+from nio import RoomCreateError
 from modules.common.module import BotModule, ModuleCannotBeDisabled
 
 class LogDequeHandler(logging.Handler):
     def __init__(self, count):
         super().__init__(level = logging.NOTSET)
-        self.last_logs = collections.deque([], maxlen=10)
+        self.logs = dict()
         self.level = logging.INFO
 
     def emit(self, record):
-        self.last_logs.append(self.format(record))
+        try:
+            self.logs[str(record.module)].append(record)
+        except:
+            self.logs[str(record.module)] = collections.deque([record], maxlen=15)
 
 class MatrixModule(BotModule):
 
@@ -52,8 +57,6 @@ class MatrixModule(BotModule):
                 await self.export_settings(bot, event)
             elif args[1] == 'ping':
                 await self.get_ping(bot, room, event)
-            elif args[1] == 'logs':
-                await self.last_logs(bot, room, event)
 
         elif len(args) == 3:
             if args[1] == 'enable':
@@ -64,6 +67,8 @@ class MatrixModule(BotModule):
                 await self.export_settings(bot, event, module_name=args[2])
             elif args[1] == 'import':
                 await self.import_settings(bot, event)
+            elif args[1] == 'logs':
+                await self.last_logs(bot, room, event, args[2])
         else:
             pass
 
@@ -234,11 +239,23 @@ class MatrixModule(BotModule):
         bot.save_settings()
         await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
 
-    async def last_logs(self, bot, room, event):
+    async def last_logs(self, bot, room, event, logmodule):
         bot.must_be_owner(event)
-        res = await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', '\n'.join(self.loghandler.last_logs))
-        self.logger.info(f'{event.sender} asked for the last {len(self.loghandler.last_logs)} log messages.')
-        return res
+        self.logger.info(f'{event.sender} asked for the most recent log messages.')
+        msg_room = await bot.find_or_create_private_msg(event.sender, f'Private message from {bot.matrix_user}')
+        if not msg_room or (type(msg_room) is RoomCreateError):
+            # fallback to current room if we can't create one
+            msg_room = room
+        for key in self.loghandler.logs:
+            if logmodule in key:
+                logmodule = key
+                break
+        else:
+            return await bot.send_text(msg_room, 'Unknown module, or no logs yet')
+
+        print (self.loghandler.logs.keys())
+        msg = '\n'.join([self.loghandler.format(record) for record in self.loghandler.logs.get(logmodule)])
+        return await bot.send_html(msg_room, f'<pre><code class="language-txt">{escape(msg)}</code></pre>', msg)
 
     def disable(self):
         raise ModuleCannotBeDisabled
