@@ -239,23 +239,35 @@ class MatrixModule(BotModule):
         bot.save_settings()
         await bot.send_msg(event.sender, f'Private message from {bot.matrix_user}', 'Updated bot settings')
 
-    async def last_logs(self, bot, room, event, logmodule):
+    async def last_logs(self, bot, room, event, target):
         bot.must_be_owner(event)
-        self.logger.info(f'{event.sender} asked for the most recent log messages.')
+        self.logger.info(f'{event.sender} asked for recent log messages.')
         msg_room = await bot.find_or_create_private_msg(event.sender, f'Private message from {bot.matrix_user}')
         if not msg_room or (type(msg_room) is RoomCreateError):
             # fallback to current room if we can't create one
             msg_room = room
-        for key in self.loghandler.logs:
-            if logmodule in key:
-                logmodule = key
-                break
-        else:
-            return await bot.send_text(msg_room, 'Unknown module, or no logs yet')
 
-        print (self.loghandler.logs.keys())
-        msg = '\n'.join([self.loghandler.format(record) for record in self.loghandler.logs.get(logmodule)])
-        return await bot.send_html(msg_room, f'<pre><code class="language-txt">{escape(msg)}</code></pre>', msg)
+        try:
+            target, count = target.split()
+            count = -abs(int(count))
+        except ValueError:
+            count = 0
+
+        keys = list(self.loghandler.logs)
+        for key in [target, f'module {target}']:
+            try:
+                logs = list(self.loghandler.logs[key])
+                break
+            except (KeyError, TypeError):
+                pass
+        else:
+            return await bot.send_text(msg_room, f'Unknown module {target}, or no logs yet')
+
+        if count:
+            logs = logs[count:]
+        logs = '\n'.join([self.loghandler.format(record) for record in logs])
+
+        return await bot.send_html(msg_room, f'<strong>Logs for {key}:</strong>\n<pre><code class="language-txt">{escape(logs)}</code></pre>', f'Logs for {key}:\n' + logs)
 
     def disable(self):
         raise ModuleCannotBeDisabled

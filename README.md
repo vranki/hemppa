@@ -43,7 +43,7 @@ Bot management commands.
 * !bot import [module] [json object] - Update a module's settings from json (Must be done as bot owner)
 * !bot import [module] [key ...] [json object] - Update a sub-object in a module from json (Must be done as bot owner)
   * Example: !bot import alias aliases {"osm": "loc", "sh": "cmd"}
-* !bot logs [module] - Print the most recent messages the given module has reported (Must be done as bot owner)
+* !bot logs [module] ([count]) - Print the [count] most recent messages the given module has reported (Must be done as bot owner)
 * !bot stats - show statistics on matrix users seen by bot
 * !bot leave - ask bot to leave this room (Must be done as admin in room)
 * !bot modules - list all modules including enabled status
