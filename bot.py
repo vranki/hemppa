@@ -236,7 +236,16 @@ class Bot:
         :return bool: Success upon sending the message
         """
         # Sends private message to user. Returns true on success.
+        msg_room = await self.find_or_create_private_msg(mxid, roomname)
+        if not msg_room or (type(msg_room) is RoomCreateError):
+            self.logger.error(f'Unable to create room when trying to message {mxid}')
+            return False
 
+        # Send message to the room
+        await self.send_text(msg_room, message)
+        return True
+
+    async def find_or_create_private_msg(self, mxid, roomname):
         # Find if we already have a common room with user:
         msg_room = None
         for croomid in self.client.rooms:
@@ -253,15 +262,9 @@ class Bot:
                 is_direct=True,
                 preset=RoomPreset.private_chat,
                 invite={mxid},
-                )
+            )
+        return msg_room
 
-        if not msg_room or (type(msg_room) is RoomCreateError):
-            self.logger.error(f'Unable to create room when trying to message {mxid}')
-            return False
-
-        # Send message to the room
-        await self.send_text(msg_room, message)
-        return True
 
     def remove_callback(self, callback):
         for cb_object in self.client.event_callbacks:
@@ -314,7 +317,7 @@ class Bot:
             try:
                 module_settings[modulename] = moduleobject.get_settings()
             except Exception:
-                traceback.print_exc(file=sys.stderr)
+                self.logger.exception(f'unhandled exception {modulename}.get_settings')
         data = {self.appid: self.version, 'module_settings': module_settings}
         self.set_account_data(data)
 
@@ -329,7 +332,7 @@ class Bot:
                     moduleobject.set_settings(
                         data['module_settings'][modulename])
                 except Exception:
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception {modulename}.set_settings')
 
     async def message_cb(self, room, event):
         # Ignore if asked to ignore
@@ -373,7 +376,7 @@ class Bot:
                     await self.send_text(room, f'Sorry, only bot owner can run that command.')
                 except Exception:
                     await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception in !{command}')
         else:
             self.logger.error(f"Unknown command: {command}")
             # TODO Make this configurable
@@ -415,8 +418,7 @@ class Bot:
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
         except Exception:
-            self.logger.error(f'Module {modulename} failed to load!')
-            traceback.print_exc(file=sys.stderr)
+            self.logger.exception(f'Module {modulename} failed to load')
             return None
 
     def reload_modules(self):
@@ -446,7 +448,7 @@ class Bot:
                     try:
                         await moduleobject.matrix_poll(self, self.pollcount)
                     except Exception:
-                        traceback.print_exc(file=sys.stderr)
+                        self.logger.exception(f'unhandled exception from {modulename}.matrix_poll')
             await asyncio.sleep(10)
 
     def set_account_data(self, data):
@@ -511,7 +513,7 @@ class Bot:
                 try:
                     moduleobject.matrix_start(self)
                 except Exception:
-                    traceback.print_exc(file=sys.stderr)
+                    self.logger.exception(f'unhandled exception from {modulename}.matrix_start')
         self.logger.info(f'All modules started.')
 
     def stop(self):
@@ -520,7 +522,7 @@ class Bot:
             try:
                 moduleobject.matrix_stop(self)
             except Exception:
-                traceback.print_exc(file=sys.stderr)
+                self.logger.exception(f'unhandled exception from {modulename}.matrix_stop')
         self.logger.info(f'All modules stopped.')
 
     async def run(self):
