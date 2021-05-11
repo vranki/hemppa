@@ -35,20 +35,24 @@ Bot management commands.
 * !bot status - print bot status information
 * !bot ping - print the ping time between the server and the bot
 * !bot version - print version and uptime of the bot
-* !bot quit - quit the bot process (Must be done as bot owner)
-* !bot reload - reload all bot modules  (Must be done as bot owner)
-* !bot export - export all bot settings as json (Must be done as bot owner)
-* !bot export [module] - export a module's settings as json (Must be done as bot owner)
-* !bot import [json object] - Update all bot settings from json (Must be done as bot owner)
-* !bot import [module] [json object] - Update a module's settings from json (Must be done as bot owner)
-* !bot import [module] [key ...] [json object] - Update a sub-object in a module from json (Must be done as bot owner)
-  * Example: !bot import alias aliases {"osm": "loc", "sh": "cmd"}
-* !bot logs [module] ([count]) - Print the [count] most recent messages the given module has reported (Must be done as bot owner)
 * !bot stats - show statistics on matrix users seen by bot
-* !bot leave - ask bot to leave this room (Must be done as admin in room)
+
+The following must be done as the bot owner:
+* !bot enable [module] - enable module
+* !bot disable [module] - disable module
+* !bot quit - quit the bot process
+* !bot reload - reload all bot modules
+* !bot export - export all bot settings as json
+* !bot export [module] - export a module's settings as json
+* !bot import [json object] - Update all bot settings from json
+* !bot import [module] [json object] - Update a module's settings from json
+* !bot import [module] [key ...] [json object] - Update a sub-object in a module from json
+  * Example: !bot import alias aliases {"osm": "loc", "sh": "cmd"}
+* !bot logs [module] ([count]) - Print the [count] most recent messages the given module has reported
+* !bot uricache (view|clean|clear) - View the uri cache, or clear it.
+The uri cache prevents the bot from uploading a blob from a url repeatedly
+* !bot leave - ask bot to leave this room
 * !bot modules - list all modules including enabled status
-* !bot enable [module] - enable module (Must be done as admin in room)
-* !bot disable [module] - disable module (Must be done as admin in room)
 
 ### Help
 
