@@ -44,6 +44,7 @@ class Bot:
         self.modules = dict()
         self.module_aliases = dict()
         self.leave_empty_rooms = True
+        self.uri_cache = dict()
         self.pollcount = 0
         self.poll_task = None
         self.owners = []
@@ -83,15 +84,20 @@ class Bot:
         :param blob_content_type: Content type of the image in case of binary content
         :return:
         """
-        matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob, blob_content_type)
+        try:
+            matrix_uri, mimetype, w, h, size = self.uri_cache[url]
+        except KeyError:
+            res = await self.upload_image(url, blob, blob_content_type)
+            matrix_uri, mimetype, w, h, size = res
+            if matrix_uri:
+                self.uri_cache[url] = list(res)
+                self.save_settings()
+            else:
+                return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
  
         if not text and not blob:
             text = f"{url}"
-
-        if matrix_uri is not None:
-            await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
-        else:
-            await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+        return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):
@@ -225,7 +231,7 @@ class Bot:
         if size:
             msg["info"]["size"] = size
 
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_msg(self, mxid, roomname, message):
         """
@@ -318,7 +324,7 @@ class Bot:
                 module_settings[modulename] = moduleobject.get_settings()
             except Exception:
                 self.logger.exception(f'unhandled exception {modulename}.get_settings')
-        data = {self.appid: self.version, 'module_settings': module_settings}
+        data = {self.appid: self.version, 'module_settings': module_settings, 'uri_cache': self.uri_cache}
         self.set_account_data(data)
 
     def load_settings(self, data):
@@ -326,6 +332,8 @@ class Bot:
             return
         if not data.get('module_settings'):
             return
+        if data.get('uri_cache'):
+            self.uri_cache = data['uri_cache']
         for modulename, moduleobject in self.modules.items():
             if data['module_settings'].get(modulename):
                 try:

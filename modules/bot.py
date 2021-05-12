@@ -69,6 +69,8 @@ class MatrixModule(BotModule):
                 await self.import_settings(bot, event)
             elif args[1] == 'logs':
                 await self.last_logs(bot, room, event, args[2])
+            elif args[1] == 'uricache':
+                await self.manage_uri_cache(bot, room, event, args[2])
         else:
             pass
 
@@ -268,6 +270,19 @@ class MatrixModule(BotModule):
         logs = '\n'.join([self.loghandler.format(record) for record in logs])
 
         return await bot.send_html(msg_room, f'<strong>Logs for {key}:</strong>\n<pre><code class="language-txt">{escape(logs)}</code></pre>', f'Logs for {key}:\n' + logs)
+
+    async def manage_uri_cache(self, bot, room, event, action):
+        bot.must_be_owner(event)
+        if action == 'view':
+            self.logger.info(f"{event.sender} wants to see the uri cache")
+            msg = [f'uri cache size: {len(bot.uri_cache)}']
+            for key, val in bot.uri_cache.items():
+                msg.append('- ' + key + ': ' + val[0])
+            return await bot.send_text(room, '\n'.join(msg))
+        if action in ['clean', 'clear']:
+            self.logger.info(f"{event.sender} wants to clear the uri cache")
+            bot.uri_cache = dict()
+            bot.save_settings()
 
     def disable(self):
         raise ModuleCannotBeDisabled
