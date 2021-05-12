@@ -299,6 +299,8 @@ class MatrixModule(BotModule):
         if bot and event and bot.is_owner(event):
             text += ('\n- "!bot quit": kill the bot :('
                      '\n- "!bot reload": reload the bot modules'
+                     '\n- "!bot uricache (view|clean)": view or clean the bot\'s URI cache'
+                     '\n- "!bot logs [module] ([count])": get [count] most recent logs from [module]'
                      '\n- "!bot enable [module]": enable a module'
                      '\n- "!bot disable [module]": disable a module'
                      '\n- "!bot import ([module]) [json]": import settings into the bot'
