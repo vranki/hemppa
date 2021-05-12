@@ -828,10 +828,11 @@ class MatrixModule(BotModule):
 
     def matrix_start(self, bot):
         super().matrix_start(bot)
-        self.add_module_aliases(bot, ['new_name', 'another_name'])
+        self.add_module_aliases(bot, ['newname', 'anothername'])
 ```
 
-Then you can call this module with its original name, `!new_name`, or `!another_name`
+Then you can call this module with its original name, `!newname`, or `!another-name`.
+(Like module names, Hemppa ignores non-alphanumeric characters in aliases.)
 
 ## Contributing
 
