@@ -16,6 +16,7 @@ import urllib.parse
 import logging
 import logging.config
 import datetime
+import hashlib
 from importlib import reload
 from io import BytesIO
 from PIL import Image
@@ -84,13 +85,17 @@ class Bot:
         :param blob_content_type: Content type of the image in case of binary content
         :return:
         """
+        cache_key = url
+        if blob:  ## url is bytes, cannot be used a key for cache
+            cache_key = hashlib.md5(url).hexdigest()
+
         try:
-            matrix_uri, mimetype, w, h, size = self.uri_cache[url]
+            matrix_uri, mimetype, w, h, size = self.uri_cache[cache_key]
         except KeyError:
             res = await self.upload_image(url, blob, blob_content_type)
             matrix_uri, mimetype, w, h, size = res
             if matrix_uri:
-                self.uri_cache[url] = list(res)
+                self.uri_cache[cache_key] = list(res)
                 self.save_settings()
             else:
                 return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
@@ -220,12 +225,13 @@ class Bot:
             "info": {
                 "thumbnail_info": None,
                 "thumbnail_url": None,
-            }, 
+            },
         }
+
         if mimetype:
             msg["info"]["mimetype"] = mimetype
         if width:
-            msg["info"]["w"] = width 
+            msg["info"]["w"] = width
         if height:
             msg["info"]["h"] = height
         if size:
