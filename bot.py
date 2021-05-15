@@ -109,10 +109,10 @@ class Bot:
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     # Throws exception if upload fails
-    async def upload_image(self, url, blob=False, blob_content_type="image/png"):
+    async def upload_image(self, url_or_bytes, blob=False, blob_content_type="image/png"):
         """
 
-        :param url: Url of binary content of the image to upload
+        :param url_or_bytes: Url or binary content of the image to upload
         :param blob: Flag to indicate if the first param is an url or a binary content
         :param blob_content_type: Content type of the image in case of binary content
         :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
@@ -121,14 +121,14 @@ class Bot:
         self.client: AsyncClient
         response: UploadResponse
         if blob:
-            (response, alist) = await self.client.upload(lambda a, b: url, blob_content_type)
-            i = Image.open(BytesIO(url))
-            image_length = len(url)
+            (response, alist) = await self.client.upload(lambda a, b: url_or_bytes, blob_content_type)
+            i = Image.open(BytesIO(url_or_bytes))
+            image_length = len(url_or_bytes)
             content_type = blob_content_type
         else:
-            self.logger.debug(f"start downloading image from url {url}")
+            self.logger.debug(f"start downloading image from url {url_or_bytes}")
             headers = {'User-Agent': 'Mozilla/5.0'}
-            url_response = requests.get(url, headers=headers)
+            url_response = requests.get(url_or_bytes, headers=headers)
             self.logger.debug(f"response [status_code={url_response.status_code}, headers={url_response.headers}")
 
             if url_response.status_code == 200:
