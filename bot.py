@@ -27,6 +27,9 @@ from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom
 # Couple of custom exceptions
 
 
+class UploadFailed(Exception):
+    pass
+
 class CommandRequiresAdmin(Exception):
     pass
 
@@ -92,19 +95,20 @@ class Bot:
         try:
             matrix_uri, mimetype, w, h, size = self.uri_cache[cache_key]
         except KeyError:
-            res = await self.upload_image(url, blob, blob_content_type)
-            matrix_uri, mimetype, w, h, size = res
-            if matrix_uri:
+            try:
+                res = await self.upload_image(url, blob, blob_content_type)
+                matrix_uri, mimetype, w, h, size = res
                 self.uri_cache[cache_key] = list(res)
                 self.save_settings()
-            else:
+            except UploadFailed:
                 return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
- 
+
         if not text and not blob:
             text = f"{url}"
         return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
+    # Throws exception if upload fails
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):
         """
 
@@ -137,7 +141,7 @@ class Bot:
             else:
                 self.logger.error("unable to request url: %s", url_response)
 
-                return None, None, None, None
+                raise UploadFailed
 
         if isinstance(response, UploadResponse):
             self.logger.info("uploaded file to %s", response.content_uri)
@@ -146,7 +150,7 @@ class Bot:
             response: UploadError
             self.logger.error("unable to upload file. msg: %s", response.message)
 
-        return None, None, None, None
+        raise UploadFailed
 
     async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
         """
