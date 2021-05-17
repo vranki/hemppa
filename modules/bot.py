@@ -152,10 +152,24 @@ class MatrixModule(BotModule):
 
     async def reload(self, bot, room, event):
         bot.must_be_owner(event)
-        await bot.send_text(room, f'Reloading modules..')
+        msg = await bot.send_text(room, f'Reloading modules...')
         bot.stop()
         bot.reload_modules()
         bot.start()
+        # update event
+        content = {
+            'm.new_content': {
+                'msgtype': 'm.notice',
+                'body': 'Modules reloaded!'
+            },
+            'm.relates_to': {
+                'rel_type': 'm.replace',
+                'event_id': msg.event_id
+            },
+            'msgtype': 'm.notice',
+            'body': 'Modules reloaded!'
+        }
+        await bot.client.room_send(room.room_id, 'm.room.message', content)
 
     async def version(self, bot, room):
         await bot.send_text(room, f'Hemppa version {bot.version} - https://github.com/vranki/hemppa')
