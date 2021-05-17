@@ -159,7 +159,7 @@ class Bot:
         :param body: Textual content of the message
         :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
         :param bot_ignore: Flag to mark the message to be ignored by the bot
-        :return:
+        :return: the NIO Response from room_send()
         """
 
         msg = {
@@ -169,7 +169,7 @@ class Bot:
         if bot_ignore:
             msg["org.vranki.hemppa.ignore"] = "true"
 
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
         """

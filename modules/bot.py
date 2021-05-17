@@ -83,8 +83,7 @@ class MatrixModule(BotModule):
         # initial pong
         serv_before  = event.server_timestamp
         local_before = time.time()
-        pong = await bot.client.room_send(room.room_id, 'm.room.message',
-            {'body': f'Pong!', 'msgtype': 'm.notice'})
+        pong = await bot.client.send_text(room, 'Pong!')
         local_delta = int((time.time() - local_before) * 1000)
 
         # ask the server what the timestamp was on our pong
