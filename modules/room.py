@@ -43,6 +43,8 @@ class MatrixModule(BotModule):
             await MatrixModule.kicked_members(bot, room)
         elif command == 'state':
             await MatrixModule.get_state_event(bot, room, args)
+        elif command == 'tombstone':
+            await MatrixModule.tombstone(bot, room, args, event)
 
     @staticmethod
     async def servers_in_room(bot, room: nio.MatrixRoom):
@@ -210,3 +212,35 @@ class MatrixModule(BotModule):
         else:
             # Raise the error and the bot module will handle the rest
             raise res
+
+    @staticmethod
+    async def tombstone(bot, room, args, event):
+        bot.must_be_admin(room, event)
+
+        body = "This room has been replaced" # Todo: make settable
+
+        if len(args) == 2:
+            target = args[1]
+            if "#" in target:
+                targetid = await bot.get_room_by_alias(target)
+                if not targetid:
+                    await bot.send_text(room, f"Bot is not on room {targetid}?")
+                    return
+            elif "!" in target:
+                targetid = target
+            else:
+                await bot.send_text(room, f"Give a room alias (starts with #) or room id (starts with !)")
+                return
+
+            tombstone_event = {
+                "body": body,
+                "replacement_room": targetid
+                }
+            response = await bot.client.room_put_state(room.room_id, 'm.room.tombstone', tombstone_event)
+            if type(response) == nio.RoomPutStateResponse:
+                await bot.send_text(room, f"See you in the new room!")
+                await bot.client.room_leave(room.room_id)
+            else:
+                await bot.send_text(room, f"Error creating tombstone event: {response}")
+            return
+        await bot.send_text(room, f"Usage: !room tombstone #room:server.org")

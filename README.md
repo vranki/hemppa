@@ -38,6 +38,7 @@ Bot management commands.
 * !bot stats - show statistics on matrix users seen by bot
 
 The following must be done as the bot owner:
+
 * !bot enable [module] - enable module
 * !bot disable [module] - disable module
 * !bot quit - quit the bot process
@@ -53,6 +54,7 @@ The following must be done as the bot owner:
 The uri cache prevents the bot from uploading a blob from a url repeatedly
 * !bot leave - ask bot to leave this room
 * !bot modules - list all modules including enabled status
+* !bot rooms - list rooms the bot is on
 
 ### Help
 
@@ -183,11 +185,15 @@ Example:
 
 This module is for interacting with the room that the commands are being executed on.
 
-* !room servers:                                    Lists the servers in the room
-* !room joined:                                     Responds with the joined members count
-* !room banned:                                     Lists the banned users and their provided reason
-* !room kicked:                                     Lists the kicked users and their provided reason
-* !room state [event type] [optional state key]:    Gets a state event with given event type and optional state key
+* !room servers                                     Lists the servers in the room
+* !room joined                                      Responds with the joined members count
+* !room banned                                      Lists the banned users and their provided reason
+* !room kicked                                      Lists the kicked users and their provided reason
+* !room state [event type] [optional state key]     Gets a state event with given event type and optional state key
+* !room tombstone [target]                          Creates a tombstone event pointing to target room. Target room can be alias (starting with #) or id (starting with !).
+
+Note on tombstone: If using alias, bot must be present in target room. This is the preferred way. If using id, make sure it's correct, as it's not validated!
+Tombstoning requires power level for room upgrade. Make sure bot has it in the room.
 
 ### Welcome to Room
 
@@ -602,6 +608,15 @@ by default, but you can set any single instance to search on.
 * !pt setinstance [url] - Set instance url, must end with / (example: https://peertube.cpy.re/)
 * !pt showinstance      - Print which instance is used
 
+### User management
+
+Admin commands to manage users.
+
+#### Usage
+
+* !users list [pattern]  - List users matching wildcard pattern
+* !users kick [pattern]  - Kick users matching wildcard pattern from room
+
 ## Bot setup
 
 * Create a Matrix user
@@ -668,9 +683,9 @@ docker-compose up
 
 ## Env variables
 
-`MATRIX_USER` is the full MXID (not just username) of the Matrix user. `MATRIX_ACCESS_TOKEN` 
-and `MATRIX_SERVER` should be self-explanatory. Set `JOIN_ON_INVITE` (default true) to false 
-if you don't want the bot automatically joining rooms.
+`MATRIX_USER` is the full MXID (not just username) of the Matrix user. `MATRIX_ACCESS_TOKEN`
+and `MATRIX_SERVER` should be url to the user's server (non-delegated server). Set `JOIN_ON_INVITE` (default true) 
+to false if you don't want the bot automatically joining rooms.
 
 You can get access token by logging in with Element Android and looking from Settings / Help & About.
 

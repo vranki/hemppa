@@ -424,8 +424,8 @@ class Bot:
 
     async def memberevent_cb(self, room, event):
         # Automatically leaves rooms where bot is alone.
-        if room.member_count == 1 and event.membership=='leave':
-            self.logger.info(f"membership event in {room.display_name} ({room.room_id}) with {room.member_count} members by '{event.sender}' - leaving room as i don't want to be left alone!")
+        if room.member_count == 1 and event.membership=='leave' and event.sender != self.matrix_user:
+            self.logger.info(f"Membership event in {room.display_name} ({room.room_id}) with {room.member_count} members by '{event.sender}' (I am {self.matrix_user})- leaving room as i don't want to be left alone!")
             await self.client.room_leave(room.room_id)
 
     def load_module(self, modulename):

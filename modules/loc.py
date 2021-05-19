@@ -39,7 +39,7 @@ class MatrixModule(BotModule):
                    latlon[0] + "&mlon=" + latlon[1]
 
         plain = sender + ' 🚩 ' + osm_link
-        html = f'{sender} 🚩 <a href={osm_link}>{location_text}</a>'
+        html = f'{sender} 🚩 <a href="{osm_link}">{location_text}</a>'
 
         await self.bot.send_html(room, html, plain)
 

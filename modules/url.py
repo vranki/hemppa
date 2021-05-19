@@ -128,7 +128,7 @@ class MatrixModule(BotModule):
                     # failed fetching, give up
                     continue
 
-                msg = None
+                msg = ""
 
                 if status == "TITLE" and title is not None:
                     msg = f"Title: {title}"
@@ -143,7 +143,7 @@ class MatrixModule(BotModule):
                 elif status == "BOTH" and description is not None:
                     msg = f"Description: {description}"
 
-                if msg is not None:
+                if msg.strip(): # Evaluates to true on non-empty strings
                     await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
         except Exception as e:
             self.logger.warning(f"Unexpected error in url module text_cb: {e}")

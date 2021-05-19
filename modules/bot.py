@@ -57,6 +57,8 @@ class MatrixModule(BotModule):
                 await self.export_settings(bot, event)
             elif args[1] == 'ping':
                 await self.get_ping(bot, room, event)
+            elif args[1] == 'rooms':
+                await self.rooms(bot, room, event)
 
         elif len(args) == 3:
             if args[1] == 'enable':
@@ -296,6 +298,14 @@ class MatrixModule(BotModule):
             self.logger.info(f"{event.sender} wants to clear the uri cache")
             bot.uri_cache = dict()
             bot.save_settings()
+
+    async def rooms(self, bot, room, event):
+        bot.must_be_owner(event)
+        rooms = []
+        for croomid in bot.client.rooms:
+            roomobj = bot.get_room_by_id(croomid)
+            rooms.append(roomobj.machine_name)
+        await bot.send_text(room, f'I\'m in following {len(rooms)} rooms: {rooms}')
 
     def disable(self):
         raise ModuleCannotBeDisabled
