@@ -8,6 +8,7 @@ class MatrixModule(BotModule):
 
         if len(args) == 2:
             if args[0] == 'list':
+                bot.must_be_owner(event)
                 users = self.search_users(bot, args[1])
                 if len(users):
                     await bot.send_text(room, ' '.join(users))
@@ -15,6 +16,7 @@ class MatrixModule(BotModule):
                     await bot.send_text(room, 'No matching users found!')
                 return
             if args[0] == 'kick':
+                bot.must_be_admin(room, event)
                 users = self.search_users(bot, args[1])
                 if len(users):
                     for user in users:

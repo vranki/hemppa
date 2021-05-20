@@ -190,7 +190,7 @@ This module is for interacting with the room that the commands are being execute
 * !room banned                                      Lists the banned users and their provided reason
 * !room kicked                                      Lists the kicked users and their provided reason
 * !room state [event type] [optional state key]     Gets a state event with given event type and optional state key
-* !room tombstone [target]                          Creates a tombstone event pointing to target room. Target room can be alias (starting with #) or id (starting with !).
+* !room tombstone [target]                          Creates a tombstone event pointing to target room. Target room can be alias (starting with #) or id (starting with !). User must be admin in the room.
 
 Note on tombstone: If using alias, bot must be present in target room. This is the preferred way. If using id, make sure it's correct, as it's not validated!
 Tombstoning requires power level for room upgrade. Make sure bot has it in the room.
@@ -614,8 +614,8 @@ Admin commands to manage users.
 
 #### Usage
 
-* !users list [pattern]  - List users matching wildcard pattern
-* !users kick [pattern]  - Kick users matching wildcard pattern from room
+* !users list [pattern]  - List users matching wildcard pattern (must be owner)
+* !users kick [pattern]  - Kick users matching wildcard pattern from room (must be admin in room)
 
 ## Bot setup
 
