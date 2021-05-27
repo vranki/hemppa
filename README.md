@@ -617,6 +617,17 @@ Admin commands to manage users.
 * !users list [pattern]  - List users matching wildcard pattern (must be owner)
 * !users kick [pattern]  - Kick users matching wildcard pattern from room (must be admin in room)
 
+### RASP (Gliding Weather forecast)
+
+Currently only Finnish RASP supported. Uses data from http://ennuste.ilmailuliitto.fi/
+
+#### Usage
+
+* !rasp [day] [hour]     - Fetch RASP for specified day and hour
+
+Day and hour can be omitted - fetches today's forecast if not set.
+PR welcome for supporting other data sources.
+
 ## Bot setup
 
 * Create a Matrix user
