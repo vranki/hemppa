@@ -101,7 +101,7 @@ class Bot:
                 self.uri_cache[cache_key] = list(res)
                 self.save_settings()
             except UploadFailed:
-                return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+                return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading it to the image to matrix server :(")
 
         if not text and not blob:
             text = f"{url}"
