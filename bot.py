@@ -22,7 +22,7 @@ from io import BytesIO
 from PIL import Image
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse, SyncError
 
 # Couple of custom exceptions
 
@@ -544,30 +544,31 @@ class Bot:
         self.logger.info(f'All modules stopped.')
 
     async def run(self):
-        await self.client.sync()
-        for roomid, room in self.client.rooms.items():
-            self.logger.info(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
-            if len(room.users) == 1 and self.leave_empty_rooms:
-                self.logger.info(f'Room {roomid} has no other users - leaving it.')
-                self.logger.info(await self.client.room_leave(roomid))
-
-        self.start()
-
-        self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
-
-        if self.client.logged_in:
-            self.load_settings(self.get_account_data())
-            self.client.add_event_callback(self.message_cb, RoomMessageText)
-            self.client.add_event_callback(self.invite_cb, (InviteEvent,))
-            self.client.add_event_callback(self.memberevent_cb, (RoomMemberEvent,))
-
-            if self.join_on_invite:
-                self.logger.info('Note: Bot will join rooms if invited')
-            self.logger.info('Bot running as %s, owners %s', self.client.user, self.owners)
-            self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
-            await self.bot_task
+        sync_response = await self.client.sync()
+        if type(sync_response) == SyncError:
+            self.logger.error(f"Received Sync Error when trying to do initial sync! Error message is: %s", sync_response.message)
         else:
-            self.logger.error('Client was not able to log in, check env variables!')
+            for roomid, room in self.client.rooms.items():
+                self.logger.info(f"Bot is on '{room.display_name}'({roomid}) with {len(room.users)} users")
+                if len(room.users) == 1 and self.leave_empty_rooms:
+                    self.logger.info(f'Room {roomid} has no other users - leaving it.')
+                    self.logger.info(await self.client.room_leave(roomid))
+
+            if self.client.logged_in:
+                self.start()
+                self.poll_task = asyncio.get_event_loop().create_task(self.poll_timer())
+                self.load_settings(self.get_account_data())
+                self.client.add_event_callback(self.message_cb, RoomMessageText)
+                self.client.add_event_callback(self.invite_cb, (InviteEvent,))
+                self.client.add_event_callback(self.memberevent_cb, (RoomMemberEvent,))
+
+                if self.join_on_invite:
+                    self.logger.info('Note: Bot will join rooms if invited')
+                self.logger.info('Bot running as %s, owners %s', self.client.user, self.owners)
+                self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
+                await self.bot_task
+            else:
+                self.logger.error('Client was not able to log in, check env variables!')
 
     async def shutdown(self):
         await self.close()
