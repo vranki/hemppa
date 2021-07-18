@@ -1,14 +1,18 @@
+from logging import log
 import sys
 import traceback
-import urllib.request
 import json
 import time
 import datetime
+import requests
+import urllib3
 
 from datetime import datetime, timedelta
 from random import randrange
 
 from modules.common.module import BotModule
+
+urllib3.disable_warnings()
 
 # API docs at: https://gitlab.com/lemoidului/ogn-flightbook/-/blob/master/doc/API.md
 class FlightBook:
@@ -19,11 +23,15 @@ class FlightBook:
             'Paraglider', 'Powered', 'Jet', 'UFO', 'Balloon', \
             'Airship', 'UAV', '?', 'Static object' ]
         self.logged_flights = dict() # station -> [index of flight]
-        self.device_cache = dict() # Registration -> device address
+        self.device_cache = dict() # Registration -> [address, CN]
 
     def get_flights(self, icao):
-        response = urllib.request.urlopen(self.base_url + "/logbook/" + icao)
-        data = json.loads(response.read().decode("utf-8"))
+        log_url = f'{self.base_url}/logbook/{icao}'
+        data = None
+        with requests.Session() as session:
+            response = session.get(log_url, headers={'Connection': 'close'}, verify=False)
+            data = response.json()
+
         # print(json.dumps(data, sort_keys=True, indent=4))
         self.update_device_cache(data)
         return data
@@ -32,12 +40,19 @@ class FlightBook:
         devices = data['devices']
         for device in devices:
             if device["address"] and device["registration"]:
-                self.device_cache[device["registration"]] = device["address"]
+                cache_entry = [device["address"], device["competition"]]
+                self.device_cache[device["registration"]] = cache_entry
 
     def address_for_registration(self, registration):
         for reg in self.device_cache.keys():
             if reg.lower() == registration.lower():
-                return self.device_cache[reg]
+                return self.device_cache[reg][0]
+        return None
+
+    def address_for_cn(self, cn):
+        for reg in self.device_cache.keys():
+            if self.device_cache[reg][1] == cn.upper():
+                return self.device_cache[reg][0]
         return None
 
     def format_time(self, time):
@@ -98,7 +113,9 @@ class MatrixModule(BotModule):
         for roomid in self.live_rooms:
             station = self.station_rooms[roomid]
             data = self.fb.get_flights(station)
-
+            if not data:
+                self.logger.warning(f"FLOG: Failed to get flights at {station}!")
+                return
             flights = data['flights']
 
             if len(flights) == 0 or (not station in self.logged_flights):
@@ -165,6 +182,10 @@ class MatrixModule(BotModule):
         elif len(args) == 2 and args[0] == "!sar":
             registration = args[1]
             address = self.fb.address_for_registration(registration)
+            if not address:
+                cn = args[1]
+                address = self.fb.address_for_cn(cn)
+
             coords = None
             if address:
                 coords = self.get_coords_for_address(address)
@@ -187,9 +208,12 @@ class MatrixModule(BotModule):
 
     def get_coords_for_address(self, address):
         # https://flightbook.glidernet.org/api/live/address/~91DADF5B86
-        url = self.fb.base_url + "/live/address/" + address
-        response = urllib.request.urlopen(self.fb.base_url + "/live/address/" + address)
-        data = json.loads(response.read().decode("utf-8"))
+        url = f'{self.fb.base_url}/live/address/{address}'
+        data = None
+        with requests.Session() as session:
+            response = session.get(url, headers={'Connection': 'close'}, verify=False)
+            data = response.json()
+
         # print(json.dumps(data, sort_keys=True, indent=4))
         return data
 
@@ -224,7 +248,10 @@ class MatrixModule(BotModule):
 
     async def show_flog(self, bot, room, station):
         data = self.fb.get_flights(station)
-        await bot.send_html(room, self.html_flog(data, False), self.text_flog(data, False))
+        if data:
+            await bot.send_html(room, self.html_flog(data, False), self.text_flog(data, False))
+        else:
+            await bot.send_text(room, f"Failed to get flight log for {station}")
 
     def get_settings(self):
         data = super().get_settings()
