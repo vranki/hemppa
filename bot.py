@@ -78,7 +78,7 @@ class Bot:
 
         self.logger.debug("Logger initialized")
 
-    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png"):
+    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png", no_cache=False):
         """
 
         :param room: A MatrixRoom the image should be send to after uploading
@@ -86,11 +86,15 @@ class Bot:
         :param text: A textual representation of the image
         :param blob: Flag to indicate if the second param is an url or a binary content
         :param blob_content_type: Content type of the image in case of binary content
+        :param no_cache: Set to true if you want to bypass cache and always re-upload the file
         :return:
         """
         cache_key = url
         if blob:  ## url is bytes, cannot be used a key for cache
             cache_key = hashlib.md5(url).hexdigest()
+
+        if no_cache:
+            cache_key = None
 
         try:
             matrix_uri, mimetype, w, h, size = self.uri_cache[cache_key]
@@ -98,8 +102,9 @@ class Bot:
             try:
                 res = await self.upload_image(url, blob, blob_content_type)
                 matrix_uri, mimetype, w, h, size = res
-                self.uri_cache[cache_key] = list(res)
-                self.save_settings()
+                if not no_cache:
+                    self.uri_cache[cache_key] = list(res)
+                    self.save_settings()
             except UploadFailed:
                 return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading it to the image to matrix server :(")
 
