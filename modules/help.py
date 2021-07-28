@@ -10,12 +10,14 @@ class MatrixModule(BotModule):
     def get_settings(self):
         data = super().get_settings()
         data['msg_users'] = self.msg_users
+        data['info'] = self.info
         return data
 
     def set_settings(self, data):
         super().set_settings(data)
         if data.get('msg_users'):
             self.msg_users = data['msg_users']
+        self.info = data.get('info') or "\nMore information at https://github.com/vranki/hemppa"
 
     def matrix_start(self, bot):
         super().matrix_start(bot)
@@ -23,26 +25,27 @@ class MatrixModule(BotModule):
 
     async def matrix_message(self, bot, room, event):
 
-        args = event.body.split()
+        args = event.body.split(None, 2)
         cmd = args.pop(0)
         if cmd == '!sethelp':
             bot.must_be_owner(event)
-            if len(args) != 2:
-                await bot.send_text(room, f'{cmd} requires two arguments')
-                return
             if args[0].lower() in ['msg_users', 'msg-users', 'msg']:
                 if args[1].lower() in ['true', '1', 'yes', 'y']:
                     self.msg_users = True
-                    await bot.send_text(room, '!help will now message users instead of posting to the room')
+                    msg = '!help will now message users instead of posting to the room'
                 else:
                     self.msg_users = False
-                    bot.send_text(room, '!help will now post to the room instead of messaging users')
+                    msg = '!help will now post to the room instead of messaging users'
+                bot.save_settings()
+            elif args[0].lower() in ['info']:
+                self.info = args[1] or "More information at https://github.com/vranki/hemppa"
+                msg = '!help info string set'
                 bot.save_settings()
             else:
                 await bot.send_text(room, f'Not a !help setting: {args[0]}')
+            return
 
-
-        if len(args) == 1:
+        elif len(args) == 1:
             msg = ''
             modulename = args.pop(0)
             moduleobject = bot.modules.get(modulename)
@@ -63,7 +66,7 @@ class MatrixModule(BotModule):
                         msg = msg + ' - ' + moduleobject.help() + '\n'
                     except AttributeError:
                         pass
-            msg = msg + "\nMore information at https://github.com/vranki/hemppa"
+            msg = msg + '\n' + self.info
         if self.msg_users:
             await bot.send_msg(event.sender, f'Chat with {bot.matrix_user}', msg)
         else:
