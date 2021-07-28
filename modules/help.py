@@ -57,13 +57,13 @@ class MatrixModule(BotModule):
                 msg += f'{modulename} has no help'
 
         else:
-            msg = f'This is Hemppa {bot.version}, a generic Matrix bot. Known commands:\n\n'
+            msg = f'This is Hemppa {bot.version}, a generic Matrix bot. Known commands:\n'
 
             for modulename, moduleobject in bot.modules.items():
                 if moduleobject.enabled:
-                    msg = msg + '!' + modulename
+                    msg = msg + '- !' + modulename
                     try:
-                        msg = msg + ' - ' + moduleobject.help() + '\n'
+                        msg = msg + ': ' + moduleobject.help() + '\n'
                     except AttributeError:
                         pass
             msg = msg + '\n' + self.info
