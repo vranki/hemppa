@@ -628,6 +628,16 @@ Currently only Finnish RASP supported. Uses data from http://ennuste.ilmailuliit
 Day and hour can be omitted - fetches today's forecast if not set.
 PR welcome for supporting other data sources.
 
+### Mumble
+
+Show information about a configured mumble server,
+including version, how many users are connected, and ping time.
+
+#### Usage
+
+* !mumble                                 - Show info about the configured mumble server
+- !mumble (set|setserver) [host] ([port]) - Set the configured mumble server
+
 ## Bot setup
 
 * Create a Matrix user
