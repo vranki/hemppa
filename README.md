@@ -274,6 +274,15 @@ Then just:
 
 mxma requires all commands to be run as bot owner.
 
+#### SpaceAPI
+
+Polls the status of Hack- and Makerspaces that provide an endpoint
+that conforms to the [SpaceAPI](https://spaceapi.io/) protocol and notifies 
+about changes of the opening status.
+
+To add a new endpoint simply use 
+`!spaceapi add https://hackspace.example.org/status`
+
 ### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
