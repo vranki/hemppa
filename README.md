@@ -283,6 +283,10 @@ about changes of the opening status.
 To add a new endpoint simply use 
 `!spaceapi add https://hackspace.example.org/status`
 
+For Admins: A template and I18N can be configured via settings of 
+the module. Use `!bot export spacepi`, then change the 
+settings and import again with `!bot import spacepi SETTINGS`.
+
 ### Url
 
 Watches all messages in a room and if a url is found tries to fetch it and
