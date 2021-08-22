@@ -361,6 +361,7 @@ Command:
 * !apod clear - clear uri cache (Must be done as admin)
 * !apod apikey [api-key] - set the nasa api key (Must be done as bot owner)
 * !apod help - show command help
+* !apod avatar (YYYY-MM-DD) - additionally, set roomavatar to the astronomy pic of the day (ignored if not admin in room)
 
 API Key:
 
