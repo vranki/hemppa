@@ -1,7 +1,7 @@
 import urllib.request
 import urllib.parse
 import urllib.error
-import tzlocal
+import datetime
 import pytz
 import os
 import sys
@@ -21,12 +21,24 @@ from modules.common.module import BotModule
 
 tautulli_path = os.getenv("TAUTULLI_PATH")
 
+def load_tzlocal():
+    try:
+        global tautulli_path
+
+        sys.path.insert(0, tautulli_path)
+        sys.path.insert(0, "{}/lib".format(tautulli_path))
+        module = importlib.import_module("tzlocal")
+        module = reload(module)
+        return module
+    except ModuleNotFoundError:
+        return None
+
 def load_tautulli():
     try:
         global tautulli_path
 
-        sys.path.append(tautulli_path)
-        sys.path.append("{}/lib".format(tautulli_path))
+        sys.path.insert(0, tautulli_path)
+        sys.path.insert(0, "{}/lib".format(tautulli_path))
         module = importlib.import_module("plexpy")
         module = reload(module)
         return module
@@ -34,6 +46,8 @@ def load_tautulli():
         return None
 
 plexpy = load_tautulli()
+tzlocal = load_tzlocal()
+
 send_entry_lock = asyncio.Lock()
 
 async def send_entry(bot, room, entry):
@@ -142,6 +156,7 @@ class MatrixModule(BotModule):
             except (pytz.UnknownTimeZoneError, LookupError, ValueError) as e:
                 plexpy.SYS_TIMEZONE = pytz.UTC
 
+            plexpy.SYS_UTC_OFFSET = datetime.datetime.now(plexpy.SYS_TIMEZONE).strftime('%z')
             plexpy.initialize("{}/config.ini".format(tautulli_path))
 
         self.httpd = WebServer(os.getenv("TAUTULLI_NOTIFIER_ADDR"), os.getenv("TAUTULLI_NOTIFIER_PORT"))
