@@ -126,10 +126,10 @@ class Bot:
         self.client: AsyncClient
         response: UploadResponse
         if blob:
-            (response, alist) = await self.client.upload(lambda a, b: url_or_bytes, blob_content_type)
             i = Image.open(BytesIO(url_or_bytes))
             image_length = len(url_or_bytes)
             content_type = blob_content_type
+            (response, alist) = await self.client.upload(lambda a, b: url_or_bytes, blob_content_type, filesize=image_length)
         else:
             self.logger.debug(f"start downloading image from url {url_or_bytes}")
             headers = {'User-Agent': 'Mozilla/5.0'}
