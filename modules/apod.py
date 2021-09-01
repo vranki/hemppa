@@ -6,6 +6,7 @@ from nio import AsyncClient, UploadError
 from nio import UploadResponse
 
 from modules.common.module import BotModule
+from bot import UploadFailed
 
 
 class Apod:
@@ -53,22 +54,31 @@ class MatrixModule(BotModule):
             if args[1] == "stats":
                 await self.send_stats(bot, room)
             elif args[1] == "clear":
-                bot.must_be_admin(room, event)
+                bot.must_be_owner(event)
                 await self.clear_uri_cache(bot, room)
             elif args[1] == "help":
                 await self.command_help(bot, room)
+            elif args[1] == "avatar":
+                await self.send_apod(bot, room, self.apod_api_url, set_room_avatar=bot.is_admin(room, event))
             else:
                 date = args[1]
                 if re.match(self.APOD_DATE_PATTERN, date) is not None:
                     uri = self.apod_by_date_api_url + date
                     await self.send_apod(bot, room, uri)
                 else:
-                    await bot.send_text(room, "invalid date. accpeted: YYYY-MM-DD")
+                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD")
         elif len(args) == 3:
             if args[1] == "apikey":
                 await self.update_api_key(bot, room, event, args[2])
+            elif args[1] == "avatar":
+                date = args[2]
+                if re.match(self.APOD_DATE_PATTERN, date) is not None:
+                    uri = self.apod_by_date_api_url + date
+                    await self.send_apod(bot, room, uri, set_room_avatar=bot.is_admin(room, event))
+                else:
+                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD")
 
-    async def send_apod(self, bot, room, uri):
+    async def send_apod(self, bot, room, uri, set_room_avatar=False):
         self.logger.debug(f"send request using uri {uri}")
         response = requests.get(uri)
         if response.status_code == 200:
@@ -77,7 +87,16 @@ class MatrixModule(BotModule):
             self.logger.debug(apod)
             if apod.media_type == "image":
                 await bot.send_text(room, f"{apod.title} ({apod.date})")
-                await bot.upload_and_send_image(room, apod.hdurl, f"{apod.title}")
+                mxc_details = bot.get_uri_cache(apod.hdurl)
+                try:
+                    if not mxc_details:
+                        mxc_details = await bot.upload_image(apod.hdurl)
+                    matrix_uri, mimetype, w, h, size = mxc_details
+                    await bot.send_image(room, matrix_uri, apod.hdurl, mimetype, w, h, size)
+                    if set_room_avatar:
+                        await bot.set_room_avatar(room, matrix_uri, mimetype, w, h, size)
+                except (UploadFailed, ValueError):
+                    await self.send_text(room, f"Something went wrong uploading {apod.hdurl}.")
                 await bot.send_text(room, f"{apod.explanation}")
             else:
                 await self.send_unknown_mediatype(room, bot, apod)
@@ -123,9 +142,10 @@ class MatrixModule(BotModule):
         msg = """commands:
         - YYYY-MM-DD - date of the APOD image to retrieve (ex. 2020-03-15)
         - stats - show information about uri cache
-        - clear - clear uri cache (Must be done as admin)
+        - clear - clear uri cache (Must be done as owner)
         - apikey [api-key] - set the nasa api key (Must be done as bot owner)
         - help - show command help
+        - avatar, avatar YYYY-MM-DD - Additionally set the room's avatar to the fetched image (Must be done as admin)
         """
         await bot.send_text(room, msg)
 

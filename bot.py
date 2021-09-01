@@ -78,6 +78,20 @@ class Bot:
 
         self.logger.debug("Logger initialized")
 
+    def get_uri_cache(self, url, blob=False):
+        """
+
+        :param url: Url of binary content of the image to upload
+        :param blob: Flag to indicate if the second param is an url or a binary content
+        :return: [matrix_uri, mimetype, w, h, size], or None
+        """
+        cache_key = url
+        if blob:  ## url is bytes, cannot be used a key for cache
+            cache_key = hashlib.md5(url).hexdigest()
+
+        return self.uri_cache.get(cache_key)
+
+
     async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png", no_cache=False):
         """
 
@@ -89,42 +103,45 @@ class Bot:
         :param no_cache: Set to true if you want to bypass cache and always re-upload the file
         :return:
         """
-        cache_key = url
+
+        if not text and not blob:
+            text = f"Image: {url}"
+
+        res = self.get_uri_cache(url, blob=blob)
+        if res:
+            try:
+                matrix_uri, mimetype, w, h, size = res
+                return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+            except ValueError: # broken cache?
+                self.logger.warning(f"Image cache for {url} could not be unpacked, attempting to re-upload...")
+        try:
+            matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob=blob, no_cache=no_cache)
+        except (UploadFailed, ValueError):
+            return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading it to the image to matrix server :(")
+
+        return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+
+    # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
+    # Throws exception if upload fails
+    async def upload_image(self, url_or_bytes, blob=False, blob_content_type="image/png", no_cache=False):
+        """
+        :param url_or_bytes: Url or binary content of the image to upload
+        :param blob: Flag to indicate if the first param is an url or a binary content
+        :param blob_content_type: Content type of the image in case of binary content
+        :param no_cache: Flag to indicate whether to cache the resulting uploaded details
+        :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
+        """
+
+        self.client: AsyncClient
+        response: UploadResponse
+
+        cache_key = url_or_bytes
         if blob:  ## url is bytes, cannot be used a key for cache
             cache_key = hashlib.md5(url).hexdigest()
 
         if no_cache:
             cache_key = None
 
-        try:
-            matrix_uri, mimetype, w, h, size = self.uri_cache[cache_key]
-        except KeyError:
-            try:
-                res = await self.upload_image(url, blob, blob_content_type)
-                matrix_uri, mimetype, w, h, size = res
-                if not no_cache:
-                    self.uri_cache[cache_key] = list(res)
-                    self.save_settings()
-            except UploadFailed:
-                return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading it to the image to matrix server :(")
-
-        if not text and not blob:
-            text = f"{url}"
-        return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
-
-    # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
-    # Throws exception if upload fails
-    async def upload_image(self, url_or_bytes, blob=False, blob_content_type="image/png"):
-        """
-
-        :param url_or_bytes: Url or binary content of the image to upload
-        :param blob: Flag to indicate if the first param is an url or a binary content
-        :param blob_content_type: Content type of the image in case of binary content
-        :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
-        """
-
-        self.client: AsyncClient
-        response: UploadResponse
         if blob:
             i = Image.open(BytesIO(url_or_bytes))
             image_length = len(url_or_bytes)
@@ -145,12 +162,14 @@ class Bot:
                 image_length = len(url_response.content)
             else:
                 self.logger.error("unable to request url: %s", url_response)
-
                 raise UploadFailed
 
         if isinstance(response, UploadResponse):
             self.logger.info("uploaded file to %s", response.content_uri)
-            return response.content_uri, content_type, i.size[0], i.size[1], image_length
+            res = [response.content_uri, content_type, i.size[0], i.size[1], image_length]
+            if cache_key:
+                self.uri_cache[cache_key] = res
+            return res
         else:
             response: UploadError
             self.logger.error("unable to upload file. msg: %s", response.message)
@@ -247,6 +266,36 @@ class Bot:
             msg["info"]["size"] = size
 
         return await self.client.room_send(room.room_id, 'm.room.message', msg)
+
+    async def set_room_avatar(self, room, uri, mimetype=None, width=None, height=None, size=None):
+        """
+
+        :param room: A MatrixRoom the image should be send to
+        :param uri: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
+        :param mimetype: The mimetype of the image
+        :param width: Width in pixel of the image
+        :param height: Height in pixel of the image
+        :param size: Size in bytes of the image
+        :return:
+        """
+        msg = {
+            "url": uri,
+            "info": {
+                "thumbnail_info": None,
+                "thumbnail_url": None,
+            },
+        }
+
+        if mimetype:
+            msg["info"]["mimetype"] = mimetype
+        if width:
+            msg["info"]["w"] = width
+        if height:
+            msg["info"]["h"] = height
+        if size:
+            msg["info"]["size"] = size
+
+        return await self.client.room_put_state(room.room_id, 'm.room.avatar', msg)
 
     async def send_msg(self, mxid, roomname, message):
         """
