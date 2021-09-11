@@ -624,12 +624,27 @@ by default, but you can set any single instance to search on.
 
 ### User management
 
-Admin commands to manage users.
+Admin commands to manage users and some utilities.
+
+You can classify users based on MXID to get stats on where users come from.
 
 #### Usage
 
-* !users list [pattern]  - List users matching wildcard pattern (must be owner)
+* !users list [pattern]  - List users matching wildcard pattern in this room (must be owner)
 * !users kick [pattern]  - Kick users matching wildcard pattern from room (must be admin in room)
+* !users classify add [name] [pattern] - Add a classification pattern (must be owner)
+* !users classify list - List classifications
+* !users classify del [name] - Delete classification
+* !users roomstats - List how many users are in each class in this room
+* !users stats - List how many users are in each class globally as seen by bot
+
+Example:
+
+* !users classify add matrix.org @*:matrix.org
+* !users classify add libera.chat @*:libera.chat
+* !users classify add discord @*discordpuppet*:*
+* !users stats
+* !users roomstats
 
 ### RASP (Gliding Weather forecast)
 
