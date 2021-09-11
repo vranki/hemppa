@@ -20,6 +20,10 @@ class MatrixModule(BotModule):
                 else:
                     allusers = self.get_users(bot, room.room_id)
                 total = len(allusers)
+                if total == 0:
+                    await bot.send_text(room, "I don't see any users. How did this happen?")
+                    return
+
                 matched = 0
                 for user in allusers:
                     for name, pattern in self.classes.items():
@@ -32,11 +36,11 @@ class MatrixModule(BotModule):
                 stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
 
                 if args[0] == 'stats':
-                    reply = f'I am seeing total {len(allusers)} users:\n'
+                    reply = f'I am seeing total {len(allusers)} users in {len(self.bot.client.rooms)} rooms:\n'
                 else:
                     reply = f'I am seeing {len(allusers)} users in this room:\n'
                 for name in stats:
-                    reply = reply + f' - {name}: {stats[name]} ({stats[name] / total * 100}%)\n'
+                    reply = reply + f' - {name}: {stats[name]} ({round(stats[name] / total * 100, 2)}%)\n'
                 await bot.send_text(room, reply)
                 return
         if len(args) == 2:
