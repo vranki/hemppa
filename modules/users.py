@@ -40,7 +40,8 @@ class MatrixModule(BotModule):
                 else:
                     reply = f'I am seeing {len(allusers)} users in this room:\n'
                 for name in stats:
-                    reply = reply + f' - {name}: {stats[name]} ({round(stats[name] / total * 100, 2)}%)\n'
+                    if stats[name] > 0:
+                        reply = reply + f' - {name}: {stats[name]} ({round(stats[name] / total * 100, 2)}%)\n'
                 await bot.send_text(room, reply)
                 return
         if len(args) == 2:
@@ -91,15 +92,14 @@ class MatrixModule(BotModule):
     def get_users(self, bot, roomid=None):
         allusers = []
         for croomid in self.bot.client.rooms:
-            if roomid and (roomid != croomid):
-                break
-            try:
-                users = self.bot.client.rooms[croomid].users
-            except (KeyError, ValueError) as e:
-                self.logger.warning(f"Couldn't get user list in room with id {croomid}, skipping: {repr(e)}")
-                continue
-            for user in users:
-                allusers.append(user)
+            if not roomid or (roomid == croomid):
+                try:
+                    users = self.bot.client.rooms[croomid].users
+                except (KeyError, ValueError) as e:
+                    self.logger.warning(f"Couldn't get user list in room with id {croomid}, skipping: {repr(e)}")
+                    continue
+                for user in users:
+                    allusers.append(user)
         allusers = list(dict.fromkeys(allusers)) # Deduplicate
         return allusers
 
