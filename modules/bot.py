@@ -301,11 +301,11 @@ class MatrixModule(BotModule):
 
     async def rooms(self, bot, room, event):
         bot.must_be_owner(event)
-        rooms = []
+        output = f'I\'m in following {len(bot.client.rooms)} rooms:\n'
         for croomid in bot.client.rooms:
             roomobj = bot.get_room_by_id(croomid)
-            rooms.append(roomobj.machine_name)
-        await bot.send_text(room, f'I\'m in following {len(rooms)} rooms: {rooms}')
+            output = output + f' - {roomobj.display_name} ( {roomobj.machine_name} )\n'
+        await bot.send_text(room, output)
 
     def disable(self):
         raise ModuleCannotBeDisabled

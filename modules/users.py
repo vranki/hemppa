@@ -45,9 +45,13 @@ class MatrixModule(BotModule):
                 await bot.send_text(room, reply)
                 return
         if len(args) == 2:
-            if args[0] == 'list':
+            if args[0] == 'list' or args[0] == 'listall':
                 bot.must_be_owner(event)
-                users = self.search_users(bot, args[1])
+                search_room = None
+                if args[0] == 'list':
+                    search_room = room.room_id
+                allusers = self.get_users(bot, search_room)
+                users = fnmatch.filter(allusers, args[1])
                 if len(users):
                     await bot.send_text(room, ' '.join(users))
                 else:
@@ -55,7 +59,8 @@ class MatrixModule(BotModule):
                 return
             if args[0] == 'kick':
                 bot.must_be_admin(room, event)
-                users = self.search_users(bot, args[1])
+                allusers = self.get_users(bot, room.room_id)
+                users = fnmatch.filter(allusers, args[1])
                 if len(users):
                     for user in users:
                         self.logger.debug(f"Kicking {user} from {room.room_id} as requested by {event.sender}")

@@ -525,6 +525,8 @@ Example:
 
 ### Gfycat
 
+NOTE: This module is not working at the moment - gfycat now needs API key
+
 Can be used to post a picture from Gfycat given a query string.
 
 Commands:
@@ -631,10 +633,11 @@ You can classify users based on MXID to get stats on where users come from.
 #### Usage
 
 * !users list [pattern]  - List users matching wildcard pattern in this room (must be owner)
+* !users listall [pattern]  - List users matching wildcard pattern globally (must be owner)
 * !users kick [pattern]  - Kick users matching wildcard pattern from room (must be admin in room)
 * !users classify add [name] [pattern] - Add a classification pattern (must be owner)
 * !users classify list - List classifications
-* !users classify del [name] - Delete classification
+* !users classify del [name] - Delete classification (must be owner)
 * !users roomstats - List how many users are in each class in this room
 * !users stats - List how many users are in each class globally as seen by bot
 
