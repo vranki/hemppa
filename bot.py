@@ -117,7 +117,7 @@ class Bot:
         try:
             matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob=blob, no_cache=no_cache)
         except (UploadFailed, ValueError):
-            return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading it to the image to matrix server :(")
+            return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading the image to matrix server :(")
 
         return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
 
