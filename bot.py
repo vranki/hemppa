@@ -137,7 +137,7 @@ class Bot:
 
         cache_key = url_or_bytes
         if blob:  ## url is bytes, cannot be used a key for cache
-            cache_key = hashlib.md5(url).hexdigest()
+            cache_key = hashlib.md5(url_or_bytes).hexdigest()
 
         if no_cache:
             cache_key = None
