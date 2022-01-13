@@ -1,5 +1,6 @@
 import os
 import re
+import html
 
 import requests
 from nio import AsyncClient, UploadError
@@ -81,31 +82,35 @@ class MatrixModule(BotModule):
     async def send_apod(self, bot, room, uri, set_room_avatar=False):
         self.logger.debug(f"send request using uri {uri}")
         response = requests.get(uri)
-        if response.status_code == 200:
-            apod = Apod.create_from_json(response.json())
 
-            self.logger.debug(apod)
-            if apod.media_type == "image":
-                await bot.send_text(room, f"{apod.title} ({apod.date})")
-                mxc_details = bot.get_uri_cache(apod.hdurl)
-                try:
-                    if not mxc_details:
-                        mxc_details = await bot.upload_image(apod.hdurl)
-                    matrix_uri, mimetype, w, h, size = mxc_details
-                    await bot.send_image(room, matrix_uri, apod.hdurl, mimetype, w, h, size)
-                    if set_room_avatar:
-                        await bot.set_room_avatar(room, matrix_uri, mimetype, w, h, size)
-                except (UploadFailed, ValueError):
-                    await self.send_text(room, f"Something went wrong uploading {apod.hdurl}.")
-                await bot.send_text(room, f"{apod.explanation}")
-            else:
-                await self.send_unknown_mediatype(room, bot, apod)
-        elif response.status_code == 400:
+        if response.status_code == 400:
             self.logger.error("unable to request apod api. status: %d text: %s", response.status_code, response.text)
-            await bot.send_text(room, response.json().get("msg"))
-        else:
+            return await bot.send_text(room, response.json().get("msg"))
+
+        if response.status_code != 200:
             self.logger.error("unable to request apod api. response: [status: %d text: %s]", response.status_code, response.text)
-            await bot.send_text(room, "sorry. something went wrong accessing the api :(")
+            return await bot.send_text(room, "sorry. something went wrong accessing the api :(")
+
+        apod = Apod.create_from_json(response.json())
+        self.logger.debug(apod)
+
+        if apod.media_type != "image":
+            return await self.send_unknown_mediatype(room, bot, apod)
+
+        await bot.send_html(room, f"<b>{html.escape(apod.title)} ({html.escape(apod.date)})</b>", f"{apod.title} ({apod.date})")
+        try:
+            matrix_uri = None
+            matrix_uri, mimetype, w, h, size = bot.get_uri_cache(apod.hdurl)
+        except (TypeError, ValueError):
+            self.logger.debug(f"Not found in cache: {apod.hdurl}")
+            try:
+                matrix_uri, mimetype, w, h, size = await bot.upload_image(apod.hdurl)
+            except (UploadFailed, TypeError, ValueError):
+                await self.send_text(room, f"Something went wrong uploading {apod.hdurl}.")
+        await bot.send_image(room, matrix_uri, apod.hdurl, mimetype, w, h, size)
+        await bot.send_text(room, f"{apod.explanation}")
+        if matrix_uri and set_room_avatar:
+            await bot.set_room_avatar(room, matrix_uri, mimetype, w, h, size)
 
     async def send_unknown_mediatype(self, room, bot, apod):
         self.logger.debug(f"unknown media_type: {apod.media_type}. sending raw information")
