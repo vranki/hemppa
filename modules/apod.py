@@ -114,8 +114,12 @@ class MatrixModule(BotModule):
 
     async def send_unknown_mediatype(self, room, bot, apod):
         self.logger.debug(f"unknown media_type: {apod.media_type}. sending raw information")
-        await bot.send_text(room, f"{apod.title}")
-        await bot.send_text(room, f"{apod.explanation} || date: {apod.date} || original-url: {apod.url}")
+        await bot.send_html(room,
+                f"<p><strong>{html.escape(apod.title)} ({html.escape(apod.date)})</strong>"
+                f"<br>(Original URL: {apod.url})</p>"
+                f"\n<p>{apod.explanation}</p>",
+                f"{apod.title} ({apod.date}) | Original URL: {apod.url}"
+                f"\n{apod.explanation}")
 
     def get_settings(self):
         data = super().get_settings()
