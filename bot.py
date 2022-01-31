@@ -169,6 +169,7 @@ class Bot:
             res = [response.content_uri, content_type, i.size[0], i.size[1], image_length]
             if cache_key:
                 self.uri_cache[cache_key] = res
+                self.save_settings()  # save cache
             return res
         else:
             response: UploadError
