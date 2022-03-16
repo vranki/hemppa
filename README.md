@@ -703,7 +703,7 @@ If your user is not pi, modify hemppa.service first.
 
 ``` bash
 sudo ln -s `pwd` /opt/hemppa
-sudo ln -s hemppa.service /lib/systemd/system
+sudo ln -s `pwd`/hemppa.service /lib/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl enable hemppa.service
 sudo systemctl start hemppa.service
