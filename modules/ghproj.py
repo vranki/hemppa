@@ -6,6 +6,7 @@ from modules.common.module import BotModule
 
 # Helper class with reusable code for github project stuff
 class GithubProject:
+    # New format to support array of colors: domains={"koneet":["#BFDADC","#0CBBF0","#0CBBF0","#E15D19","#ED49CF"],"tilat":["#0E8A16","#1E8A16"]}
     def get_domains(description):
         p = re.compile('domains=\{.*\}')
         matches = json.loads(p.findall(description)[0][8:])
@@ -17,16 +18,17 @@ class GithubProject:
         domains = GithubProject.get_domains(repo.description)
         if(not len(domains)):
             return None, None
-        domain_color = domains.get(domain, None)
-        if not domain_color:
+        domain_colors = domains.get(domain, None)
+        if not domain_colors:
             return None, None
 
         open_issues = repo.get_issues(state='open')
         domain_labels = []
         labels = repo.get_labels()
         for label in labels:
-            if label.color == domain_color[1:]:
-                domain_labels.append(label)
+            for domain_color in domain_colors:
+                if label.color == domain_color[1:]:
+                    domain_labels.append(label)
 
         domain_issues = dict()
         domain_ok = []
