@@ -590,10 +590,10 @@ You can create any number of them.
 For example set all machine labels to be #B60205 and space labels to be #0E8A16. These 
 can be easily picked from color chooser.
 * Edit the repository description and add a json block describing the
-label domains and their colors. For example:
+label domains and their colors (array format supports multiple colors per domain). For example:
 
 ```
-Hackerspace machines, todo and stuff. domains={ "machines": "#B60205", "spaces" : "#0E8A16"} 
+Hackerspace machines, todo and stuff. domains={"koneet":["#BFDADC","#0CBBF0","#0CBBF0","#E15D19","#ED49CF"],"tilat":["#0E8A16","#1E8A16"]}
 ```
 
 Make sure you type the description on one line - this is a silly Github limitation.
