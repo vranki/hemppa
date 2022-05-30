@@ -217,7 +217,7 @@ class Bot:
             msg["org.vranki.hemppa.ignore"] = "true"
         await self.client.room_send(room.room_id, 'm.room.message', msg)
 
-    async def send_location(self, room, body, latitude, longitude, bot_ignore=False):
+    async def send_location(self, room, body, latitude, longitude, bot_ignore=False, asset='m.pin'):
         """
 
         :param room: A MatrixRoom the html should be send to
@@ -226,12 +226,14 @@ class Bot:
         :param latitude: Latitude in WGS84 coordinates (float)
         :param longitude: Longitude in WGS84 coordinates (float)
         :param bot_ignore: Flag to mark the message to be ignored by the bot
+        :param asset: Asset string as defined in MSC3488 (such as m.self or m.pin)
         :return:
         """
         locationmsg = {
             "body": str(body),
             "geo_uri": 'geo:' + str(latitude) + ',' + str(longitude),
             "msgtype": "m.location",
+            "org.matrix.msc3488.asset": { "type": asset }
             }
         await self.client.room_send(room.room_id, 'm.room.message', locationmsg)
 
@@ -555,7 +557,6 @@ class Bot:
             sys.exit(2)
 
     def init(self):
-
         self.matrix_user = os.getenv('MATRIX_USER')
         matrix_server = os.getenv('MATRIX_SERVER')
         bot_owners = os.getenv('BOT_OWNERS')

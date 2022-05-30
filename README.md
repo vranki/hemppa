@@ -176,6 +176,8 @@ Can search OpenStreetMaps for locations and send Matrix location events from the
 Commands:
 
 * !loc [location] - search for location
+* !loc enable     - enable location to link translation in this room (must be done as room admin)
+* !loc disable    - disable location to link translation in this room (must be done as room admin)
 
 Example:
 
