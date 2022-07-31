@@ -33,9 +33,9 @@ class MatrixModule(BotModule):
                         api_base_url = instanceurl
                     )
                     tootdict = toottodon.toot(toot_body)
-                    await bot.send_text(room, tootdict['url'])
+                    await bot.send_text(room, tootdict['url'], event)
                 else:
-                    await bot.send_text(room, f'{event.sender} has not logged in yet with the bot. Please do so.')
+                    await bot.send_text(room, f'{event.sender} has not logged in yet with the bot. Please do so.', event)
                 return
 
         if len(args) == 4:
@@ -46,7 +46,7 @@ class MatrixModule(BotModule):
                 instanceurl = args[1]
                 username = args[2]
                 password = args[3]
-                await self.register_app_if_necessary(bot, room, instanceurl)
+                await self.register_app_if_necessary(bot, room, instanceurl, event)
                 await self.login_to_account(bot, room, mxid, None, instanceurl, username, password)
                 return
         if len(args) == 5:
@@ -59,10 +59,10 @@ class MatrixModule(BotModule):
                 password = args[4]
                 roomid = await bot.get_room_by_alias(roomalias)
                 if roomid:
-                    await self.register_app_if_necessary(bot, room, instanceurl)
+                    await self.register_app_if_necessary(bot, room, instanceurl, event)
                     await self.login_to_account(bot, room, None, roomid, instanceurl, username, password)
                 else:
-                    await bot.send_text(room, f'Unknown room alias {roomalias} - invite bot to the room first.')
+                    await bot.send_text(room, f'Unknown room alias {roomalias} - invite bot to the room first.', event)
                 return
         if len(args) == 1:
             if args[0] == "status":
@@ -74,44 +74,44 @@ class MatrixModule(BotModule):
                 for roomlogin in self.roomlogins:
                     out = out + f' - {roomlogin} as {self.roomlogins[roomlogin][0]} on {self.roomlogins[roomlogin][2]}\n'
 
-                await bot.send_text(room, out)
+                await bot.send_text(room, out, event)
             if args[0] == "logout":
                 if event.sender in self.logins.keys():
                     # TODO: Is there a way to invalidate the access token with API?
                     del self.logins[event.sender]
                     bot.save_settings()
-                    await bot.send_text(room, f'{event.sender} login data removed from the bot.')
+                    await bot.send_text(room, f'{event.sender} login data removed from the bot.', event)
             if args[0] == "roomlogout":
                 bot.must_be_admin(room, event)
                 if room.room_id in self.roomlogins.keys():
                     del self.roomlogins[room.room_id]
                     bot.save_settings()
-                    await bot.send_text(room, f'Login data for this room removed from the bot.')
+                    await bot.send_text(room, f'Login data for this room removed from the bot.', event)
                 else:
-                    await bot.send_text(room, f'No login found for room id {room.room_id}.')
+                    await bot.send_text(room, f'No login found for room id {room.room_id}.', event)
             if args[0] == "clear":
                 bot.must_be_owner(event)
                 self.logins = dict()
                 self.roomlogins = dict()
                 bot.save_settings()
-                await bot.send_text(room, f'All Mastodon logins cleared')
+                await bot.send_text(room, f'All Mastodon logins cleared', event)
             if args[0] == "setpublic":
                 bot.must_be_owner(event)
                 self.public = True
                 bot.save_settings()
-                await bot.send_text(room, f'Mastodon usage is now public use')
+                await bot.send_text(room, f'Mastodon usage is now public use', event)
             if args[0] == "setprivate":
                 bot.must_be_owner(event)
                 self.public = False
                 bot.save_settings()
-                await bot.send_text(room, f'Mastodon usage is now restricted to bot owners')
+                await bot.send_text(room, f'Mastodon usage is now restricted to bot owners', event)
 
-    async def register_app_if_necessary(self, bot, room, instanceurl):
+    async def register_app_if_necessary(self, bot, room, instanceurl, event):
         if not instanceurl in self.apps.keys():
             app = Mastodon.create_app(f'Hemppa The Bot - {bot.client.user}', api_base_url = instanceurl)
             self.apps[instanceurl] = [app[0], app[1]]
             bot.save_settings()
-            await bot.send_text(room, f'Registered Mastodon app on {instanceurl}')
+            await bot.send_text(room, f'Registered Mastodon app on {instanceurl}', event)
 
     async def login_to_account(self, bot, room, mxid, roomid, instanceurl, username, password):
         mastodon = Mastodon(client_id = self.apps[instanceurl][0], client_secret = self.apps[instanceurl][1], api_base_url = instanceurl)
@@ -119,10 +119,10 @@ class MatrixModule(BotModule):
         print('login_To_account', mxid, roomid)
         if mxid:
             self.logins[mxid] = [username, access_token, instanceurl]
-            await bot.send_text(room, f'Logged Matrix user {mxid} into {instanceurl} as {username}')
+            await bot.send_text(room, f'Logged Matrix user {mxid} into {instanceurl} as {username}', event)
         elif roomid:
             self.roomlogins[roomid] = [username, access_token, instanceurl]
-            await bot.send_text(room, f'Set room {roomid} Mastodon user to {username} on {instanceurl}')
+            await bot.send_text(room, f'Set room {roomid} Mastodon user to {username} on {instanceurl}', event)
 
         bot.save_settings()
 

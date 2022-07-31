@@ -93,7 +93,7 @@ class MatrixModule(BotModule):
             float(latlon[0])
             float(latlon[1])
         except Exception:
-            self.bot.send_text(room, "Error: Invalid location " + geo_uri)
+            self.bot.send_text(room, "Error: Invalid location " + geo_uri, event)
             return
 
         osm_link = f"https://www.openstreetmap.org/?mlat={latlon[0]}&mlon={latlon[1]}"
@@ -101,26 +101,26 @@ class MatrixModule(BotModule):
         plain = f'{sender} sent {location_text} {osm_link} 🚩'
         html = f'{sender} sent <a href="{osm_link}">{location_text}</a> 🚩'
 
-        await self.bot.send_html(room, html, plain)
+        await self.bot.send_html(room, html, plain, event)
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         args.pop(0)
         if len(args) == 0:
-            await bot.send_text(room, 'Usage: !loc <location name>')
+            await bot.send_text(room, 'Usage: !loc <location name>', event)
             return
         elif len(args) == 1:
             if args[0] == 'enable':
                 bot.must_be_admin(room, event)
                 self.enabled_rooms.append(room.room_id)
                 self.enabled_rooms = list(dict.fromkeys(self.enabled_rooms)) # Deduplicate
-                await bot.send_text(room, "Ok, sending locations events here as text versions")
+                await bot.send_text(room, "Ok, sending locations events here as text versions", event)
                 bot.save_settings()
                 return
             if args[0] == 'disable':
                 bot.must_be_admin(room, event)
                 self.enabled_rooms.remove(room.room_id)
-                await bot.send_text(room, "Ok, disabled here")
+                await bot.send_text(room, "Ok, disabled here", event)
                 bot.save_settings()
                 return
 
@@ -130,9 +130,9 @@ class MatrixModule(BotModule):
         location = geolocator.geocode(query)
         self.logger.info('loc rx %s', location)
         if location:
-            await bot.send_location(room, location.address, location.latitude, location.longitude, "m.pin")
+            await bot.send_location(room, location.address, location.latitude, location.longitude, "m.pin", event)
         else:
-            await bot.send_text(room, "Can't find " + query + " on map!")
+            await bot.send_text(room, "Can't find " + query + " on map!", event)
 
     def help(self):
         return 'Search for locations and display Matrix location events as OSM links'

@@ -144,20 +144,20 @@ class MatrixModule(BotModule):
                 station = self.station_rooms[room.room_id]
                 await self.show_flog(bot, room, station)
             else:
-                await bot.send_text(room, 'No OGN station set for this room - set it first.')
+                await bot.send_text(room, 'No OGN station set for this room - set it first.', event)
 
         elif len(args) == 2 and args[0] == "!flog":
             if args[1] == 'rmstation':
                 bot.must_be_admin(room, event)
                 del self.station_rooms[room.room_id]
                 self.live_rooms.remove(room.room_id)
-                await bot.send_text(room, f'Cleared OGN station for this room')
+                await bot.send_text(room, f'Cleared OGN station for this room', event)
 
             elif args[1] == 'status':
                 print(self.logged_flights)
                 print(self.fb.device_cache)
                 bot.must_be_admin(room, event)
-                await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}')
+                await bot.send_text(room, f'OGN station for this room: {self.station_rooms.get(room.room_id)}, live updates enabled: {room.room_id in self.live_rooms}', event)
 
             elif args[1] == 'poll':
                 bot.must_be_admin(room, event)
@@ -167,13 +167,13 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
                 self.live_rooms.append(room.room_id)
                 bot.save_settings()
-                await bot.send_text(room, f'Sending live updates for station {self.station_rooms.get(room.room_id)} to this room')
+                await bot.send_text(room, f'Sending live updates for station {self.station_rooms.get(room.room_id)} to this room', event)
 
             elif args[1] == 'rmlive':
                 bot.must_be_admin(room, event)
                 self.live_rooms.remove(room.room_id)
                 bot.save_settings()
-                await bot.send_text(room, f'Not sending live updates for station {self.station_rooms.get(room.room_id)} to this room anymore')
+                await bot.send_text(room, f'Not sending live updates for station {self.station_rooms.get(room.room_id)} to this room anymore', event)
 
             else:
                 # Assume parameter is a station name
@@ -190,9 +190,9 @@ class MatrixModule(BotModule):
             if address:
                 coords = self.get_coords_for_address(address)
             if coords:
-                await bot.send_location(room, f'{registration} ({coords["utc"]})', coords["lat"], coords["lng"])
+                await bot.send_location(room, f'{registration} ({coords["utc"]})', coords["lat"], coords["lng"], event)
             else:
-                await bot.send_text(room, f'No Flarm ID found for {registration}!')
+                await bot.send_text(room, f'No Flarm ID found for {registration}!', event)
 
         elif len(args) == 3 and args[0] == "!flog":
             if args[1] == 'station':
@@ -203,7 +203,7 @@ class MatrixModule(BotModule):
                 self.logger.info(f'Station now for this room {self.station_rooms.get(room.room_id)}')
 
                 bot.save_settings()
-                await bot.send_text(room, f'Set OGN station {station} to this room')
+                await bot.send_text(room, f'Set OGN station {station} to this room', event)
 
 
     def get_coords_for_address(self, address):
@@ -246,12 +246,12 @@ class MatrixModule(BotModule):
             out = out + "</ul>"
         return out
 
-    async def show_flog(self, bot, room, station):
+    async def show_flog(self, bot, room, event, station):
         data = self.fb.get_flights(station)
         if data:
-            await bot.send_html(room, self.html_flog(data, False), self.text_flog(data, False))
+            await bot.send_html(room, self.html_flog(data, False), self.text_flog(data, False), event)
         else:
-            await bot.send_text(room, f"Failed to get flight log for {station}")
+            await bot.send_text(room, f"Failed to get flight log for {station}", event)
 
     def get_settings(self):
         data = super().get_settings()

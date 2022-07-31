@@ -10,9 +10,9 @@ class MatrixModule(BotModule):
         if len(args) == 2 and len(args[1]) == 4:
             icao = args[1].upper()
             notam = self.get_notam(icao)
-            await bot.send_text(room, notam)
+            await bot.send_text(room, notam, event)
         else:
-            await bot.send_text(room, 'Usage: !notam <icao code>')
+            await bot.send_text(room, 'Usage: !notam <icao code>', event)
 
     def help(self):
         return ('NOTAM data access (usage: !notam <icao code>) - Currently Finnish airports only')

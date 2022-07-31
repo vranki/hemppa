@@ -12,9 +12,9 @@ class MatrixModule(BotModule):
                         icao.upper() + ".TXT"
             response = urllib.request.urlopen(metar_url)
             lines = response.readlines()
-            await bot.send_text(room, lines[1].decode("utf-8").strip())
+            await bot.send_text(room, lines[1].decode("utf-8").strip(), event)
         else:
-            await bot.send_text(room, 'Usage: !metar <icao code>')
+            await bot.send_text(room, 'Usage: !metar <icao code>', event)
 
     def help(self):
         return ('Metar data access (usage: !metar <icao code>)')

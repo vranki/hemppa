@@ -38,10 +38,10 @@ class MatrixModule(BotModule):
                                     "%H:%M") + ' (' + str(event.duration) + ' min)'
                         s = s + '</b> ' + event.title + \
                             " " + (event.notes or '')
-                        await bot.send_html(room, s, s)
+                        await bot.send_html(room, s, s, event)
         elif len(args) == 2:
             if args[1] == 'list':
-                await bot.send_text(room, f'Calendars in this room: {self.calendar_rooms.get(room.room_id) or []}')
+                await bot.send_text(room, f'Calendars in this room: {self.calendar_rooms.get(room.room_id) or []}', event)
             elif args[1] == 'poll':
                 bot.must_be_owner(event)
                 await self.poll_all_calendars(bot)
@@ -56,7 +56,7 @@ class MatrixModule(BotModule):
                     if calid not in self.calendar_rooms[room.room_id]:
                         self.calendar_rooms[room.room_id].append(calid)
                     else:
-                        await bot.send_text(room, 'This teamup calendar already added in this room!')
+                        await bot.send_text(room, 'This teamup calendar already added in this room!', event)
                         return
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
@@ -65,7 +65,7 @@ class MatrixModule(BotModule):
 
                 bot.save_settings()
                 self.setup_calendars()
-                await bot.send_text(room, 'Added new teamup calendar to this room')
+                await bot.send_text(room, 'Added new teamup calendar to this room', event)
             if args[1] == 'del':
                 bot.must_be_admin(room, event)
 
@@ -79,14 +79,14 @@ class MatrixModule(BotModule):
 
                 bot.save_settings()
                 self.setup_calendars()
-                await bot.send_text(room, 'Removed teamup calendar from this room')
+                await bot.send_text(room, 'Removed teamup calendar from this room', event)
             if args[1] == 'apikey':
                 bot.must_be_owner(event)
 
                 self.api_key = args[2]
                 bot.save_settings()
                 self.setup_calendars()
-                await bot.send_text(room, 'Api key set')
+                await bot.send_text(room, 'Api key set', event)
 
     def help(self):
         return ('Polls teamup calendar.')
