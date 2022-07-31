@@ -124,6 +124,8 @@ class Bot:
     # Wrapper around matrix-nio's client.room_send
     # Use src_event context to modify the msg
     async def room_send(self, room_id, pre_event, msgtype, msg, **kwargs):
+        if pre_event is None:
+            self.logger.info(f'No pre-event passed. This module may not be set up to support m.thread.')
         try:
             # m.thread support
             relates_to = pre_event.source['content']['m.relates_to']
@@ -131,7 +133,6 @@ class Bot:
                 msg['m.relates_to'] = relates_to
                 msg['m.relates_to']['m.in_reply_to'] = {'event_id': pre_event.event_id}
         except (AttributeError, KeyError):
-            self.logger.warning(f'No pre-event passed. This module may not be set up to support m.thread.')
             pass
 
         return await self.client.room_send(room_id, msgtype, msg, **kwargs)
