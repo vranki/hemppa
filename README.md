@@ -774,7 +774,7 @@ class MatrixModule(BotModule):
 
         # Echo what they said back
         self.logger.debug(f"room: {room.name} sender: {event.sender} wants an echo")
-        await bot.send_text(room, ' '.join(args))
+        await bot.send_text(room, ' '.join(args), event=None)
 
     def help(self):
         return 'Echoes back what user has said'
@@ -805,33 +805,36 @@ class Bot:
         :return bool: Success upon sending the message
         """
 
-    async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
+    async def send_text(self, room, body, event=None, msgtype="m.notice", bot_ignore=False):
         """
 
         :param room: A MatrixRoom the text should be send to
         :param body: Textual content of the message
+        :param event: The event to reply to
         :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
         :param bot_ignore: Flag to mark the message to be ignored by the bot
         :return:
         """
 
-    async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
+    async def send_html(self, room, html, plaintext, event=None, msgtype="m.notice", bot_ignore=False):
         """
 
         :param room: A MatrixRoom the html should be send to
         :param html: Html content of the message
         :param plaintext: Plaintext content of the message
+        :param event: The event to reply to
         :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
         :param bot_ignore: Flag to mark the message to be ignored by the bot
         :return:
         """
         
-    async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
+    async def send_image(self, room, url, body, event=None, mimetype=None, width=None, height=None, size=None):
         """
 
         :param room: A MatrixRoom the image should be send to
         :param url: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
         :param body: A textual representation of the image
+        :param event: The event to reply to
         :param mimetype: The mimetype of the image
         :param width: Width in pixel of the image
         :param height: Height in pixel of the image
@@ -849,17 +852,18 @@ class Bot:
         """
     
         
-    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png"):
+    async def upload_and_send_image(self, room, url, event=None, text=None, blob=False, blob_content_type="image/png"):
         """
 
         :param room: A MatrixRoom the image should be send to after uploading
         :param url: Url of binary content of the image to upload
+        :param event: The event to reply to
         :param text: A textual representation of the image
         :param blob: Flag to indicate if the second param is an url or a binary content 
         :param blob_content_type: Content type of the image in case of binary content
         :return:
         """
-    async def send_location(self, room, body, latitude, longitude, bot_ignore=False):
+    async def send_location(self, room, body, latitude, longitude, event=None bot_ignore=False):
         """
 
         :param room: A MatrixRoom the html should be send to
@@ -867,6 +871,7 @@ class Bot:
         :param body: Plaintext content of the message
         :param latitude: Latitude in WGS84 coordinates (float)
         :param longitude: Longitude in WGS84 coordinates (float)
+        :param event: The event to reply to
         :param bot_ignore: Flag to mark the message to be ignored by the bot
         :return:
         """
