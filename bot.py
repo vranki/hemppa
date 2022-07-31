@@ -92,7 +92,7 @@ class Bot:
         return self.uri_cache.get(cache_key)
 
 
-    async def upload_and_send_image(self, room, url, text=None, blob=False, blob_content_type="image/png", no_cache=False):
+    async def upload_and_send_image(self, room, url, event=None, text=None, blob=False, blob_content_type="image/png", no_cache=False):
         """
 
         :param room: A MatrixRoom the image should be send to after uploading
@@ -111,15 +111,30 @@ class Bot:
         if res:
             try:
                 matrix_uri, mimetype, w, h, size = res
-                return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+                return await self.send_image(room, matrix_uri, text, event, mimetype, w, h, size)
             except ValueError: # broken cache?
                 self.logger.warning(f"Image cache for {url} could not be unpacked, attempting to re-upload...")
         try:
-            matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob=blob, no_cache=no_cache)
+            matrix_uri, mimetype, w, h, size = await self.upload_image(url, event=event, blob=blob, no_cache=no_cache)
         except (UploadFailed, ValueError):
-            return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading the image to matrix server :(")
+            return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading the image to matrix server :(", event=event)
 
-        return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+        return await self.send_image(room, matrix_uri, text, event, mimetype, w, h, size)
+
+    # Wrapper around matrix-nio's client.room_send
+    # Use src_event context to modify the msg
+    async def room_send(self, room_id, pre_event, msgtype, msg, **kwargs):
+        try:
+            # m.thread support
+            relates_to = pre_event.source['content']['m.relates_to']
+            if relates_to['rel_type'] == 'm.thread':
+                msg['m.relates_to'] = relates_to
+                msg['m.relates_to']['m.in_reply_to'] = {'event_id': pre_event.event_id}
+        except (AttributeError, KeyError):
+            self.logger.warning(f'No pre-event passed. This module may not be set up to support m.thread.')
+            pass
+
+        return await self.client.room_send(room_id, msgtype, msg, **kwargs)
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     # Throws exception if upload fails
@@ -169,7 +184,6 @@ class Bot:
             res = [response.content_uri, content_type, i.size[0], i.size[1], image_length]
             if cache_key:
                 self.uri_cache[cache_key] = res
-                self.save_settings()  # save cache
             return res
         else:
             response: UploadError
@@ -177,7 +191,7 @@ class Bot:
 
         raise UploadFailed
 
-    async def send_text(self, room, body, msgtype="m.notice", bot_ignore=False):
+    async def send_text(self, room, body, event=None, msgtype="m.notice", bot_ignore=False):
         """
 
         :param room: A MatrixRoom the text should be send to
@@ -194,9 +208,9 @@ class Bot:
         if bot_ignore:
             msg["org.vranki.hemppa.ignore"] = "true"
 
-        return await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.room_send(room.room_id, event, 'm.room.message', msg)
 
-    async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
+    async def send_html(self, room, html, plaintext, event=None, msgtype="m.notice", bot_ignore=False):
         """
 
         :param room: A MatrixRoom the html should be send to
@@ -215,9 +229,9 @@ class Bot:
         }
         if bot_ignore:
             msg["org.vranki.hemppa.ignore"] = "true"
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        await self.room_send(room.room_id, event, 'm.room.message', msg)
 
-    async def send_location(self, room, body, latitude, longitude, bot_ignore=False, asset='m.pin'):
+    async def send_location(self, room, body, latitude, longitude, event=None, bot_ignore=False, asset='m.pin'):
         """
 
         :param room: A MatrixRoom the html should be send to
@@ -235,9 +249,9 @@ class Bot:
             "msgtype": "m.location",
             "org.matrix.msc3488.asset": { "type": asset }
             }
-        await self.client.room_send(room.room_id, 'm.room.message', locationmsg)
+        await self.room_send(room.room_id, event, 'm.room.message', locationmsg)
 
-    async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
+    async def send_image(self, room, url, body, event=None, mimetype=None, width=None, height=None, size=None):
         """
 
         :param room: A MatrixRoom the image should be send to
@@ -268,7 +282,7 @@ class Bot:
         if size:
             msg["info"]["size"] = size
 
-        return await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.room_send(room.room_id, event, 'm.room.message', msg)
 
     async def set_room_avatar(self, room, uri, mimetype=None, width=None, height=None, size=None):
         """
@@ -315,7 +329,7 @@ class Bot:
             return False
 
         # Send message to the room
-        await self.send_text(msg_room, message)
+        await self.send_text(msg_room, None, message)
         return True
 
     async def find_or_create_private_msg(self, mxid, roomname):
@@ -423,7 +437,7 @@ class Bot:
 
         if self.owners_only and not self.is_owner(event):
             self.logger.info(f"Ignoring {event.sender}, because they're not an owner")
-            await self.send_text(room, "Sorry, only bot owner can run commands.")
+            await self.send_text(room, "Sorry, only bot owner can run commands.", event=event)
             return
 
         # HACK to ignore messages for some time after joining.
@@ -446,11 +460,11 @@ class Bot:
                 try:
                     await moduleobject.matrix_message(self, room, event)
                 except CommandRequiresAdmin:
-                    await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
+                    await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.', event=event)
                 except CommandRequiresOwner:
-                    await self.send_text(room, f'Sorry, only bot owner can run that command.')
+                    await self.send_text(room, f'Sorry, only bot owner can run that command.', event=event)
                 except Exception:
-                    await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                    await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details', event=event)
                     self.logger.exception(f'unhandled exception in !{command}')
         else:
             self.logger.error(f"Unknown command: {command}")
