@@ -19,12 +19,12 @@ class MatrixModule(BotModule):
                 bot.must_be_owner(event)
                 self.app_id = args[2]
                 bot.save_settings()
-                await bot.send_text(room, 'App id set')
+                await bot.send_text(room, 'App id set', event)
                 return
 
         if len(args) > 1:
             if self.app_id == '':
-                await bot.send_text(room, 'Please get and set a appid: https://products.wolframalpha.com/simple-api/documentation/')
+                await bot.send_text(room, 'Please get and set a appid: https://products.wolframalpha.com/simple-api/documentation/', event)
                 return
 
             query = event.body[len(args[0])+1:]
@@ -43,9 +43,9 @@ class MatrixModule(BotModule):
             else:
                 plain = 'Could not find response for ' + query
                 html = plain
-            await bot.send_html(room, html, plain)
+            await bot.send_html(room, html, plain, event)
         else:
-            await bot.send_text(room, 'Usage: !wa <query>')
+            await bot.send_text(room, 'Usage: !wa <query>', event)
 
     def get_settings(self):
         data = super().get_settings()

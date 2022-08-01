@@ -13,7 +13,7 @@ class MatrixModule(BotModule):
             hour = int(args[1])
 
         imgurl = 'http://ennuste.ilmailuliitto.fi/' + str(day) + '/wstar_bsratio.curr.' + str(hour) + '00lst.d2.png'
-        await bot.upload_and_send_image(room, imgurl, f"RASP Day {day+1} at {hour}:00", no_cache=True)
+        await bot.upload_and_send_image(room, imgurl, f"RASP Day {day+1} at {hour}:00", event=event, no_cache=True)
 
     def help(self):
         return 'RASP Gliding Weather forecast, Finland only'

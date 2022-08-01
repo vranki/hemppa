@@ -44,14 +44,14 @@ class MatrixModule(BotModule):
                 self.logger.debug(f'RX filename {filename}')
                 conn = cups.Connection ()
                 conn.printFile(printer, filename, f"Printed from Matrix - {filename}", {'fit-to-page': 'TRUE', 'PageSize': self.paper_size})
-                await self.bot.send_text(room, f'Printing file on {printer}..')
+                await self.bot.send_text(room, f'Printing file on {printer}..', event)
                 os.remove(filename) # Not sure if we should wait first?
             else:
                 self.logger.debug(f'No printer configured for room {room.room_id}')
         except:
                 self.logger.warning(f"File callback failure")
                 traceback.print_exc(file=sys.stderr)
-                await self.bot.send_text(room, f'Printing failed, sorry. See log for details.')
+                await self.bot.send_text(room, f'Printing failed, sorry. See log for details.', event)
 
     def matrix_start(self, bot):
         super().matrix_start(bot)
@@ -80,25 +80,25 @@ class MatrixModule(BotModule):
                         if printerid == printer:
                             msg += f' <- room {roomid}'
                     msg += '\n'
-                await bot.send_text(room, msg)
+                await bot.send_text(room, msg, event)
             elif args[0] == 'rmroomprinter':
                 del self.printers[room.room_id]
-                await bot.send_text(room, f'Deleted printer from this room.')
+                await bot.send_text(room, f'Deleted printer from this room.', event)
                 bot.save_settings()
 
         if len(args) == 2:
             if args[0] == 'setroomprinter':
                 printer = args[1]
                 if printer in printers:
-                    await bot.send_text(room, f'Printing with {printer} here.')
+                    await bot.send_text(room, f'Printing with {printer} here.', event)
                     self.printers[room.room_id] = printer
                     bot.save_settings()
                 else:
-                    await bot.send_text(room, f'No printer called {printer} in your CUPS.')
+                    await bot.send_text(room, f'No printer called {printer} in your CUPS.', event)
             if args[0] == 'setpapersize':
                 self.paper_size = args[1]
                 bot.save_settings()
-                await bot.send_text(room, f'Paper size set to {self.paper_size}.')
+                await bot.send_text(room, f'Paper size set to {self.paper_size}.', event)
 
     def help(self):
         return 'Print files from Matrix'

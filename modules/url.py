@@ -144,7 +144,7 @@ class MatrixModule(BotModule):
                     msg = f"Description: {description}"
 
                 if msg.strip(): # Evaluates to true on non-empty strings
-                    await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
+                    await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True, event)
         except Exception as e:
             self.logger.warning(f"Unexpected error in url module text_cb: {e}")
             traceback.print_exc(file=sys.stderr)
@@ -257,7 +257,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.notice"
             bot.save_settings()
-            await bot.send_text(room, "Sending titles as notices from now on.")
+            await bot.send_text(room, "Sending titles as notices from now on.", event)
             return
 
         # show status
@@ -265,7 +265,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.text"
             bot.save_settings()
-            await bot.send_text(room, "Sending titles as text from now on.")
+            await bot.send_text(room, "Sending titles as text from now on.", event)
             return
 
         # set blacklist
@@ -276,7 +276,7 @@ class MatrixModule(BotModule):
             else:
                 self.blacklist = args[1].split(',')
             bot.save_settings()
-            await bot.send_text(room, f"Blacklisted URLs set to {self.blacklist}")
+            await bot.send_text(room, f"Blacklisted URLs set to {self.blacklist}", event)
             return
 
         # invalid command

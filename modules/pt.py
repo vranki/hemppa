@@ -10,6 +10,7 @@ from modules.common.module import BotModule
 class PeerTubeClient:
     def __init__(self):
         self.instance_url = 'https://sepiasearch.org/'
+        self.client = PeerTubeClient()
 
     def search(self, search_string, count=0):
         if count == 0:
@@ -19,6 +20,15 @@ class PeerTubeClient:
         response = urllib.request.urlopen(search_url)
         data = json.loads(response.read().decode("utf-8"))
         return data
+    def videos(self, params):
+        params = urlencode(params, quote_via=quote_plus)
+        query_url = self.instance_url + 'api/v1/videos?' + params
+        response = urllib.request.urlopen(query_url)
+        data = json.loads(response.read().decode("utf-8"))
+        return data
+
+    def getlive(self, count=1):
+        return self.videos({'isLive': 1, 'count': count})
 
 class MatrixModule(BotModule):
     def __init__(self, name):
@@ -29,19 +39,36 @@ class MatrixModule(BotModule):
         super().matrix_start(bot)
         self.add_module_aliases(bot, ['ptall'])
 
+    def format_video(self, video):
+        video_url = video.get("url") or self.instance_url + 'videos/watch/' + video["uuid"]
+        duration = time.strftime('%H:%M:%S', time.gmtime(video["duration"]))
+        instancedata = video["account"]["host"]
+        html = f'<a href="{video_url}">{video["name"]}</a> {video["description"] or ""} [{duration}] @ {instancedata}'
+        text = f'{video_url} : {video["name"]} {video.get("description") or ""} [{duration}]'
+        return (html, text)
+
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         if len(args) == 3:
             if args[1] == "setinstance":
                 bot.must_be_owner(event)
-                self.instance_url = args[2]
+                self.client.instance_url = args[2]
                 bot.save_settings()
-                await bot.send_text(room, 'Instance url set to ' + self.instance_url, bot_ignore=True)
+                await bot.send_text(room, 'Instance url set to ' + self.instance_url, bot_ignore=True, event=event)
+                return
+            if args[1] == "live":
+                data = self.client.getlive()
+                if len(data['data']):
+                    for video in data['data']:
+                        html, text = self.format_video(video)
+                        await bot.send_html(room, event, html, text, bot_ignore=True)
+                else:
+                    await bot.send_text(room, 'Sorry, no livestreams found.', bot_ignore=True, event=event)
                 return
 
         if len(args) == 2:
             if args[1] == "showinstance":
-                await bot.send_text(room, 'Using instance at ' + self.instance_url, bot_ignore=True)
+                await bot.send_text(room, 'Using instance at ' + self.instance_url, bot_ignore=True, event)
                 return
 
         if len(args) > 1:
@@ -59,22 +86,22 @@ class MatrixModule(BotModule):
                     instancedata = video["account"]["host"]
                     html = f'<a href="{video_url}">{video["name"]}</a> {video["description"] or ""} [{duration}] @ {instancedata}'
                     text = f'{video_url} : {video["name"]} {video.get("description") or ""} [{duration}]'
-                    await bot.send_html(room, html, text, bot_ignore=True)
+                    await bot.send_html(room, html, text, event, bot_ignore=True)
             else:
-                    await bot.send_text(room, 'Sorry, no videos found found.', bot_ignore=True)
+                    await bot.send_text(room, 'Sorry, no videos found found.', event, bot_ignore=True)
 
         else:
-            await bot.send_text(room, 'Usage: !pt <query> or !ptall <query> to return all results')
+            await bot.send_text(room, 'Usage: !pt <query> or !ptall <query> to return all results', event)
 
     def get_settings(self):
         data = super().get_settings()
-        data['instance_url'] = self.instance_url
+        data['instance_url'] = self.client.instance_url
         return data
 
     def set_settings(self, data):
         super().set_settings(data)
         if data.get("instance_url"):
-            self.instance_url = data["instance_url"]
+            self.client.instance_url = data["instance_url"]
 
     def help(self):
         return ('PeerTube search')

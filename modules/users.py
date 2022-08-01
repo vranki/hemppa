@@ -21,7 +21,7 @@ class MatrixModule(BotModule):
                     allusers = self.get_users(bot, room.room_id)
                 total = len(allusers)
                 if total == 0:
-                    await bot.send_text(room, "I don't see any users. How did this happen?")
+                    await bot.send_text(room, "I don't see any users. How did this happen?", event)
                     return
 
                 matched = 0
@@ -31,7 +31,7 @@ class MatrixModule(BotModule):
                         if match:
                             stats[name] = stats[name] + 1
                             matched = matched + 1
-                
+
                 stats['Matrix'] = total - matched
                 stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
 
@@ -42,7 +42,7 @@ class MatrixModule(BotModule):
                 for name in stats:
                     if stats[name] > 0:
                         reply = reply + f' - {name}: {stats[name]} ({round(stats[name] / total * 100, 2)}%)\n'
-                await bot.send_text(room, reply)
+                await bot.send_text(room, reply, event)
                 return
         if len(args) == 2:
             if args[0] == 'list' or args[0] == 'listall':
@@ -53,9 +53,9 @@ class MatrixModule(BotModule):
                 allusers = self.get_users(bot, search_room)
                 users = fnmatch.filter(allusers, args[1])
                 if len(users):
-                    await bot.send_text(room, ' '.join(users))
+                    await bot.send_text(room, ' '.join(users), event)
                 else:
-                    await bot.send_text(room, 'No matching users found!')
+                    await bot.send_text(room, 'No matching users found!', event)
                 return
             if args[0] == 'kick':
                 bot.must_be_admin(room, event)
@@ -66,11 +66,11 @@ class MatrixModule(BotModule):
                         self.logger.debug(f"Kicking {user} from {room.room_id} as requested by {event.sender}")
                         await bot.client.room_kick(room.room_id, user)
                 else:
-                    await bot.send_text(room, 'No matching users found!')
+                    await bot.send_text(room, 'No matching users found!', event)
                 return
             if args[0] == 'classify':
                 if args[1] == 'list':
-                    await bot.send_text(room, f'Classes in use: {self.classes}.')
+                    await bot.send_text(room, f'Classes in use: {self.classes}.', event)
                     return
         elif len(args) == 4:
             if args[0] == 'classify':
@@ -79,7 +79,7 @@ class MatrixModule(BotModule):
                     name = args[2]
                     pattern = args[3]
                     self.classes[name] = pattern
-                    await bot.send_text(room, f'Added class {name} pattern {pattern}.')
+                    await bot.send_text(room, f'Added class {name} pattern {pattern}.', event)
                     bot.save_settings()
                     return
         elif len(args) == 3:
@@ -88,11 +88,11 @@ class MatrixModule(BotModule):
                     bot.must_be_owner(event)
                     name = args[2]
                     del self.classes[name]
-                    await bot.send_text(room, f'Deleted class {name}.')
+                    await bot.send_text(room, f'Deleted class {name}.', event)
                     bot.save_settings()
                     return
 
-        await bot.send_text(room, 'Unknown command - please see readme')
+        await bot.send_text(room, 'Unknown command - please see readme', event)
 
     def get_users(self, bot, roomid=None):
         allusers = []

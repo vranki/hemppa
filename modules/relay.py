@@ -34,7 +34,7 @@ class MatrixModule(BotModule):
             sendernick = target_room.user_name(event.sender)
             if not sendernick:
                 sendernick = event.sender
-            await self.bot.send_text(target_room, f'<{sendernick}> {event.body}', msgtype="m.text", bot_ignore=True)
+            await self.bot.send_text(target_room, f'<{sendernick}> {event.body}', msgtype="m.text", bot_ignore=True, event)
         else:
             self.logger.warning(f"Bot doesn't seem to be in bridged room {target_id}")
 
@@ -72,25 +72,25 @@ class MatrixModule(BotModule):
 
                     msg += f'{i}: {srcroom} <-> {tgtroom}'
                     i = i + 1
-                await bot.send_text(room, msg)
+                await bot.send_text(room, msg, event)
 
         if len(args) == 2:
             if args[0] == 'bridge':
                 roomid = args[1]
                 room_to_bridge = bot.get_room_by_id(roomid)
                 if room_to_bridge:
-                    await bot.send_text(room, f'Bridging {room_to_bridge.display_name} here.')
+                    await bot.send_text(room, f'Bridging {room_to_bridge.display_name} here.', event)
                     self.bridges[room.room_id] = roomid
                     bot.save_settings()
                 else:
-                    await bot.send_text(room, f'I am not on room with id {roomid} (note: use id, not alias)!')
+                    await bot.send_text(room, f'I am not on room with id {roomid} (note: use id, not alias)!', event)
             elif args[0] == 'unbridge':
                 idx = int(args[1]) - 1
                 i = 0
                 for src_id, tgt_id in self.bridges.items():
                     if i == idx:
                         del self.bridges[src_id]
-                        await bot.send_text(room, f'Unbridged {src_id} and {tgt_id}.')
+                        await bot.send_text(room, f'Unbridged {src_id} and {tgt_id}.', event)
                         bot.save_settings()
                         return
                     i = i + 1
