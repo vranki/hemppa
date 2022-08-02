@@ -330,7 +330,7 @@ class Bot:
             return False
 
         # Send message to the room
-        await self.send_text(msg_room, None, message)
+        await self.send_text(msg_room, message)
         return True
 
     async def find_or_create_private_msg(self, mxid, roomname):
