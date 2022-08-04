@@ -85,16 +85,16 @@ class MatrixModule(BotModule):
             try:
                 gifs = gfycat().search(query)
                 if len(gifs) < 1:
-                    await bot.send_text(room, gif_url)
+                    await bot.send_text(room, gif_url, event)
                     return
 
                 gif_url = gifs.get(0)["content_urls"]["largeGif"]["url"]
                 await bot.upload_and_send_image(room, gif_url)
             except Exception as exc:
                 gif_url = str(exc)
-                await bot.send_text(room, gif_url)
+                await bot.send_text(room, gif_url, event)
         else:
-            await bot.send_text(room, 'Usage: !gfycat <query>')
+            await bot.send_text(room, 'Usage: !gfycat <query>', event)
 
     def help(self):
         return ('Gfycat bot')

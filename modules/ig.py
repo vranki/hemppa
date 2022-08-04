@@ -26,7 +26,8 @@ class MatrixModule(PollingService):
                     if media.identifier not in self.known_ids:
                         await bot.send_html(bot.get_room_by_id(roomid),
                                             f'<a href="{media.link}">Instagram {account}:</a> {media.caption}',
-                                            f'{account}: {media.caption} {media.link}')
+                                            f'{account}: {media.caption} {media.link}',
+                                            event)
                 self.known_ids.add(media.identifier)
 
         except InstagramNotFoundException:

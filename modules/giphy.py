@@ -21,7 +21,7 @@ class MatrixModule(BotModule):
 
             self.api_key = args[2]
             bot.save_settings()
-            await bot.send_text(room, 'Api key set')
+            await bot.send_text(room, 'Api key set', event)
         elif len(args) > 1:
             gif_url = "No image found"
             query = event.body[len(args[0])+1:]
@@ -34,7 +34,7 @@ class MatrixModule(BotModule):
                 except Exception:
                     pass
                 if len(gifs) < 1:
-                    await bot.send_text(room, gif_url)
+                    await bot.send_text(room, gif_url, event)
                     return
 
                 gif_url = gifs[0].media_url
@@ -42,9 +42,9 @@ class MatrixModule(BotModule):
                 return
             except Exception as exc:
                 gif_url = str(exc)
-                await bot.send_text(room, gif_url)
+                await bot.send_text(room, gif_url, event)
         else:
-            await bot.send_text(room, 'Usage: !giphy <query>')
+            await bot.send_text(room, 'Usage: !giphy <query>', event)
 
     def get_settings(self):
         data = super().get_settings()

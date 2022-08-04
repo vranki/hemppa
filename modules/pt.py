@@ -36,12 +36,12 @@ class MatrixModule(BotModule):
                 bot.must_be_owner(event)
                 self.instance_url = args[2]
                 bot.save_settings()
-                await bot.send_text(room, 'Instance url set to ' + self.instance_url, bot_ignore=True)
+                await bot.send_text(room, 'Instance url set to ' + self.instance_url, bot_ignore=True, event)
                 return
 
         if len(args) == 2:
             if args[1] == "showinstance":
-                await bot.send_text(room, 'Using instance at ' + self.instance_url, bot_ignore=True)
+                await bot.send_text(room, 'Using instance at ' + self.instance_url, bot_ignore=True, event)
                 return
 
         if len(args) > 1:
@@ -59,12 +59,12 @@ class MatrixModule(BotModule):
                     instancedata = video["account"]["host"]
                     html = f'<a href="{video_url}">{video["name"]}</a> {video["description"] or ""} [{duration}] @ {instancedata}'
                     text = f'{video_url} : {video["name"]} {video.get("description") or ""} [{duration}]'
-                    await bot.send_html(room, html, text, bot_ignore=True)
+                    await bot.send_html(room, html, text, event, bot_ignore=True)
             else:
-                    await bot.send_text(room, 'Sorry, no videos found found.', bot_ignore=True)
+                    await bot.send_text(room, 'Sorry, no videos found found.', event, bot_ignore=True)
 
         else:
-            await bot.send_text(room, 'Usage: !pt <query> or !ptall <query> to return all results')
+            await bot.send_text(room, 'Usage: !pt <query> or !ptall <query> to return all results', event)
 
     def get_settings(self):
         data = super().get_settings()

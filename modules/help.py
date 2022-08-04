@@ -42,7 +42,7 @@ class MatrixModule(BotModule):
                 msg = '!help info string set'
                 bot.save_settings()
             else:
-                await bot.send_text(room, f'Not a !help setting: {args[0]}')
+                await bot.send_text(room, f'Not a !help setting: {args[0]}', event)
             return
 
         elif len(args) == 1:
@@ -68,9 +68,9 @@ class MatrixModule(BotModule):
                         pass
             msg = msg + '\n' + self.info
         if self.msg_users:
-            await bot.send_msg(event.sender, f'Chat with {bot.matrix_user}', msg)
+            await bot.send_msg(event.sender, f'Chat with {bot.matrix_user}', msg, event)
         else:
-            await bot.send_text(room, msg)
+            await bot.send_text(room, msg, event)
 
     def help(self):
         return 'Prints help on commands'

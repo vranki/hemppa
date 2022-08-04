@@ -21,18 +21,18 @@ class MatrixModule(BotModule):
                 if not self.daily_commands.get(room.room_id):
                     self.daily_commands[room.room_id] = []
                 self.daily_commands[room.room_id].append(
-                    {'time': dailytime, 'command': dailycmd})
+                    {'time': dailytime, 'command': dailycmd, 'pre-event': event})
                 bot.save_settings()
-                await bot.send_text(room, 'Daily command added.')
+                await bot.send_text(room, 'Daily command added.', event)
         elif len(args) == 1:
             if args[0] == 'list':
-                await bot.send_text(room, 'Daily commands on this room: ' + str(self.daily_commands.get(room.room_id)))
+                await bot.send_text(room, 'Daily commands on this room: ' + str(self.daily_commands.get(room.room_id)), event)
             elif args[0] == 'clear':
                 self.daily_commands.pop(room.room_id, None)
                 bot.save_settings()
-                await bot.send_text(room, 'Cleared commands on this room.')
+                await bot.send_text(room, 'Cleared commands on this room.', event)
             elif args[0] == 'time':
-                await bot.send_text(room, '{datetime} {timezone}'.format(datetime=datetime.now(), timezone=os.environ.get('TZ')))
+                await bot.send_text(room, '{datetime} {timezone}'.format(datetime=datetime.now(), timezone=os.environ.get('TZ')), event)
 
     def help(self):
         return ('Runs scheduled commands')
@@ -57,7 +57,7 @@ class MatrixModule(BotModule):
                     commands = self.daily_commands[room_id]
                     for command in commands:
                         if int(command['time']) == self.last_hour:
-                            await bot.send_text(bot.get_room_by_id(room_id), command['command'], 'm.text')
+                            await bot.send_text(bot.get_room_by_id(room_id), command['command'], 'm.text', command.get('event'))
                 else:
                     delete_rooms.append(room_id)
 

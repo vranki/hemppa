@@ -81,11 +81,11 @@ class MatrixModule(BotModule):
             if args[0] == 'rmrepo':
                 bot.must_be_admin(room, event)
                 del self.repo_rooms[room.room_id]
-                await bot.send_text(room, 'Github repo removed from this room.')
+                await bot.send_text(room, 'Github repo removed from this room.', event)
                 bot.save_settings()
                 return
             if args[0] == 'repo':
-                await bot.send_text(room, f'Github repo for this room is {self.repo_rooms.get(room.room_id, "not set")}.')
+                await bot.send_text(room, f'Github repo for this room is {self.repo_rooms.get(room.room_id, "not set")}.', event)
                 return
 
             domain = args[0]
@@ -93,11 +93,11 @@ class MatrixModule(BotModule):
             if reponame:
                 issues, ok = GithubProject.get_domain(reponame, domain)
                 if issues or ok:
-                    await self.send_domain_status(bot, room, reponame, issues, ok)
+                    await self.send_domain_status(bot, room, event, reponame, issues, ok)
                 else:
-                    await bot.send_text(room, f'No labels with domain {domain} found.')
+                    await bot.send_text(room, f'No labels with domain {domain} found.', event)
             else:
-                await bot.send_text(room, f'No github repo set for this room. Use setrepo to set it.')
+                await bot.send_text(room, f'No github repo set for this room. Use setrepo to set it.', event)
             return
 
         if len(args) == 2:
@@ -108,16 +108,16 @@ class MatrixModule(BotModule):
                 self.logger.info(f'Adding repo {reponame} to room id {room.room_id}')
 
                 self.repo_rooms[room.room_id] = reponame
-                await bot.send_text(room, f'Github repo {reponame} set to this room.')
+                await bot.send_text(room, f'Github repo {reponame} set to this room.', event)
                 bot.save_settings()
                 return
 
-        await bot.send_text(room, 'Unknown command')
+        await bot.send_text(room, 'Unknown command', event)
 
-    async def send_domain_status(self, bot, room, reponame, issues, ok):
+    async def send_domain_status(self, bot, room, event, reponame, issues, ok):
         text_out = GithubProject.domain_to_string(reponame, issues, ok)
         html_out = GithubProject.domain_to_html(reponame, issues, ok)
-        await bot.send_html(room, html_out, text_out)
+        await bot.send_html(room, html_out, text_out, event)
 
 
     def help(self):
