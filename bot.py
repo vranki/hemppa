@@ -24,19 +24,7 @@ from PIL import Image
 import requests
 from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse, SyncError
 
-# Couple of custom exceptions
-
-
-class UploadFailed(Exception):
-    pass
-
-class CommandRequiresAdmin(Exception):
-    pass
-
-
-class CommandRequiresOwner(Exception):
-    pass
-
+from modules.common.exceptions import CommandRequiresAdmin, CommandRequiresOwner, UploadFailed
 
 class Bot:
 
@@ -115,7 +103,7 @@ class Bot:
             except ValueError: # broken cache?
                 self.logger.warning(f"Image cache for {url} could not be unpacked, attempting to re-upload...")
         try:
-            matrix_uri, mimetype, w, h, size = await self.upload_image(url, event=event, blob=blob, no_cache=no_cache)
+            matrix_uri, mimetype, w, h, size = await self.upload_image(url, blob=blob, no_cache=no_cache)
         except (UploadFailed, ValueError):
             return await self.send_text(room, f"Sorry. Something went wrong fetching {url} and uploading the image to matrix server :(", event=event)
 
