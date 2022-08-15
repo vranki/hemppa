@@ -112,16 +112,6 @@ msg_template_plain = """*{title} -({year})- Rating: {audience_rating}*
 """
 
 
-def _get_loop():
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    except RuntimeError:
-        loop = asyncio.get_event_loop()
-    finally:
-        return loop
-
-
 class WebServer:
     def __init__(self, host, port):
         self.host = host
@@ -129,11 +119,15 @@ class WebServer:
         self.app = web.Application()
         self.app.router.add_post('/notify', self.notify)
 
-    def run(self):
+    async def run(self):
         if not self.host or not self.port:
             return
 
-        aiohttp.web.run_app(self.app, host=self.host, port=self.port, handle_signals=True, loop=asyncio.get_running_loop())
+        loop = asyncio.get_event_loop()
+        runner = web.AppRunner(self.app)
+        loop.run_until_complete(runner.setup())
+        site = web.TCPSite(runner, host=self.host, port=self.port)
+        loop.run_until_complete(site.start())
 
     async def notify(self, request: web.Request) -> web.Response:
         try:
@@ -171,7 +165,8 @@ class MatrixModule(BotModule):
         super().matrix_start(bot)
         global global_bot
         global_bot = bot
-        self.httpd.run()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.httpd.run())
 
     def matrix_stop(self, bot):
         super().matrix_stop(bot)

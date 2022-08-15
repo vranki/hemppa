@@ -556,13 +556,15 @@ Commands:
 
 Tautulli instance and API Key:
 
-The module work with an existing installed instance of Tautulli accessible on the machine at the path defined by env variable `TAUTULLI_PATH`
+The module work with an instance of Tautulli accessible on URL defined by env variable `TAUTULLI_URL`
+In order to load art pictures you need to define an instance of Plex Media Server with its token as well by the two env variables `PLEX_MEDIA_SERVER_URL` and `PLEX_MEDIA_SERVER_TOKEN`
 You have to provide an api key by using the relevant command.
 
 Environ variables seen by command:
 
-* TAUTULLI_PATH: Path accessible from the machine to the installed instance of Tautulli
-* TAUTULLI_URL: Url accessible from the machine to the installed instance of Tautulli
+* PLEX_MEDIA_SERVER_URL: Url accessible from the machine to an instance of Plex Media Server
+* PLEX_MEDIA_SERVER_TOKEN: Plex Token for the instance of Plex Media Server
+* TAUTULLI_URL: Url accessible from the machine to an instance of Tautulli
 * TAUTULLI_NOTIFIER_ADDR: Listening address for the Tautulli webhook handler target
 * TAUTULLI_NOTIFIER_PORT: Listening port for the Tautulli webhook handler target
 * BOT_OWNERS: Owner of the rooms in the list for the notification webhook
