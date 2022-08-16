@@ -7,7 +7,7 @@ from nio import AsyncClient, UploadError
 from nio import UploadResponse
 
 from modules.common.module import BotModule
-from bot import UploadFailed
+from modules.common.exceptions import UploadFailed
 
 
 class Apod:

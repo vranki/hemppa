@@ -5,7 +5,6 @@ import sys
 import traceback
 import cups
 import httpx
-import asyncio
 import aiofiles
 import os
 
