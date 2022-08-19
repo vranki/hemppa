@@ -20,16 +20,19 @@ nest_asyncio.apply()
 rooms = dict()
 global_bot = None
 
+send_entry_lock = asyncio.Lock()
+
 
 async def send_entry(blob, content_type, fmt_params, rooms):
-    for room_id in rooms:
-        room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"),
-                          encrypted=rooms[room_id])
-        if blob and content_type:
-            await global_bot.upload_and_send_image(room, blob, text="", blob=True, blob_content_type=content_type)
+    async with send_entry_lock:
+        for room_id in rooms:
+            room = MatrixRoom(room_id=room_id, own_user_id=os.getenv("BOT_OWNERS"),
+                              encrypted=rooms[room_id])
+            if blob and content_type:
+                await global_bot.upload_and_send_image(room, blob, text="", blob=True, blob_content_type=content_type)
 
-        await global_bot.send_html(room, msg_template_html.format(**fmt_params),
-                                   msg_template_plain.format(**fmt_params))
+            await global_bot.send_html(room, msg_template_html.format(**fmt_params),
+                                       msg_template_plain.format(**fmt_params))
 
 
 def get_image(img=None, width=1000, height=1500):
