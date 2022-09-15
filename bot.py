@@ -22,7 +22,9 @@ from io import BytesIO
 from PIL import Image
 
 import requests
-from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse, SyncError
+from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom, LoginError, RoomMemberEvent, \
+    RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse, SyncError, \
+    RoomPutStateError
 
 from modules.common.exceptions import CommandRequiresAdmin, CommandRequiresOwner, UploadFailed
 
@@ -258,7 +260,7 @@ class Bot:
             "msgtype": "m.image",
             "info": {
                 "thumbnail_info": None,
-                "thumbnail_url": None,
+                "thumbnail_url": url,
             },
         }
 
@@ -270,38 +272,29 @@ class Bot:
             msg["info"]["h"] = height
         if size:
             msg["info"]["size"] = size
+
+        self.logger.debug(f"send image room message: {msg}")
 
         return await self.room_send(room.room_id, event, 'm.room.message', msg)
 
-    async def set_room_avatar(self, room, uri, mimetype=None, width=None, height=None, size=None):
+    async def set_room_avatar(self, room, uri):
         """
 
-        :param room: A MatrixRoom the image should be send to
+        :param room: A MatrixRoom the image should be send as room avatar event
         :param uri: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri
-        :param mimetype: The mimetype of the image
-        :param width: Width in pixel of the image
-        :param height: Height in pixel of the image
-        :param size: Size in bytes of the image
         :return:
         """
         msg = {
-            "url": uri,
-            "info": {
-                "thumbnail_info": None,
-                "thumbnail_url": None,
-            },
+            "url": uri
         }
 
-        if mimetype:
-            msg["info"]["mimetype"] = mimetype
-        if width:
-            msg["info"]["w"] = width
-        if height:
-            msg["info"]["h"] = height
-        if size:
-            msg["info"]["size"] = size
+        result = await self.client.room_put_state(room.room_id, 'm.room.avatar', msg)
 
-        return await self.client.room_put_state(room.room_id, 'm.room.avatar', msg)
+        if isinstance(result, RoomPutStateError):
+            self.logger.warning(f"can't set room avatar. {result.message}")
+            await self.send_text(room, f"sorry. can't set room avatar. I need at least be a moderator")
+
+        return result
 
     async def send_msg(self, mxid, roomname, message):
         """

@@ -107,10 +107,10 @@ class MatrixModule(BotModule):
                 matrix_uri, mimetype, w, h, size = await bot.upload_image(apod.hdurl)
             except (UploadFailed, TypeError, ValueError):
                 await bot.send_text(room, f"Something went wrong uploading {apod.hdurl}.")
-        await bot.send_image(room, matrix_uri, apod.hdurl, mimetype, w, h, size)
+        await bot.send_image(room, matrix_uri, apod.hdurl, None, mimetype, w, h, size)
         await bot.send_text(room, f"{apod.explanation}")
         if matrix_uri and set_room_avatar:
-            await bot.set_room_avatar(room, matrix_uri, mimetype, w, h, size)
+            await bot.set_room_avatar(room, matrix_uri, None, mimetype, w, h, size)
 
     async def send_unknown_mediatype(self, room, bot, apod):
         self.logger.debug(f"unknown media_type: {apod.media_type}. sending raw information")
