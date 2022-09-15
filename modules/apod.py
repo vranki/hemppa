@@ -53,21 +53,21 @@ class MatrixModule(BotModule):
             await self.send_apod(bot, room, self.apod_api_url)
         elif len(args) == 2:
             if args[1] == "stats":
-                await self.send_stats(bot, room)
+                await self.send_stats(bot, room, event)
             elif args[1] == "clear":
                 bot.must_be_owner(event)
-                await self.clear_uri_cache(bot, room)
+                await self.clear_uri_cache(bot, room, event)
             elif args[1] == "help":
-                await self.command_help(bot, room)
+                await self.command_help(bot, room, event)
             elif args[1] == "avatar":
-                await self.send_apod(bot, room, self.apod_api_url, set_room_avatar=bot.is_admin(room, event))
+                await self.send_apod(bot, room, event, self.apod_api_url, set_room_avatar=bot.is_admin(room, event))
             else:
                 date = args[1]
                 if re.match(self.APOD_DATE_PATTERN, date) is not None:
                     uri = self.apod_by_date_api_url + date
-                    await self.send_apod(bot, room, uri)
+                    await self.send_apod(bot, room, event, uri)
                 else:
-                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD")
+                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD", event)
         elif len(args) == 3:
             if args[1] == "apikey":
                 await self.update_api_key(bot, room, event, args[2])
@@ -75,21 +75,21 @@ class MatrixModule(BotModule):
                 date = args[2]
                 if re.match(self.APOD_DATE_PATTERN, date) is not None:
                     uri = self.apod_by_date_api_url + date
-                    await self.send_apod(bot, room, uri, set_room_avatar=bot.is_admin(room, event))
+                    await self.send_apod(bot, room, event, uri, set_room_avatar=bot.is_admin(room, event))
                 else:
-                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD")
+                    await bot.send_text(room, "invalid date. accepted: YYYY-MM-DD", event)
 
-    async def send_apod(self, bot, room, uri, set_room_avatar=False):
+    async def send_apod(self, bot, room, event, uri, set_room_avatar=False):
         self.logger.debug(f"send request using uri {uri}")
         response = requests.get(uri)
 
         if response.status_code == 400:
             self.logger.error("unable to request apod api. status: %d text: %s", response.status_code, response.text)
-            return await bot.send_text(room, response.json().get("msg"))
+            return await bot.send_text(room, response.json().get("msg"), event)
 
         if response.status_code != 200:
             self.logger.error("unable to request apod api. response: [status: %d text: %s]", response.status_code, response.text)
-            return await bot.send_text(room, "sorry. something went wrong accessing the api :(")
+            return await bot.send_text(room, "sorry. something went wrong accessing the api :(", event)
 
         apod = Apod.create_from_json(response.json())
         self.logger.debug(apod)
@@ -97,7 +97,7 @@ class MatrixModule(BotModule):
         if apod.media_type != "image":
             return await self.send_unknown_mediatype(room, bot, apod)
 
-        await bot.send_html(room, f"<b>{html.escape(apod.title)} ({html.escape(apod.date)})</b>", f"{apod.title} ({apod.date})")
+        await bot.send_html(room, f"<b>{html.escape(apod.title)} ({html.escape(apod.date)})</b>", f"{apod.title} ({apod.date})", event)
         try:
             matrix_uri = None
             matrix_uri, mimetype, w, h, size = bot.get_uri_cache(apod.hdurl)
@@ -106,9 +106,9 @@ class MatrixModule(BotModule):
             try:
                 matrix_uri, mimetype, w, h, size = await bot.upload_image(apod.hdurl)
             except (UploadFailed, TypeError, ValueError):
-                await bot.send_text(room, f"Something went wrong uploading {apod.hdurl}.")
-        await bot.send_image(room, matrix_uri, apod.hdurl, mimetype, w, h, size)
-        await bot.send_text(room, f"{apod.explanation}")
+                await bot.send_text(room, f"Something went wrong uploading {apod.hdurl}.", event)
+        await bot.send_image(room, matrix_uri, apod.hdurl, event, mimetype, w, h, size)
+        await bot.send_text(room, f"{apod.explanation}", event)
         if matrix_uri and set_room_avatar:
             await bot.set_room_avatar(room, matrix_uri, mimetype, w, h, size)
 
@@ -138,16 +138,16 @@ class MatrixModule(BotModule):
     def help(self):
         return 'Sends latest Astronomy Picture of the Day to the room. (https://apod.nasa.gov/apod/astropix.html)'
 
-    async def send_stats(self, bot, room):
+    async def send_stats(self, bot, room, event):
         msg = f"collected {len(self.matrix_uri_cache)} upload matrix uri's"
-        await bot.send_text(room, msg)
+        await bot.send_text(room, msg, event)
 
-    async def clear_uri_cache(self, bot, room):
+    async def clear_uri_cache(self, bot, room, event):
         self.matrix_uri_cache.clear()
         bot.save_settings()
-        await bot.send_text(room, "cleared uri cache")
+        await bot.send_text(room, "cleared uri cache", event)
 
-    async def command_help(self, bot, room):
+    async def command_help(self, bot, room, event):
         msg = """commands:
         - YYYY-MM-DD - date of the APOD image to retrieve (ex. 2020-03-15)
         - stats - show information about uri cache
@@ -156,12 +156,12 @@ class MatrixModule(BotModule):
         - help - show command help
         - avatar, avatar YYYY-MM-DD - Additionally set the room's avatar to the fetched image (Must be done as admin)
         """
-        await bot.send_text(room, msg)
+        await bot.send_text(room, msg, event)
 
     async def update_api_key(self, bot, room, event, apikey):
         bot.must_be_owner(event)
         self.api_key = apikey
         self.update_api_urls()
         bot.save_settings()
-        await bot.send_text(room, 'Api key set')
+        await bot.send_text(room, 'Api key set', event)
 

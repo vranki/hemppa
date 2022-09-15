@@ -21,7 +21,7 @@ class MatrixModule(PollingService):
                 if 'messages' in response.json():
                     messages = response.json()['messages']
                     for message in messages:
-                        success = await bot.send_msg(message['to'], message['title'], message['message'])
+                        success = await bot.send_msg(message['to'], message['title'], message['message'], event)
         except Exception:
             self.logger.error('Polling MXMA failed:')
             traceback.print_exc(file=sys.stderr)

@@ -13,11 +13,11 @@ class MatrixModule(BotModule):
             lines = response.readlines()
             if len(lines) > 6:
                 taf = lines[6].decode("utf-8").split(',')[0]
-                await bot.send_text(room, taf.strip())
+                await bot.send_text(room, taf.strip(), event)
             else:
-                await bot.send_text(room, 'Cannot find taf for ' + icao)
+                await bot.send_text(room, 'Cannot find taf for ' + icao, event)
         else:
-            await bot.send_text(room, 'Usage: !taf <icao code>')
+            await bot.send_text(room, 'Usage: !taf <icao code>', event)
 
     def help(self):
         return ('Taf data access (usage: !taf <icao code>)')

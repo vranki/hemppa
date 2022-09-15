@@ -34,7 +34,7 @@ class MatrixModule(BotModule):
 
                 plainMessage = f'{sender} started a {calltype}: {jitsiUrl}'
                 htmlMessage = f'{sender} started a <a href="{jitsiUrl}">{calltype}</a>'
-                await self.bot.send_html(room, htmlMessage, plainMessage)
+                await self.bot.send_html(room, htmlMessage, plainMessage, event)
         except Exception as e:
             self.logger.error(f"Failed parsing Jitsi event. Error: {e}")
 

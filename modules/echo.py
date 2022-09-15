@@ -8,7 +8,7 @@ class MatrixModule(BotModule):
 
         # Echo what they said back
         self.logger.debug(f"room: {room.name} sender: {event.sender} wants an echo")
-        await bot.send_text(room, ' '.join(args))
+        await bot.send_text(room, ' '.join(args), event)
 
     def help(self):
         return 'Echoes back what user has said'

@@ -33,7 +33,7 @@ class MatrixModule(BotModule):
                 bot.module_aliases.update({args[0]: args[1]})
                 self.aliases.update({args[0]: args[1]})
                 bot.save_settings()
-                await bot.send_text(room, f'Aliased !{args[0]} to !{args[1]}')
+                await bot.send_text(room, f'Aliased !{args[0]} to !{args[1]}', event)
 
         elif len(args) == 2:
             if args.pop(0) in ['rm', 'remove']:
@@ -43,7 +43,7 @@ class MatrixModule(BotModule):
                 old = bot.module_aliases.pop(args[0])
                 self.aliases.pop(args[0])
                 bot.save_settings()
-                await bot.send_text(room, f'Removed alias !{args[0]}')
+                await bot.send_text(room, f'Removed alias !{args[0]}', event)
 
         elif len(args) == 1:
             if args.pop(0) in ['ls', 'list']:
@@ -55,10 +55,10 @@ class MatrixModule(BotModule):
                 for k, v in inverted.items():
                     v = ', '.join(v)
                     msg.append(f'- {k} = {v}')
-                await bot.send_text(room, '\n'.join(msg))
+                await bot.send_text(room, '\n'.join(msg), event)
 
             elif args.pop(0) == 'help':
-                await bot.send_text(room, self.long_help(bot=bot, event=event))
+                await bot.send_text(room, self.long_help(bot=bot, event=event), event)
 
     def help(self):
         return 'Manage command aliases'

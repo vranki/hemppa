@@ -181,11 +181,11 @@ class MatrixModule(BotModule):
 
             self.api_key = args[2]
             bot.save_settings()
-            await bot.send_text(room, 'Api key set')
+            await bot.send_text(room, 'Api key set', event)
         elif len(args) == 2:
             media_type = args[1]
             if media_type != "movie" and media_type != "show" and media_type != "artist":
-                await bot.send_text(room, "media type '%s' provided not valid" % media_type)
+                await bot.send_text(room, "media type '%s' provided not valid" % media_type, event)
                 return
 
             try:
@@ -194,7 +194,7 @@ class MatrixModule(BotModule):
                 connection = urllib.request.urlopen(req).read()
                 entries = json.loads(connection)
                 if "response" not in entries and "data" not in entries["response"] and "recently_added" not in entries["response"]["data"]:
-                    await bot.send_text(room, "no recently added for %s" % media_type)
+                    await bot.send_text(room, "no recently added for %s" % media_type, event)
                     return
 
                 for entry in entries["response"]["data"]["recently_added"]:
@@ -205,25 +205,25 @@ class MatrixModule(BotModule):
                 raise ValueError(err.read())
             except Exception as exc:
                 message = str(exc)
-                await bot.send_text(room, message)
+                await bot.send_text(room, message, event)
         elif len(args) == 4:
             if args[1] == "add" or args[1] == "remove":
                 room_id = args[2]
                 encrypted = args[3]
                 if args[1] == "add":
                     self.rooms[room_id] = encrypted == "encrypted"
-                    await bot.send_text(room, f"Added {room_id} to rooms notification list")
+                    await bot.send_text(room, f"Added {room_id} to rooms notification list", event)
                 else:
                     del self.rooms[room_id]
-                    await bot.send_text(room, f"Removed {room_id} to rooms notification list")
+                    await bot.send_text(room, f"Removed {room_id} to rooms notification list", event)
 
                 bot.save_settings()
                 global rooms
                 rooms = self.rooms
             else:
-                await bot.send_text(room, 'Usage: !tautulli <movie|show|artist>|<add|remove> %room_id% %encrypted%')
+                await bot.send_text(room, 'Usage: !tautulli <movie|show|artist>|<add|remove> %room_id% %encrypted%', event)
         else:
-            await bot.send_text(room, 'Usage: !tautulli <movie|show|artist>|<add|remove> %room_id% %encrypted%')
+            await bot.send_text(room, 'Usage: !tautulli <movie|show|artist>|<add|remove> %room_id% %encrypted%', event)
 
     def get_settings(self):
         data = super().get_settings()

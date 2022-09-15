@@ -33,18 +33,18 @@ class MatrixModule(BotModule):
             self.logger.info(f"room: {room.name} sender: {event.sender} is setting the server settings")
             if len(args) < 3:
                 self.host = None
-                return await bot.send_text(room, f'Usage: !{args[0]} {args[1]} [host] ([port])')
+                return await bot.send_text(room, f'Usage: !{args[0]} {args[1]} [host] ([port])', event)
             self.host = args[2]
             if len(args) > 3:
                 self.port = int(args[3])
             if not self.port:
                 self.port = 64738
             bot.save_settings()
-            return await bot.send_text(room, f'Set server settings: host: {self.host} port: {self.port}')
+            return await bot.send_text(room, f'Set server settings: host: {self.host} port: {self.port}', event)
 
         self.logger.info(f"room: {room.name} sender: {event.sender} wants mumble info")
         if not self.host:
-            return await bot.send_text(room, f'No mumble host info set!')
+            return await bot.send_text(room, f'No mumble host info set!', event)
 
         try:
             ret = self.mumble_ping()
@@ -56,10 +56,10 @@ class MatrixModule(BotModule):
             # [7] = bandwidth
             # [5] = users
             # [6] = max users
-            await bot.send_text(room, f'{self.host}:{self.port} (v{version}): {ret[5]} / {ret[6]} (ping: {ping}ms)')
+            await bot.send_text(room, f'{self.host}:{self.port} (v{version}): {ret[5]} / {ret[6]} (ping: {ping}ms)', event)
         except socket.gaierror as e:
             self.logger.error(f"room: {room.name}: mumble_ping failed: {e}")
-            await bot.send_text(room, f'Could not get get mumble server info: {e}')
+            await bot.send_text(room, f'Could not get get mumble server info: {e}', event)
 
     def mumble_ping(self):
         addrinfo = socket.getaddrinfo(self.host, self.port, 0, 0, socket.SOL_UDP)
