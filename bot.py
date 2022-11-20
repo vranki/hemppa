@@ -35,6 +35,7 @@ class Bot:
         self.version = '1.5'
         self.client = None
         self.join_on_invite = False
+        self.homeserver_only = True
         self.modules = dict()
         self.module_aliases = dict()
         self.leave_empty_rooms = True
@@ -463,6 +464,10 @@ class Bot:
         room: MatrixRoom
         event: InviteEvent
 
+        if room.room_id.split(':')[1] != self.matrix_user.split(':')[1]:
+            self.logger.error(f'Cannot join room {room.display_name}, as it is not on the homeserver')
+            return
+
         if self.join_on_invite or self.is_owner(event):
             for attempt in range(3):
                 self.jointime = datetime.datetime.now()
@@ -558,6 +563,7 @@ class Bot:
         bot_owners = os.getenv('BOT_OWNERS')
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         join_on_invite = os.getenv('JOIN_ON_INVITE')
+        homeserver_only = os.getenv('HOMESERVER_ONLY')
         owners_only = os.getenv('OWNERS_ONLY') is not None
         leave_empty_rooms = os.getenv('LEAVE_EMPTY_ROOMS')
 
@@ -565,6 +571,7 @@ class Bot:
             self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
             self.join_on_invite = (join_on_invite or '').lower() == 'true'
+            self.homeserver_only = (homeserver_only or '').lower() == 'true'
             self.leave_empty_rooms = (leave_empty_rooms or 'true').lower() == 'true'
             self.owners = bot_owners.split(',')
             self.owners_only = owners_only
@@ -616,6 +623,8 @@ class Bot:
 
                 if self.join_on_invite:
                     self.logger.info('Note: Bot will join rooms if invited')
+                if self.homeserver_only:
+                    self.logger.info('Note: Bot will only join rooms located on its homeserver')
                 self.logger.info('Bot running as %s, owners %s', self.client.user, self.owners)
                 self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
                 await self.bot_task
