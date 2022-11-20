@@ -464,7 +464,7 @@ class Bot:
         room: MatrixRoom
         event: InviteEvent
 
-        if room.room_id.split(':')[1] != self.matrix_user.split(':')[1]:
+        if self.homeserver_only and room.room_id.split(':')[1] != self.matrix_user.split(':')[1]:
             self.logger.error(f'Cannot join room {room.display_name}, as it is not on the homeserver')
             return
 
