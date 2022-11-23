@@ -371,6 +371,17 @@ The module uses a demo API Key which can be replaced by your own api key by sett
 
 You can create one at https://api.nasa.gov/#signUp
 
+
+### Inspirobot
+
+Query a randomly generated inspirational poster from https://inspirobot.me/ upload and send to the room.
+
+Command:
+
+* !inspire - Generate inspiration and post to the room
+* !inspire help - Show this help
+
+
 ### Wolfram Alpha
 
 Make queries to Wolfram Alpha
