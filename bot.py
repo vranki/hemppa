@@ -35,7 +35,7 @@ class Bot:
         self.version = '1.5'
         self.client = None
         self.join_on_invite = False
-        self.homeserver_only = True
+        self.invite_whitelist = []
         self.modules = dict()
         self.module_aliases = dict()
         self.leave_empty_rooms = True
@@ -459,13 +459,23 @@ class Bot:
     def starts_with_command(body):
         """Checks if body starts with ! and has one or more letters after it"""
         return re.match(r"^!\w.*", body) is not None
+    
+    def on_invite_whitelist(self, sender):
+        for entry in self.invite_whitelist:
+            if entry == sender:
+                return True 
+            controll_value = entry.split(':')
+            if controll_value[0] == '@*' and controll_value[1] == sender.split(':')[1]:
+                return True
+        return False
+
 
     async def invite_cb(self, room, event):
         room: MatrixRoom
         event: InviteEvent
 
-        if self.homeserver_only and room.room_id.split(':')[1] != self.matrix_user.split(':')[1]:
-            self.logger.error(f'Cannot join room {room.display_name}, as it is not on the homeserver')
+        if len(self.invite_whitelist) > 0 and self.on_invite_whitelist(event.sender):
+            self.logger.error(f'Cannot join room {room.display_name}, as {event.sender} is not whitelisted for invites!')
             return
 
         if self.join_on_invite or self.is_owner(event):
@@ -563,7 +573,7 @@ class Bot:
         bot_owners = os.getenv('BOT_OWNERS')
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
         join_on_invite = os.getenv('JOIN_ON_INVITE')
-        homeserver_only = os.getenv('HOMESERVER_ONLY')
+        invite_whitelist = os.getenv('INVITE_WHITELIST')
         owners_only = os.getenv('OWNERS_ONLY') is not None
         leave_empty_rooms = os.getenv('LEAVE_EMPTY_ROOMS')
 
@@ -571,7 +581,7 @@ class Bot:
             self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
             self.join_on_invite = (join_on_invite or '').lower() == 'true'
-            self.homeserver_only = (homeserver_only or '').lower() == 'true'
+            self.invite_whitelist = invite_whitelist.split(',') if invite_whitelist is not None else []
             self.leave_empty_rooms = (leave_empty_rooms or 'true').lower() == 'true'
             self.owners = bot_owners.split(',')
             self.owners_only = owners_only
@@ -623,8 +633,8 @@ class Bot:
 
                 if self.join_on_invite:
                     self.logger.info('Note: Bot will join rooms if invited')
-                if self.homeserver_only:
-                    self.logger.info('Note: Bot will only join rooms located on its homeserver')
+                if len(self.invite_whitelist) > 0:
+                    self.logger.info(f'Note: Bot will only join rooms when the inviting user is contained in {self.invite_whitelist}')
                 self.logger.info('Bot running as %s, owners %s', self.client.user, self.owners)
                 self.bot_task = asyncio.create_task(self.client.sync_forever(timeout=30000))
                 await self.bot_task
