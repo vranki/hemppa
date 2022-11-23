@@ -37,7 +37,6 @@ class MatrixModule(BotModule):
         pic_url = response.text
         self.logger.debug("Sending image with src='%s'", pic_url)
         await bot.upload_and_send_image(room, pic_url)
-        # await bot.send_image(room, matrix_uri, apod.hdurl, None, mimetype, w, h, size)
 
     def help(self):
         return """I'm InspiroBot.
