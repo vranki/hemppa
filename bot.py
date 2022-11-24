@@ -474,7 +474,7 @@ class Bot:
         room: MatrixRoom
         event: InviteEvent
 
-        if len(self.invite_whitelist) > 0 and self.on_invite_whitelist(event.sender):
+        if len(self.invite_whitelist) > 0 and not self.on_invite_whitelist(event.sender):
             self.logger.error(f'Cannot join room {room.display_name}, as {event.sender} is not whitelisted for invites!')
             return
 
