@@ -1,6 +1,3 @@
-from email import message
-import itertools
-import shlex
 from modules.common.module import BotModule
 
 
