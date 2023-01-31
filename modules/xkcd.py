@@ -1,10 +1,7 @@
-import os
 import re
 import html
 
 import requests
-from nio import AsyncClient, UploadError
-from nio import UploadResponse
 
 from modules.common.module import BotModule
 from modules.common.exceptions import UploadFailed
@@ -19,7 +16,6 @@ class Xkcd:
         self.img = img
         self.alt = alt
         self.num = num
-
 
     @staticmethod
     def create_from_json(json):
@@ -38,7 +34,6 @@ class MatrixModule(BotModule):
         super().__init__(name)
         self.uri_get_latest = 'https://xkcd.com/info.0.json'
 
-
     async def matrix_message(self, bot, room, event):
         self.logger.debug(f"room: {room.name} sender: {event.sender} queried the xkcd module with body: {event.body}")
 
@@ -51,7 +46,7 @@ class MatrixModule(BotModule):
                 await self.command_help(bot, room)
             else:
                 xkcd_id = args[1]
-                if re.match("\d+", xkcd_id) is not None:
+                if re.match("\\d+", xkcd_id) is not None:
                     await self.send_xkcd(bot, room, self.uri_get_by_id(xkcd_id))
                 else:
                     await bot.send_text(room, "Invalid comic id. ids must be positive integers.")
@@ -76,7 +71,7 @@ class MatrixModule(BotModule):
             try:
                 matrix_uri, mimetype, w, h, size = await bot.upload_image(img_url)
             except (UploadFailed, TypeError, ValueError):
-                await bot.send_text(room, f"Something went wrong uploading {apimg_url}.")
+                await bot.send_text(room, f"Something went wrong uploading {img_url}.")
 
         await bot.send_html(room, f"<b>{html.escape(xkcd.title)} ({html.escape(str(xkcd.num))})</b>", f"{xkcd.title} ({str(xkcd.num)})")
         await bot.send_image(room, matrix_uri, img_url, None, mimetype, w, h, size)
@@ -91,8 +86,7 @@ class MatrixModule(BotModule):
     async def command_help(self, bot, room):
         msg = """commands:
         - no arguments: fetch latest xkcd comic
-        - (\d+) fetch and display the xkcd comic with the given id
+        - (\\d+) fetch and display the xkcd comic with the given id
         - help - show command help
         """
         await bot.send_text(room, msg)
-
