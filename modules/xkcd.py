@@ -51,7 +51,7 @@ class MatrixModule(BotModule):
                 await self.command_help(bot, room)
             else:
                 xkcd_id = args[1]
-                if re.match("\d+", date) is not None:
+                if re.match("\d+", xkcd_id) is not None:
                     await self.send_xkcd(bot, room, self.uri_get_by_id(xkcd_id))
                 else:
                     await bot.send_text(room, "Invalid comic id. ids must be positive integers.")
@@ -78,12 +78,12 @@ class MatrixModule(BotModule):
             except (UploadFailed, TypeError, ValueError):
                 await bot.send_text(room, f"Something went wrong uploading {apimg_url}.")
 
-        await bot.send_html(room, f"<b>{html.escape(xkcd.title)} ({html.escape(xkcd.num)})</b>", f"{xkcd.title} ({xkcd.num})")
+        await bot.send_html(room, f"<b>{html.escape(xkcd.title)} ({html.escape(str(xkcd.num))})</b>", f"{xkcd.title} ({str(xkcd.num)})")
         await bot.send_image(room, matrix_uri, img_url, None, mimetype, w, h, size)
         await bot.send_text(room, f"{xkcd.alt}")
 
     def uri_get_by_id(self, id):
-        return 'https://xkcd.com/' + int(id) + '/info.0.json'
+        return 'https://xkcd.com/' + str(int(id)) + '/info.0.json'
 
     def help(self):
         return 'Sends latest/any specified XCKD web comic to the room. See https://xkcd.com/ '
