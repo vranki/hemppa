@@ -392,6 +392,18 @@ Command:
 * !inspire - Generate inspiration and post to the room
 * !inspire help - Show this help
 
+### User Status
+
+This is a substitute for matrix' (element's?) missing user status feature.
+Save a custom (status) message for users and allows to query them.
+
+Commands:
+
+* !status clear - clear my status
+* !status show [user] - show the status of the given user. If no user is given, show all status messages
+* !status help - show this text
+* !status [status] - set your status (your status must not begin with another command word.)
+
 
 ### Wolfram Alpha
 
