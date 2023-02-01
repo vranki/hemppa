@@ -1,3 +1,5 @@
+import html
+
 from modules.common.module import BotModule
 
 
@@ -18,19 +20,28 @@ class MatrixModule(BotModule):
             await bot.send_text(room, self.help())
         elif args[0] == "show":
             if len(args) > 1:
-                if args[1] in self.status:
-                    await bot.send_text(room, f"Status message of {args[1]}: {self.status[args[1]]}")
-                else:
-                    await bot.send_text(room, f"No status known for {args[1]}")
+                await self.send_status(bot=bot, room=room, user=args[1])
             else:
-                await bot.send_text(room, f"All status messages:\n{self.status}")
+                await self.send_status(bot=bot, room=room)
         elif args[0] == "clear":
             self.status.pop(event.sender)
+            bot.save_settings()
             await bot.send_text(room, f"Cleared status of {event.sender}")
         else:
             self.status[event.sender] = " ".join(args)
             bot.save_settings()
-            await bot.send_text(room, f"Status message of {event.sender}: {self.status[event.sender]}")
+            await self.send_status(bot=bot, room=room, user=event.sender)
+
+    async def send_status(self, bot, room, user=None):
+        if user:
+            if user in self.status:
+                await bot.send_text(room, f"Status message of {user}: {self.status[user]}")
+            else:
+                await bot.send_text(room, f"No status known for {user}")
+        else:
+            await bot.send_html(room, "<b>All status messages:</b><br/><ul><li>" +
+                                "</li><li>".join([f"<b>{html.escape(key)}:</b> {html.escape(value)}" for key, value in self.status.items()]) +
+                                "</li></ul>", f"All status messages:\n{self.status}")
 
     def get_settings(self):
         data = super().get_settings()
