@@ -371,6 +371,17 @@ The module uses a demo API Key which can be replaced by your own api key by sett
 
 You can create one at https://api.nasa.gov/#signUp
 
+### XKCD
+
+Fetch comic strips from [XKCD](https://xkcd.com) (A webcomic of romance,
+sarcasm, math, and language) and post them to the room.
+
+Command:
+
+* !xkcd - Sends latest XKCD comic strip to the room
+* !xkcd ID - Sends xkcd number ID to the room
+* !xkcd help - show command help
+
 
 ### Inspirobot
 
