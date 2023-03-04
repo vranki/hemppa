@@ -1,5 +1,4 @@
 import re
-import html
 
 import requests
 
@@ -14,12 +13,7 @@ class MatrixModule(BotModule):
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
 
-        if len(args) == 3 and args[1] == 'apikey':
-            bot.must_be_owner(event)
-            self.api_key = args[2]
-            bot.save_settings()
-            await bot.send_text(room, 'Api key set')
-        elif len(args) > 1:
+        if len(args) > 1:
             query = event.body[len(args[0])+1:]
             try:
                 response = requests.get(self.api_url, params={
@@ -68,8 +62,3 @@ class MatrixModule(BotModule):
 
     def help(self):
         return ('Wikipedia bot')
-
-    def get_settings(self):
-        data = super().get_settings()
-        data["api_key"] = self.api_key
-        return data
