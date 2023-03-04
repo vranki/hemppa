@@ -708,6 +708,14 @@ including version, how many users are connected, and ping time.
 * !mumble                                 - Show info about the configured mumble server
 - !mumble (set|setserver) [host] ([port]) - Set the configured mumble server
 
+### Wikipedia
+
+Searches Wikipedia for a given query and returns the first result summary and link.
+
+#### Usage
+
+* !wikipedia [query] - Search Wikipedia for query
+
 ## Bot setup
 
 * Create a Matrix user
