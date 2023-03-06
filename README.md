@@ -717,6 +717,14 @@ Reads Twitter links from room, replaces domain with nitter, removes query parame
 * !nitter enable     - enable converting twitter links to nitter links in this room (must be done as room admin)
 * !nitter disable    - disable converting twitter links to nitter links in this room (must be done as room admin)
 
+### Wikipedia
+
+Searches Wikipedia for a given query and returns the first result summary and link.
+
+#### Usage
+
+* !wikipedia [query] - Search Wikipedia for query
+
 ## Bot setup
 
 * Create a Matrix user
