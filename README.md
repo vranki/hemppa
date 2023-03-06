@@ -708,6 +708,15 @@ including version, how many users are connected, and ping time.
 * !mumble                                 - Show info about the configured mumble server
 - !mumble (set|setserver) [host] ([port]) - Set the configured mumble server
 
+### Nitter
+
+Reads Twitter links from room, replaces domain with nitter, removes query parameters and posts link to room.
+
+#### Usage
+
+* !nitter enable     - enable converting twitter links to nitter links in this room (must be done as room admin)
+* !nitter disable    - disable converting twitter links to nitter links in this room (must be done as room admin)
+
 ### Wikipedia
 
 Searches Wikipedia for a given query and returns the first result summary and link.
