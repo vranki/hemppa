@@ -56,7 +56,7 @@ class MatrixModule(BotModule):
         args = event.body.split()
         args.pop(0)
         if len(args) == 0:
-            await bot.send_text(room, 'Usage: !twitter <enable|disable>')
+            await bot.send_text(room, 'Usage: !nitter <enable|disable>')
             return
         if len(args) == 1:
             if args[0] == 'enable':
