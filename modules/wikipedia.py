@@ -4,6 +4,7 @@ import requests
 
 from modules.common.module import BotModule
 
+
 # This module searches wikipedia for query, returns page summary and link.
 class MatrixModule(BotModule):
     def __init__(self, name):
@@ -14,32 +15,36 @@ class MatrixModule(BotModule):
         args = event.body.split()
 
         if len(args) > 1:
-            query = event.body[len(args[0])+1:]
+            query = event.body[len(args[0]) + 1:]
             try:
                 response = requests.get(self.api_url, params={
                     'action': 'query',
-                    'prop': 'extracts',
+                    'format': 'json',
                     'exintro': True,
                     'explaintext': True,
+                    'prop': 'extracts',
+                    'redirects': 1,
                     'titles': query,
-                    'format': 'json',
-                    'formatversion': 2
                 })
 
                 response.raise_for_status()
                 data = response.json()
-                if 'query' not in data or 'pages' not in data['query'] or len(data['query']['pages']) == 0:
+
+                # Get the page id
+                page_id = list(data['query']['pages'].keys())[0]
+
+                if page_id == '-1':
                     await bot.send_text(room, 'No results found')
                     return
 
-                page = data['query']['pages'][0]
+                # Get the page title
+                title = data['query']['pages'][page_id]['title']
 
-                if 'extract' not in page:
-                    await bot.send_text(room, 'No results found')
-                    return
+                # Get the page summary
+                summary = data['query']['pages'][page_id]['extract']
 
                 # Remove all html tags
-                extract = re.sub('<[^<]+?>', '', page['extract'])
+                extract = re.sub('<[^<]+?>', '', summary)
                 # Remove any multiple spaces
                 extract = re.sub(' +', ' ', extract)
                 # Remove any new lines
@@ -47,13 +52,23 @@ class MatrixModule(BotModule):
                 # Remove any tabs
                 extract = re.sub('\t', '', extract)
 
-                # Truncate to 500 chars
-                extract = extract[:500]
+                # Truncate the extract, Element URL preview contains nonsense Wikipedia meta content
+                if len(extract) <= 256:
+                    pass
+                else:
+                    extract = ' '.join(extract[:256 + 1].split(' ')[0:-1]) + '...'
 
-                # Add a link to the page
-                extract = extract + '\nhttps://en.wikipedia.org/?curid=' + str(page['pageid'])
+                # Get the page url
+                url = f'https://en.wikipedia.org/wiki/{title}'
 
-                await bot.send_text(room, extract)
+                # Convert all spaces to underscores in url
+                url = re.sub(r'\s', '_', url)
+
+                # Format the response
+                response = f'{title}: {extract} \n{url}'
+
+                # Send the response
+                await bot.send_text(room, response)
                 return
             except Exception as exc:
                 await bot.send_text(room, str(exc))
