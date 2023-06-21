@@ -279,14 +279,14 @@ mxma requires all commands to be run as bot owner.
 #### SpaceAPI
 
 Polls the status of Hack- and Makerspaces that provide an endpoint
-that conforms to the [SpaceAPI](https://spaceapi.io/) protocol and notifies 
+that conforms to the [SpaceAPI](https://spaceapi.io/) protocol and notifies
 about changes of the opening status.
 
-To add a new endpoint simply use 
+To add a new endpoint simply use
 `!spaceapi add https://hackspace.example.org/status`
 
-For Admins: A template and I18N can be configured via settings of 
-the module. Use `!bot export spacepi`, then change the 
+For Admins: A template and I18N can be configured via settings of
+the module. Use `!bot export spacepi`, then change the
 settings and import again with `!bot import spacepi SETTINGS`.
 
 ### Url
@@ -552,8 +552,8 @@ Read the documentation to create one at https://developers.giphy.com/docs/api
 Commands:
 
 * !giphy apikey [apikey]    - Set api key (Must be done as bot owner)
-* !giphy [query]            - Post the first image result from giphy for the given [query]  
-  
+* !giphy [query]            - Post the first image result from giphy for the given [query]
+
 
 Example:
 
@@ -567,7 +567,7 @@ Can be used to post a picture from Gfycat given a query string.
 
 Commands:
 
-* !gfycat [query]   - Post the first image result from gfycat for the given [query]  
+* !gfycat [query]   - Post the first image result from gfycat for the given [query]
 
 Example:
 
@@ -606,7 +606,7 @@ Environ variables seen by command:
 Docker environment:
 
 Since the module needs access to the source of the running Tautulli instance volumes on both Docker (hemppa and Tautulli) should be defined and being visible each other.
-When running on Docker the env variables seen by command should be defined for the bot instance. 
+When running on Docker the env variables seen by command should be defined for the bot instance.
 
 Example:
 
@@ -624,8 +624,8 @@ environment but can be extended to any purpose.
 
 * Create labels to github that represent for example different machines and spaces.
 You can create any number of them.
-* Define label colors for each type of asset. These are called domains in this module. 
-For example set all machine labels to be #B60205 and space labels to be #0E8A16. These 
+* Define label colors for each type of asset. These are called domains in this module.
+For example set all machine labels to be #B60205 and space labels to be #0E8A16. These
 can be easily picked from color chooser.
 * Edit the repository description and add a json block describing the
 label domains and their colors (array format supports multiple colors per domain). For example:
@@ -725,6 +725,18 @@ Searches Wikipedia for a given query and returns the first result summary and li
 
 * !wikipedia [query] - Search Wikipedia for query
 
+### Dice Roll
+
+Rolls dice in XdY format.
+
+* !roll 1d20 - roll a single d20
+* !roll 1d20+4 - a skill check or attack roll
+* !roll 1d20+1 adv - a skill check or attack roll with advantage
+* !roll 1d20-1 dis - a skill check or attack roll with disadvantage
+* !roll help - show help info
+
+For more syntax help, see <https://d20.readthedocs.io/en/latest/start.html#dice-syntax>.
+
 ## Bot setup
 
 * Create a Matrix user
@@ -792,7 +804,7 @@ docker-compose up
 ## Env variables
 
 `MATRIX_USER` is the full MXID (not just username) of the Matrix user. `MATRIX_ACCESS_TOKEN`
-and `MATRIX_SERVER` should be url to the user's server (non-delegated server). Set `JOIN_ON_INVITE` (default true) 
+and `MATRIX_SERVER` should be url to the user's server (non-delegated server). Set `JOIN_ON_INVITE` (default true)
 to false if you don't want the bot automatically joining rooms.
 
 You can get access token by logging in with Element Android and looking from Settings / Help & About.
@@ -882,7 +894,7 @@ class Bot:
         :param bot_ignore: Flag to mark the message to be ignored by the bot
         :return:
         """
-        
+
     async def send_image(self, room, url, body, event=None, mimetype=None, width=None, height=None, size=None):
         """
 
@@ -896,17 +908,17 @@ class Bot:
         :param size: Size in bytes of the image
         :return:
         """
-    
+
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):
         """
 
         :param url: Url of binary content of the image to upload
-        :param blob: Flag to indicate if the first param is an url or a binary content 
+        :param blob: Flag to indicate if the first param is an url or a binary content
         :param blob_content_type: Content type of the image in case of binary content
         :return: A MXC-Uri https://matrix.org/docs/spec/client_server/r0.6.0#mxc-uri, Content type, Width, Height, Image size in bytes
         """
-    
-        
+
+
     async def upload_and_send_image(self, room, url, event=None, text=None, blob=False, blob_content_type="image/png"):
         """
 
@@ -914,7 +926,7 @@ class Bot:
         :param url: Url of binary content of the image to upload
         :param event: The event to reply to
         :param text: A textual representation of the image
-        :param blob: Flag to indicate if the second param is an url or a binary content 
+        :param blob: Flag to indicate if the second param is an url or a binary content
         :param blob_content_type: Content type of the image in case of binary content
         :return:
         """
