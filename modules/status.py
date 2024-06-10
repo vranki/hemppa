@@ -34,6 +34,9 @@ class MatrixModule(BotModule):
                 bot.save_settings()
                 await bot.send_text(room, f"Cleared status of {event.sender}")
         elif args[0] == "ttl":
+            if args[1]:
+                bot.must_be_admin(room, event)
+                self.ttl = float(args[1])
             await bot.send_text(room, f"Current status TTL is {self.ttl} seconds = {self.ttl / 60.0 / 60.0 / 24.0} days")
         else:
             self.status[event.sender] = (" ".join(args), time.time())
