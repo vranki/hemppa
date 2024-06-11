@@ -31,13 +31,15 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
                 self.status = dict()
             else:
-                self.status.pop(event.sender)
+                if(event.sender in self.status.keys()):
+                    self.status.pop(event.sender)
                 bot.save_settings()
                 await bot.send_text(room, f"Cleared status of {event.sender}")
         elif args[0] == "ttl":
             if len(args) > 1:
                 bot.must_be_admin(room, event)
                 self.ttl = float(args[1])
+                bot.save_settings()
             await bot.send_text(room, f"Current status TTL is {self.ttl} seconds = {self.ttl / 60.0 / 60.0 / 24.0} days")
         else:
             self.status[event.sender] = (" ".join(args), time.time())
