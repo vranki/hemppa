@@ -1,5 +1,6 @@
 import html
 import time
+import markdown
 
 from modules.common.module import BotModule
 
@@ -26,7 +27,7 @@ class MatrixModule(BotModule):
             else:
                 await self.send_status(bot=bot, room=room)
         elif args[0] == "clear":
-            if args[1] == "all":
+            if len(args) > 1 and args[1] == "all":
                 bot.must_be_admin(room, event)
                 self.status = dict()
             else:
@@ -34,7 +35,7 @@ class MatrixModule(BotModule):
                 bot.save_settings()
                 await bot.send_text(room, f"Cleared status of {event.sender}")
         elif args[0] == "ttl":
-            if args[1]:
+            if len(args) > 1:
                 bot.must_be_admin(room, event)
                 self.ttl = float(args[1])
             await bot.send_text(room, f"Current status TTL is {self.ttl} seconds = {self.ttl / 60.0 / 60.0 / 24.0} days")
@@ -55,12 +56,12 @@ class MatrixModule(BotModule):
         self.drop_old_messages()
         if user:
             if user in self.status:
-                await bot.send_html(room, f"<b>{html.escape(user)}:</b> {html.escape(self.status[user][0])}", f"Status message of {user}: {self.status[user][0]}")
+                await bot.send_html(room, f"<b>{html.escape(user)}:</b> {markdown.markdown(self.status[user][0])}", f"Status message of {user}: {self.status[user][0]}")
             else:
                 await bot.send_text(room, f"No status known for {user}")
         else:
             await bot.send_html(room, "<b>All status messages:</b><br/><ul><li>" +
-                                "</li><li>".join([f"<b>{html.escape(key)}:</b> {html.escape(value[0])}" for key, value in self.status.items()]) +
+                                "</li><li>".join([f"<b>{html.escape(key)}:</b> {markdown.markdown(value[0])}" for key, value in self.status.items()]) +
                                 "</li></ul>", f"All status messages:\n{self.status}")
 
     def get_settings(self):
