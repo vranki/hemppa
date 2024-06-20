@@ -20,7 +20,7 @@ class MatrixModule(BotModule):
         args = event.body.split()
         args.pop(0)
         if len(args) < 1 or args[0] == "help":
-            await bot.send_text(room, self.help())
+            await self.command_help(bot, room)
         elif args[0] == "show":
             if len(args) > 1:
                 await self.send_status(bot=bot, room=room, user=args[1])
@@ -31,7 +31,7 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
                 self.status = dict()
             else:
-                if(event.sender in self.status.keys()):
+                if (event.sender in self.status.keys()):
                     self.status.pop(event.sender)
                 bot.save_settings()
                 await bot.send_text(room, f"Cleared status of {event.sender}")
@@ -79,8 +79,8 @@ class MatrixModule(BotModule):
         if data.get("user_status_list_ttl"):
             self.ttl = data["user_status_list_ttl"]
 
-    def help(self):
-        return """
+    async def command_help(self, bot, room):
+        msg = """
         Store a status message per user and display them.
         Usage:
         !status clear - clear my status
@@ -90,3 +90,7 @@ class MatrixModule(BotModule):
         !status help - show this text
         !status [status] - set your status
         """
+        await bot.send_html(room, msg, "Status module help")
+
+    def help(self):
+        return "Save a custom (status) message for users and allows to query them."
