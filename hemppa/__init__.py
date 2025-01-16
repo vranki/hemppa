@@ -509,6 +509,8 @@ class Bot:
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
+        except ModuleNotFoundError:
+            self.logger.exception(f'Unable to load module. Maybe you forgot to install optional dependencies?')
         except Exception:
             self.logger.exception(f'Module {modulename} failed to load')
             return None
