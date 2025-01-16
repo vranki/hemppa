@@ -13,6 +13,9 @@ dynamic = [
     "version"
 ]
 
+[project.scripts]
+hemppa = "hemppa.__main__:main"
+
 [poetry.optional-dependencies]
 
 [tool]
