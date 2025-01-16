@@ -10,7 +10,7 @@ class MatrixModule(BotModule):
     def get_settings(self):
         data = super().get_settings()
         data['msg_users'] = self.msg_users
-        data['info'] = self.info
+        data['info'] = getattr(self, 'info', None)
         return data
 
     def set_settings(self, data):
