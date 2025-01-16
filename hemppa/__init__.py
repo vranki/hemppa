@@ -657,24 +657,3 @@ class Bot:
             self.poll_task.cancel()
         self.bot_task.cancel()
         self.stop()
-
-
-async def main():
-    bot = Bot()
-    bot.init()
-
-    loop = asyncio.get_running_loop()
-
-    for signame in {'SIGINT', 'SIGTERM'}:
-        loop.add_signal_handler(
-            getattr(signal, signame),
-            functools.partial(bot.handle_exit, signame, loop))
-
-    await bot.run()
-    await bot.shutdown()
-
-
-try:
-    asyncio.run(main())
-except Exception as e:
-    traceback.print_exc(file=sys.stderr)
