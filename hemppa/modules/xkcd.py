@@ -3,8 +3,8 @@ import html
 
 import requests
 
-from modules.common.module import BotModule
-from modules.common.exceptions import UploadFailed
+from .common.module import BotModule
+from .common.exceptions import UploadFailed
 
 
 class Xkcd:

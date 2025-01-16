@@ -5,7 +5,7 @@ from urllib.parse import urlencode, quote_plus
 import json
 import time 
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 class PeerTubeClient:
     def __init__(self):

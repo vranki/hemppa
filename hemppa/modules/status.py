@@ -2,7 +2,7 @@ import html
 import time
 import markdown
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

@@ -9,7 +9,7 @@ from nio import AsyncClient, UploadError
 from nio import UploadResponse
 
 from collections import namedtuple
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 class MatrixModule(BotModule):
     api_key = None

@@ -2,7 +2,7 @@ import re
 
 import requests
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 # This module searches wikipedia for query, returns page summary and link.

@@ -1,7 +1,7 @@
 import html
 import requests
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

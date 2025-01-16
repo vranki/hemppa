@@ -1,4 +1,4 @@
-from modules.common.pollingservice import PollingService
+from .common.pollingservice import PollingService
 from urllib.request import urlopen
 import json
 import time

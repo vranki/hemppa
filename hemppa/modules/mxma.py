@@ -1,8 +1,8 @@
-from modules.common.module import BotModule
+from .common.module import BotModule
 import requests, json
 import traceback
 
-from modules.common.pollingservice import PollingService
+from .common.pollingservice import PollingService
 
 class MatrixModule(PollingService):
     def __init__(self, name):

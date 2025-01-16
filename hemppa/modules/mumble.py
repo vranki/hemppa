@@ -1,4 +1,4 @@
-from modules.common.module import BotModule
+from .common.module import BotModule
 import random
 import socket
 from struct import pack, unpack

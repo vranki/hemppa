@@ -1,6 +1,6 @@
 import re
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 from nio import RoomMessageText
 
 

@@ -12,7 +12,7 @@ from aiohttp import web
 from future.moves.urllib.parse import urlencode
 from nio import MatrixRoom
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 import nest_asyncio
 nest_asyncio.apply()

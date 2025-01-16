@@ -16,7 +16,7 @@ from googleapiclient.discovery import build
 # It's created on first run (run from console!) and
 # can be copied to another computer.
 #
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

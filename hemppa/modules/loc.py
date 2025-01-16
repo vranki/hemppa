@@ -1,7 +1,7 @@
 from geopy.geocoders import Nominatim
 from nio import RoomMessageUnknown
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

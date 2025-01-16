@@ -2,7 +2,7 @@ from github import Github
 import re
 import json
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 # Helper class with reusable code for github project stuff
 class GithubProject:

@@ -1,4 +1,4 @@
-from modules.common.module import BotModule
+from .common.module import BotModule
 import fnmatch
 
 class MatrixModule(BotModule):

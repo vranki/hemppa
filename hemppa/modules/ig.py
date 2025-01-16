@@ -7,7 +7,7 @@ from igramscraper.exception.instagram_not_found_exception import \
     InstagramNotFoundException
 from igramscraper.instagram import Instagram
 
-from modules.common.pollingservice import PollingService
+from .common.pollingservice import PollingService
 
 
 class MatrixModule(PollingService):

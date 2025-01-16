@@ -7,7 +7,7 @@ from datetime import timedelta
 import time
 
 from nio import RoomCreateError
-from modules.common.module import BotModule, ModuleCannotBeDisabled
+from .common.module import BotModule, ModuleCannotBeDisabled
 
 class LogDequeHandler(logging.Handler):
     def __init__(self, count):

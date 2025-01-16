@@ -2,7 +2,7 @@ import os
 import itertools
 import shlex
 import requests
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

@@ -6,7 +6,7 @@ from pyteamup import Calendar
 #
 # TeamUp calendar notifications
 #
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 
 class MatrixModule(BotModule):

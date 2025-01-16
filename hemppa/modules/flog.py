@@ -10,7 +10,7 @@ import urllib3
 from datetime import datetime, timedelta
 from random import randrange
 
-from modules.common.module import BotModule
+from .common.module import BotModule
 
 urllib3.disable_warnings()
 
