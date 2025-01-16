@@ -205,11 +205,16 @@ class MatrixModule(BotModule):
         self.logger.info(f"Asked to enable {module_name}")
         if bot.modules.get(module_name):
             module = bot.modules.get(module_name)
-            module.enable()
-            module.matrix_start(bot)
-            bot.save_settings()
-            return await bot.send_text(room, f"Module {module_name} enabled")
-        return await bot.send_text(room, f"Module with name {module_name} not found. Execute !bot modules for a list of available modules")
+        else:
+            try:
+                module = bot.load_module(module_name)
+                bot.modules[module.name] = module
+            except Exception:
+                return await bot.send_text(room, f"Module with name {module_name} not found. Execute !bot modules for a list of available modules")
+        module.enable()
+        module.matrix_start(bot)
+        bot.save_settings()
+        return await bot.send_text(room, f"Module {module_name} enabled")
 
     async def disable_module(self, bot, room, event, module_name):
         bot.must_be_owner(event)
