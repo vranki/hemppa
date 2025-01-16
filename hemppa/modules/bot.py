@@ -188,6 +188,9 @@ class MatrixModule(BotModule):
             location,
     ):
         module_name = location.split('.')[-1]
+        if module_name.startswith('_'):
+            # Ignore hidden modules
+            return None
         if '.' not in location:
             # Fall back to builtin modules
             location = '.'.join(self.__module__.split('.')[:-1]) + '.' + location
