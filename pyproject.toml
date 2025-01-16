@@ -12,3 +12,5 @@ dependencies = [
     "pillow>=11.1.0",
     "requests>=2.32.3",
 ]
+
+[poetry.optional-dependencies]
