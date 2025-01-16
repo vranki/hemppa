@@ -183,6 +183,20 @@ class MatrixModule(BotModule):
         self.logger.info(f'{event.sender} commanded bot to quit, so quitting..')
         bot.bot_task.cancel()
 
+    def load_module(
+            self,
+            location,
+    ):
+        module_name = location.split('.')[-1]
+        if '.' not in location:
+            # Fall back to builtin modules
+            location = '.'.join(self.__module__.split('.')[:-1]) + '.' + location
+        python_module = importlib.reload(importlib.import_module(location))
+        module = getattr(python_module, 'MatrixModule')
+        module_instance = module(module_name)
+        return module_instance
+
+
     async def enable_module(self, bot, room, event, module_name):
         bot.must_be_owner(event)
         self.logger.info(f"Asked to enable {module_name}")
