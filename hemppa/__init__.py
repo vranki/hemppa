@@ -519,6 +519,13 @@ class Bot:
         try:
             self.logger.info(f'Loading module: {modulename}..')
             module = self.modules[module_manager_name].load_module(modulename)
+            if module.name in self.modules.keys():
+                self.logger.warning(
+                    'module %(a)s clashes with module %(b)s' % {
+                        'a': module.name,
+                        'b': self.modules[module.name].__module__ + '.' + module.name,
+                    },
+                )
             return module
         except ModuleNotFoundError:
             self.logger.exception(f'Unable to load module. Maybe you forgot to install optional dependencies?')
