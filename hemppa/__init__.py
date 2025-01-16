@@ -29,6 +29,7 @@ from nio import AsyncClient, InviteEvent, JoinError, RoomMessageText, MatrixRoom
     RoomVisibility, RoomPreset, RoomCreateError, RoomResolveAliasResponse, UploadError, UploadResponse, SyncError, \
     RoomPutStateError
 
+from . import modules
 from .modules.common.exceptions import CommandRequiresAdmin, CommandRequiresOwner, UploadFailed
 
 class Bot:
