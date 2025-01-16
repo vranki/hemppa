@@ -503,12 +503,23 @@ class Bot:
             await self.client.room_leave(room.room_id)
 
     def load_module(self, modulename):
+        module_manager_location = os.getenv('HEMPPA_MODULE_MANAGER') or 'hemppa.modules.bot'
+        module_manager_module = importlib.import_module(module_manager_location)
+        module_manager_class = getattr(module_manager_module, 'MatrixModule')
+        module_manager_name = module_manager_location.split('.')[-1]
+
+        assert module_manager_class, ModuleNotFoundError(
+            'Unable to find module manager in %s' % module_manager_location,
+        )
+
+        self.modules[module_manager_name] = module_manager_class(
+            name=module_manager_name,
+        )
+
         try:
             self.logger.info(f'Loading module: {modulename}..')
-            module = importlib.import_module('hemppa.modules.' + modulename)
-            module = reload(module)
-            cls = getattr(module, 'MatrixModule')
-            return cls(modulename)
+            module = self.modules[module_manager_name].load_module(modulename)
+            return module
         except ModuleNotFoundError:
             self.logger.exception(f'Unable to load module. Maybe you forgot to install optional dependencies?')
         except Exception:
