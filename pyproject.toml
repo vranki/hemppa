@@ -9,4 +9,5 @@ requires-python = ">=3.9,<4.0"
 dependencies = [
     "matrix-nio>=0.25.2",
     "pyyaml>=6.0.2",
+    "pillow>=11.1.0",
 ]
