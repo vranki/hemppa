@@ -521,7 +521,8 @@ class Bot:
         self.load_settings(self.get_account_data())
 
     def get_modules(self):
-        modulefiles = glob.glob('./modules/*.py')
+        path = modules.__path__[:][0] + '/*.py'
+        modulefiles = glob.glob(path)
 
         for modulefile in modulefiles:
             modulename = os.path.splitext(os.path.basename(modulefile))[0]
