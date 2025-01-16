@@ -3,3 +3,4 @@ name = "hemppa"
 packages = [
     {include = "hemppa", from = "."},
 ]
+license = { file = "LICENSE" }
