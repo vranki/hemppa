@@ -30,7 +30,9 @@ from .modules.common.exceptions import CommandRequiresAdmin, CommandRequiresOwne
 
 class Bot:
 
-    def __init__(self):
+    def __init__(
+            self,
+    ):
         self.appid = 'org.vranki.hemppa'
         self.version = '1.5'
         self.client = None
