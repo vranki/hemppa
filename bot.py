@@ -499,7 +499,7 @@ class Bot:
     def load_module(self, modulename):
         try:
             self.logger.info(f'Loading module: {modulename}..')
-            module = importlib.import_module('modules.' + modulename)
+            module = importlib.import_module('hemppa.modules.' + modulename)
             module = reload(module)
             cls = getattr(module, 'MatrixModule')
             return cls(modulename)
