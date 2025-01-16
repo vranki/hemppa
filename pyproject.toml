@@ -10,4 +10,5 @@ dependencies = [
     "matrix-nio>=0.25.2",
     "pyyaml>=6.0.2",
     "pillow>=11.1.0",
+    "requests>=2.32.3",
 ]
