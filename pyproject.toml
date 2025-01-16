@@ -1,8 +1,5 @@
 [project]
 name = "hemppa"
-packages = [
-    {include = "hemppa", from = "."},
-]
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.9,<4.0"
@@ -12,5 +9,22 @@ dependencies = [
     "pillow>=11.1.0",
     "requests>=2.32.3",
 ]
+dynamic = [
+    "version"
+]
 
 [poetry.optional-dependencies]
+
+[tool]
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry]
+version = "0.0.0"
+packages = [
+    {include = "hemppa", from = "."},
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
