@@ -577,17 +577,17 @@ class Bot:
         matrix_server = os.getenv('MATRIX_SERVER')
         bot_owners = os.getenv('BOT_OWNERS')
         access_token = os.getenv('MATRIX_ACCESS_TOKEN')
-        join_on_invite = os.getenv('JOIN_ON_INVITE')
+        join_on_invite = os.getenv('JOIN_ON_INVITE') in ['true']
         invite_whitelist = os.getenv('INVITE_WHITELIST')
         owners_only = os.getenv('OWNERS_ONLY') is not None
-        leave_empty_rooms = os.getenv('LEAVE_EMPTY_ROOMS')
+        leave_empty_rooms = os.getenv('LEAVE_EMPTY_ROOMS') in ['true']
 
         if matrix_server and self.matrix_user and bot_owners and access_token:
             self.client = AsyncClient(matrix_server, self.matrix_user, ssl = matrix_server.startswith("https://"))
             self.client.access_token = access_token
-            self.join_on_invite = (join_on_invite or '').lower() == 'true'
+            self.join_on_invite = join_on_invite is True
             self.invite_whitelist = invite_whitelist.split(',') if invite_whitelist is not None else []
-            self.leave_empty_rooms = (leave_empty_rooms or 'true').lower() == 'true'
+            self.leave_empty_rooms = leave_empty_rooms is True
             self.owners = bot_owners.split(',')
             self.owners_only = owners_only
             self.get_modules()
