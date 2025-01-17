@@ -519,7 +519,7 @@ class Bot:
         try:
             self.logger.info(f'Loading module: {modulename}..')
             module = self.modules[module_manager_name].load_module(modulename)
-            if module.name in self.modules.keys():
+            if getattr(module, 'name', None) in self.modules.keys():
                 self.logger.warning(
                     'module %(a)s clashes with module %(b)s' % {
                         'a': module.name,
