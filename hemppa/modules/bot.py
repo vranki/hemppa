@@ -153,11 +153,41 @@ class MatrixModule(BotModule):
         return await bot.send_text(room, f'Uptime: {uptime} - System time: {systime} '
                 f'- {enabled} modules enabled out of {len(bot.modules)} loaded.')
 
+    def reload_module(
+            self,
+            bot,
+            module_location,
+    ):
+        module_name = module_location.split('.')[-1]
+        if module_name not in bot.modules.keys():
+            raise ValueError(
+                'Cannot reload module that has not been loaded before',
+            )
+        module = self.load_module(module_location)
+        return module_name, module
+
     async def reload(self, bot, room, event):
         bot.must_be_owner(event)
         msg = await bot.send_text(room, f'Reloading modules...')
         bot.stop()
-        bot.reload_modules()
+        for module_name, module in bot.modules.items():
+            try:
+                new_name, new_module = self.reload_module(
+                    bot=bot,
+                    module_location=module.__module__,
+                )
+                if new_name != module_name:
+                    bot.logger.warn(
+                        'module name has changed: %(old)s -> %(new)s' % {
+                            'old': module_name,
+                            'new': new_name,
+                        },
+                    )
+                    del bot.modules[module_name]
+                bot.modules[new_name] = new_module
+            except ValueError as e:
+                bot.logger.warn(e)
+                pass
         bot.start()
         # update event
         content = {
