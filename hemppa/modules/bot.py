@@ -238,6 +238,10 @@ class MatrixModule(BotModule):
         else:
             try:
                 module = bot.load_module(module_name)
+                if not isinstance(module, BotModule):
+                    raise ValueError(
+                        'Object of type "%s" is not a valid module' % type(module),
+                    )
                 bot.modules[module.name] = module
             except Exception:
                 return await bot.send_text(room, f"Module with name {module_name} not found. Execute !bot modules for a list of available modules")
