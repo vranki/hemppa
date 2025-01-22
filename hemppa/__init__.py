@@ -521,6 +521,7 @@ class Bot:
             module = self.modules[module_manager_name].load_module(modulename)
             if all([
                 getattr(module, 'name', None) in self.modules.keys(),
+                getattr(module, 'name', None) != module_manager_name,
             ]):
                 self.logger.warning(
                     'module %(a)s clashes with module %(b)s' % {
