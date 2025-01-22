@@ -531,7 +531,9 @@ class Bot:
                 )
             return module
         except ModuleNotFoundError:
-            self.logger.exception(f'Unable to load module. Maybe you forgot to install optional dependencies?')
+            self.logger.exception(
+                f'Unable to load module %s. Maybe you forgot to install optional dependencies?' % modulename,
+            )
         except Exception:
             self.logger.exception(f'Module {modulename} failed to load')
             return None
