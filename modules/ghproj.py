@@ -8,7 +8,7 @@ from modules.common.module import BotModule
 class GithubProject:
     # New format to support array of colors: domains={"koneet":["#BFDADC","#0CBBF0","#0CBBF0","#E15D19","#ED49CF"],"tilat":["#0E8A16","#1E8A16"]}
     def get_domains(description):
-        p = re.compile('domains=\{.*\}')
+        p = re.compile('domains=\\{.*\\}')
         matches = json.loads(p.findall(description)[0][8:])
         return matches
 

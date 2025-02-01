@@ -539,10 +539,12 @@ class Bot:
 
     def set_account_data(self, data):
         userid = urllib.parse.quote(self.matrix_user)
+        headers = {
+            'Authorization': f'Bearer {self.client.access_token}',
+        }
+        ad_url = f"{self.client.homeserver}/_matrix/client/v3/user/{userid}/account_data/{self.appid}"
 
-        ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
-
-        response = requests.put(ad_url, json.dumps(data))
+        response = requests.put(ad_url, json.dumps(data), headers=headers)
         self.__handle_error_response(response)
 
         if response.status_code != 200:
@@ -550,10 +552,13 @@ class Bot:
 
     def get_account_data(self):
         userid = urllib.parse.quote(self.matrix_user)
+        headers = {
+            'Authorization': f'Bearer {self.client.access_token}',
+        }
 
-        ad_url = f"{self.client.homeserver}/_matrix/client/r0/user/{userid}/account_data/{self.appid}?access_token={self.client.access_token}"
+        ad_url = f"{self.client.homeserver}/_matrix/client/v3/user/{userid}/account_data/{self.appid}"
 
-        response = requests.get(ad_url)
+        response = requests.get(ad_url, headers=headers)
         self.__handle_error_response(response)
 
         if response.status_code == 200:
