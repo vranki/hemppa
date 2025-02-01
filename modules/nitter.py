@@ -4,13 +4,13 @@ from modules.common.module import BotModule
 from nio import RoomMessageText
 
 
-# This module reads matrix messages and converts twitter.com links to nitter.nl
-# Module will only target messages that contain only the twitter link
+# This module reads matrix messages and converts x.com links to nitter.nl
+# Module will only target messages that contain only the x link
 # Additionally module will target only profile links or post links, query parameters are removed
 class MatrixModule(BotModule):
     def __init__(self, name):
         super().__init__(name)
-        self.regex = re.compile(r'https://twitter.com/([^?]*)')
+        self.regex = re.compile(r'https://x.com/([^?]*)')
         self.bot = None
         self.enabled_rooms = []
 
@@ -44,7 +44,7 @@ class MatrixModule(BotModule):
             return
 
         if len(event.body.split()) <= 1:
-            if event.body.startswith('https://twitter.com/'):
+            if event.body.startswith('https://x.com/'):
                 for link in self.regex.findall(event.body):
                     await self.bot.send_text(room, f'https://nitter.net/{link}')
                 return
@@ -74,7 +74,7 @@ class MatrixModule(BotModule):
                 return
 
     def help(self):
-        return 'Converts Twitter links to nitter links.'
+        return 'Converts X links to nitter links.'
 
     def get_settings(self):
         data = super().get_settings()
