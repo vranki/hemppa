@@ -27,6 +27,8 @@ nest_asyncio = "*"
 d20 = "*"
 gql = "*"
 tenacity = "*"
+markdown = "*"
+future = "*"
 
 [dev-packages]
 pylint = "*"
