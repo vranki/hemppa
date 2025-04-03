@@ -29,6 +29,7 @@ gql = "*"
 tenacity = "*"
 markdown = "*"
 future = "*"
+paho-mqtt = "*"
 
 [dev-packages]
 pylint = "*"

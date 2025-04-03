@@ -737,6 +737,18 @@ Rolls dice in XdY format.
 
 For more syntax help, see <https://d20.readthedocs.io/en/latest/start.html#dice-syntax>.
 
+### Matrix -> MQTT Forwarding
+
+Can forward messages from Matrix room to MQTT topics.
+Must be bot owner to use.
+
+* !mqtt forward #room:matrix.org test.mosquitto.org hemppa_test_topic - Setup a forward from room to given MQTT server and topic name
+* !mqtt status - show status
+* !mqtt remove !roomid  - Remove existing forward
+* !mqtt clear - Clear all forwards
+
+(Currently just sends message bodies as string - might change to JSON later?)
+
 ## Bot setup
 
 * Create a Matrix user
