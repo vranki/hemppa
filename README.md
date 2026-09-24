@@ -155,17 +155,26 @@ NOTE: disabled by default
 
 ### Cron
 
-Can schedule things to be done.
+Schedule messages or bot commands with standard 5-field cron expressions
+(`min hour dom mon dow`). Evaluated every ~10s; each match fires at most once per minute.
+Timezone comes from the `TZ` environment variable.
 
-Commands:
+Commands (room admin required):
 
-* !cron daily [hour] [command] - Run command on start of hour (Must be done as room admin)
-* !cron list - List commands in this room
-* !cron clear - Clear command s in this room (Must be done as room admin)
-* !cron time - Print the current datetime and time zone that the cron command will use (time zone set using the `TZ` environment variable)
+* !cron add "[cron]" [command] - Add a cron job
+* !cron once [when] [command] - One-shot reminder (relative `10m`/`1h`/`30s` or absolute `"YYYY-MM-DD HH:MM"`)
+* !cron daily [hour] [command] - Shorthand for `0 [hour] * * *`
+* !cron list - List jobs in this room
+* !cron remove [index] - Remove a job by index from !cron list
+* !cron clear - Clear all jobs in this room
+* !cron time - Print current datetime and TZ
 
 Examples:
 
+* !cron add "*/5 * * * *" "ping"
+* !cron add "0 9 * * 1-5" "!echo weekday morning"
+* !cron once 10m "drink water"
+* !cron once "2026-12-24 18:00" "party starts"
 * !cron daily 19 "It is now 19 o clock"
 * !cron daily 8 "!googlecal today"
 
